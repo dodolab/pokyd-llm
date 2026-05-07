@@ -1,0 +1,88 @@
+void TABULKA(WORD body,BYTE level) {
+BYTE tabulka[17][50],levele[20],pozice1,pozice2,poradi,znak;
+WORD skore[17];
+  for (pozice1=0; pozice1 < 17; pozice1++) {
+    for (pozice2=0; pozice2 < 50; pozice2++)
+     tabulka[pozice1][pozice2]=rand()%256;
+   }
+  _AX = 3; geninterrupt(0x10); _setcursortype(_NOCURSOR);
+  SOUBOR("SILNICE.SCO"); soucet=0;
+  if ((f=fopen(soubor,"rb")) == NULL) {		//vynulovani tabulky
+    VYGENERUJ:
+    for (pozice1=0; pozice1 < 17; pozice1++) {
+      strcpy(tabulka[pozice1],"Silnice v1.1 - KYBLSoft 2000");
+      skore[pozice1]=0; levele[pozice1]=0;
+     }
+   }
+  else {					//nacteni ze souboru
+    fseek(f,5,SEEK_SET);			//signatura
+    for (pozice1=0; pozice1 < 17; pozice1++) {
+      for (pozice2=0; pozice2 < 50; pozice2++)
+       tabulka[pozice1][pozice2]=PRECTI_ZNAK();
+      skore[pozice1]=PRECTI_ZNAK(); skore[pozice1]<<=8; skore[pozice1]+=PRECTI_ZNAK();
+      levele[pozice1]=PRECTI_ZNAK();
+     }
+    if (soucet != getc(f)) goto VYGENERUJ;
+    fclose(f); f=NULL;
+   }
+  if (level == 0) goto ZOBRAZ;
+
+  for (poradi=0; body < skore[poradi] && poradi < 16; poradi++);
+							//najdi misto zapsani
+  while (body == skore[poradi] && level < levele[poradi] && poradi < 16) poradi++;
+  for (pozice1=16; pozice1 > poradi; pozice1--)	{	//posunuti dalsich mist
+    strcpy(tabulka[pozice1],tabulka[pozice1-1]);
+    skore[pozice1]=skore[pozice1-1];
+    levele[pozice1]=levele[pozice1-1];
+   }
+
+ZOBRAZ:
+  gotoxy(1,1); textattr(11);
+  cprintf(""
+"ษออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออป"
+"บ         T A B U L K A   V I T E Z U                       Body     Level     บ"
+"ฬออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออน");
+  for (pozice1=0; pozice1 < 19; pozice1++)
+   cprintf("บ                                                                              บ");
+  cprintf("ศออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผ");
+
+  textcolor(10);
+  for (pozice1=0; pozice1 < 17; pozice1++) {
+    gotoxy(4,pozice1+5); cprintf("%2d.  %s",pozice1+1,tabulka[pozice1]);
+    gotoxy(61,pozice1+5); cprintf("%u",skore[pozice1]);
+    gotoxy(71,pozice1+5); cprintf("%d",levele[pozice1]);
+   }
+
+  if (body < skore[16] || level == 0) goto KONEC;
+
+  gotoxy(2,poradi+5); textattr(14+6*16); cprintf("  %2d.                                                                         ",poradi+1);
+  gotoxy(61,poradi+5); cprintf("%u",body); skore[poradi]=body;
+  gotoxy(71,poradi+5); cprintf("%d",level); levele[poradi]=level;
+  gotoxy(9,poradi+5); pozice1=0; _setcursortype(_NORMALCURSOR);
+GETCH:
+  switch(znak=getch()) {
+    case 0: getch(); goto GETCH;
+    case '\r': if (pozice1 > 0) { tabulka[poradi][pozice1]=0; break; } goto GETCH;
+    case '\b': if (pozice1 > 0) { cprintf("\b \b"); pozice1--; } goto GETCH;
+    default: if (znak > 31 && pozice1 < 45) { cprintf("%c",znak); tabulka[poradi][pozice1++]=znak; } goto GETCH;
+   }
+  _setcursortype(_NOCURSOR);
+
+  SOUBOR("SILNICE.SCO"); soucet=0;
+  if ((f=fopen(soubor,"wb")) == NULL) {
+    gotoxy(1,25); textattr(12); cprintf("Soubor %s nelze vytvorit!",soubor);
+    if (zvuk == 1) { sound(200); delay(500); nosound(); } getch();
+   }
+  else {
+    fwrite("SIL11",5,1,f);			//verze 1.1
+    for (pozice1=0; pozice1 < 17; pozice1++) {
+      for (pozice2=0; pozice2 < 50; pozice2++)
+       ZAPIS_ZNAK(tabulka[pozice1][pozice2]);
+      ZAPIS_ZNAK(skore[pozice1]>>8); ZAPIS_ZNAK((BYTE)skore[pozice1]);
+      ZAPIS_ZNAK(levele[pozice1]);
+     }
+    putc(soucet,f);
+    fclose(f); f=NULL;
+   }
+  KONEC:;
+ }

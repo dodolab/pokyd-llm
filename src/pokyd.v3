@@ -1,0 +1,151 @@
+/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
+   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+
+   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+*/
+
+
+void INTRO_CARY(void) {
+  INTRO_CARA(18,61,80);
+  INTRO_CARA(19,37,67);
+  INTRO_CARA(20,21,51);
+  INTRO_CARA(21,13,43);
+  INTRO_CARA(22,8,38);
+  INTRO_CARA(23,5,35);
+  INTRO_CARA(24,2,32);
+  INTRO_CARA(25,1,31);
+ }
+
+DWORD VOLNAPAMET(void) {
+DWORD kolik=coreleft();
+  if (kolik > 65536) kolik=65536;
+  if (kolik > 16) kolik-=16;			//4 otevrene soubory
+  return(kolik);
+ }
+
+void OBNOV_OBRAZOVKU(BYTE jak) {
+BYTE mod;
+  CTISOURADNICE(); SMAZKURZOR(); PRECTIOBRAZOVKU(0); 
+  if (jak == 1) for (mod=0; mod < 0xF; mod++) textmode(mod);
+  textmode(0x10);
+  SMAZOBRAZOVKU(1); NASTAVSPRAVNYMOD(); ZAPISOBRAZOVKU();
+  NAPISHLAVICKOVYRADEK(); VLOZSOURADNICE(); 
+  if (jak == 1) { DATUM(1); CAS(1); KALENDAR(1); ZAPIS_NALADU(); } else ZAPISCAS();
+ }
+
+void VRATNAZEVDNE(BYTE *pointer,BYTE velke_pismeno) {
+  _AH = 0x2A; geninterrupt(0x21);
+  switch(_AL) {
+    case 1: strcpy(pointer,"pondeli"); break;
+    case 2: strcpy(pointer,"utery"); break;
+    case 3: strcpy(pointer,"streda"); break;
+    case 4: strcpy(pointer,"ctvrtek"); break;
+    case 5: strcpy(pointer,"patek"); break;
+    case 6: strcpy(pointer,"sobota"); break;
+    case 0: strcpy(pointer,"nedele"); break;
+   }
+  if (velke_pismeno == 1) pointer[0]&=0x5F;
+ }
+
+BYTE CTIZNAK(void) {
+  _AH = 8; _BH = 0; geninterrupt(0x10);
+  return(_AL);
+ }
+
+void PIS(BYTE x,BYTE y,BYTE *text,BYTE barva) {
+  gotoxy(x,y);
+  NAPISRETEZEC(text,barva);
+ }
+
+void NAPISHELP(void) {
+  PRECTIOBRAZOVKU(1); CTISOURADNICE(); HELPF1(14);
+  NASTAVSPRAVNYMOD(); ZAPISOBRAZOVKU(); VLOZSOURADNICE(); ZAPISCAS();
+ }
+
+void ZAPISCAS(void) {
+  CAS(1); ZAPIS_NALADU();
+ }
+
+BYTE VYBERBARVU(void) {
+  return((rand()%15)+1);
+ }
+
+void SMAZKURZOR(void) {
+  _AH = 1;
+  _CX = 0x2000;
+  geninterrupt(0x10);		//smaz kurzor
+ }
+
+void PLNYKURZOR(void){
+  _AH = 1;
+  _CX = 0x1F;
+  geninterrupt(0x10);
+ }
+
+BYTE CTIBARVU(void) {
+  _AH = 8; _BH = 0; geninterrupt(0x10);
+  return(_AH);
+ }
+
+void NASTAVBARVU(BYTE r,BYTE g,BYTE b,BYTE barva) {
+  _BX = barva; _DH = r; _CH = g; _CL = b;
+  _AX = 0x1010; geninterrupt(0x10);
+ }
+
+void BARVA(BYTE barva) {
+  gotoxy(1,wherey());
+  _AH = 9;
+  _BH = 0; _AL = ' '; _CX = 80; _BL = barva;
+  geninterrupt(0x10);
+  textcolor(barva);
+ }
+
+DWORD CAS18(void) {
+DWORD cas;
+
+  _AH=0;
+  geninterrupt (0x1A);
+  cas=_CX;
+  cas<<= 16;
+  cas+=_DX;
+  return(cas);
+ }
+
+BYTE TESTSTRANY(void) {
+  /* Legacy cursor probing can hang in some DOSBox/Open Watcom setups.
+     Default to 25-line mode (index 24) and let runtime mode switch logic
+     move to 50 rows later when explicitly requested. */
+  return(24);
+ }
+
+void NAPISZNAK(BYTE znak,BYTE barva) {
+  if (znak != 0) _AL = znak;
+  else _AL = ' ';				//vymena nuly za mezeru
+  _CX = 1; _BH = 0; _BL = barva; _AH = 9;
+  geninterrupt(0x10);
+ }
+
+void NAPISZNAK2(BYTE znak,BYTE barva) {
+  NAPISZNAK(znak,barva);
+  gotoxy(wherex()+1,wherey());
+ }
+
+void VYMAZZNAKNAOBR(BYTE x,BYTE y) {
+  gotoxy(x,y); NAPISZNAK(' ',0);
+ }
+
+void NAPISRETEZEC(BYTE *retezec,BYTE barva) {
+BYTE pozice=0,celkempozice=strlen(retezec);
+  while (pozice < celkempozice) {
+    NAPISZNAK2(retezec[pozice],barva);
+    pozice++;
+   }
+ }
+
+void PREVED_NA_MALA(BYTE *co) {
+BYTE pozice;
+  for (pozice=0; co[pozice] != 0; pozice++) {
+    if (co[pozice] >= 'A' && co[pozice] <= 'Z') co[pozice]+=32;
+   }
+ }

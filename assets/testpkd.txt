@@ -1,0 +1,53 @@
+ ---------------------------------------------------------------------------
+ |  POKYD v7.0 - testovaci program v1.6 - KYBLSoft 2005, autor Ales Janda  |
+ ---------------------------------------------------------------------------
+      -----------------------------------------------------------------
+
+   Tento program otestuje soubory:
+       TESTPKD.EXE
+       TESTPKD.TXT
+       POKYD.EXE
+       POKYD.ICO
+       POKYD.TXT
+       VERZE.TXT
+       PLUGINY\COOKEDIT.EXE
+       PLUGINY\CAS.EXE
+       PLUGINY\HAD.EXE
+       PLUGINY\HONICKA.EXE
+       PLUGINY\KALKUL.EXE
+       PLUGINY\NAJDIME.EXE
+       PLUGINY\NAJDIME.KAL
+       PLUGINY\NOKOMAR.EXE
+       PLUGINY\PALBA.EXE
+       PLUGINY\PISMENA.EXE
+       PLUGINY\SILNICE.EXE
+       PLUGINY\PLUGINY.TXT
+  
+   Kontrolni soucty techto souboru ma ulozeny  v souboru TESTPKD.TST.
+
+   Program lze spustit i z jine cesty, nez kde je Pokyd. Bude ho hledat v tom
+   adresari, kde je on sam.
+
+   verze 1.1: Opravena chyba,  pri ktere program psal nesmyslne chyby po chy-
+              bejicim souboru.  Lze testovat i ze souboru jine verze, program
+              pouze na tuto skutecnost upozorni  a zepta se  (tyka se souboru
+              TESTPKD.TST).
+
+   verze 1.2: Program bude  zpetne kompatibilni,  protoze  si zapise  i jmena
+              souboru. Opravena chyba, ktera nastala po spatnem stavu 14 sou-
+              boru.
+
+   verze 1.3: Pri spatne verzi napise, o jakou verzi se jedna.
+
+   verze 1.4: Dokonalejsi system  testovani,  ted uz nejde  soucet  "nahodne"
+              uhodnout.
+
+   verze 1.5: Pri kriticke chybe  program jiz nepise  znamou hlasku  A(bort),
+              R(etry), I(gnore) ?
+
+   verze 1.6 (z verze 2005): opravena chyba v cyklu,  kdy program nekontrolo-
+              val posledni uvedeny soubor
+
+
+   Prijemne testovani Vam preje
+                                                         Ales Janda, autor

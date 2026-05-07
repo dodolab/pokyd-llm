@@ -1,0 +1,856 @@
+
+                          *-*-*-*-*-*-*-*-*-*-*-*
+         Ales Janda       -      P O K Y D      -       KYBLSoft 2005
+                          *-*-*-*-*-*-*-*-*-*-*-*
+
+
+   Aktualni verze programu Pokyd:  7.0
+
+   V tomto souboru najdete historii Pokydu, zmeny pristich verzi a nejdulezi-
+   tejsi zmeny v historii Pokydu vubec.
+
+    Historie Pokydu
+   =================
+
+   Jako velikost programu se pocita vlastni EXE soubor a soubor s inteligenci
+   SLOVNIK.DAT.  Do verze 2.4 je zapsan pouze EXE soubor, protoze ten slovnik
+   obsahoval v sobe. Program se ovsem musi distribuovat se vsemi soubory.
+
+** verze 7.0, 4. vydani (13.11.2005)  -  46kB + 157kB (pocitan 5. slovnik)
+    - upraveno prepinani obrazovek  (na LCD monitorech  se to prepinalo hodne
+      dlouho)
+    - opravena drobna chyba v programu testujicim integritu Pokydu
+    - aktualizace kontaktu a informace o vyvoji programu
+
+** verze 7.0, 3. vydani (13.4.2004)  -  46kB + 157kB (pocitan 4. slovnik)
+    - drobna vylepseni, aktualizovani
+
+** verze 7.0, 2. vydani (29.8.2003)  -  46kB + 157kB (pocitan 3. slovnik)
+    - drobna vylepseni, aktualizovani
+
+** verze 7.0 (29.8.2002)  -  46kB + 157kB (pocitan 1. slovnik)
+    - pridano dost inteligence, nyni se bude aktualizovat pouze slovnik
+    - zlepsen system samotne detekce vet
+    - vylepsen plugin Cas (nyni verze 1.2) a NajdiMe (verze 1.5)
+    - zmenena (a zjednodusena) uvodni obrazovka
+    - mnohem vice klavesovych zkratek
+    - po pluginech Pokyd neceka na klavesu
+    - pridano nekolik dalsich vtipu a spousta jinych upraveno
+    - vylepseno nacteni vadneho konfiguracniho souboru
+    - hodne zlepseno preruseni kydani dvou pocitacu
+    - vypnuti textovych efektu ma vliv i na smazani radku klavesou Esc
+    - opraveno ruzne standardni nastaveni nekterych polozek  a zkazeni konfi-
+      guracniho souboru pri utnuti pred nactenim slovniku
+    - v nastaveni opraven kurzor mysi, kdy se nekdy kazil
+    - dost doplnen textovy soubor POKYD.TXT
+    - ve Windows NT/2000/XP se program spusti na cele obrazovce
+    - v celem programu opraveno a upraveno  spousta veci,  aby byl program co
+      nejprijemnejsi
+
+** verze 6.5 (13.4.2002)  -  46kB + 154kB
+    - pridano pomerne dost nove inteligence
+    - system inteligence jeste vylepsen
+    - vylepsen plugin NajdiMe - nyni verze 1.4
+    - rozeznani svatku a vyznamneho dne
+    - do textoveho souboru se zapisuje cislo pocitace, pouze kdyz spolu mluvi
+      dva pocitaci
+    - pri smazani obrazovky 2 nove efekty - nyni celkem 8
+    - pridany spoustu dalsich  klavesovych zkratek  -  jsou napsane v souboru
+      POKYD.TXT
+    - nova verze testovaciho programu TestPkd - nyni verze 1.5
+    - z prikazoveho radku lze kombinovat parametr akce a samotnou vetu
+    - opraveny drobne chyby ve slovniku, v programu a u mysi v nastaveni
+    - upravena hlavicka u vystupniho souboru s hovorem
+    - nyni i podpora informaci  o novych verzich na wapu  -  wapova adresa je
+      http://kyblsoft.borec.cz/wap
+    - zmenen prekladac - z Turbo C++ na Borland C++
+
+** verze 6.4 (25.12.2001)  -  44kB + 147kB
+    - moznost zmeny jmeny obou pocitacu
+    - pocitac si zapamatuje  jmeno cloveka  a ulozi ho do profilu,  ktery lze
+      menit novou verzi programu Cookies Editor (nyni verze 1.2)
+    - jmeno cloveka se automaticky prevede do 5. padu a pouziva se oboji. Obe
+      tato jmena lze upravit v pluginu Cookies Editor
+    - udelan kompletne jiny system napovedy, nyni ma vice obrazek rozdelenych
+      podle temat a lze ji vyvolat takrka kdykoli
+    - vylepsen plugin Pismena, nyni verze 1.3
+    - hlaseni spatneho souboru POKYD.CFG se zobrazi vzdy, ne jen jednou
+    - pridany nektere dalsi funkcni klavesy na ruzne akce
+    - program ohlasi spatny soubor s profilem
+    - pri spusteni se program neukonci po stisku klavesy Esc
+    - upraven font a kurzor
+    - ulozeni na konci programu je standardne zapnuto
+    - vylepseno psani otazek u hlasek
+
+** verze 6.31 (4.9.2001)  -  44kB + 140kB
+    - opravena celkem zavazna chyba (z verze 5.3 !!!) s barvou textu pocitace
+    - moznost spusteni programu v modu "jen ke cteni": POKYD.EXE -readonly
+
+** verze 6.3 (29.8.2001)  -  43kB + 140kB
+    - pridana moznost nastavit charakter pocitace
+    - zlepsena inteligence
+    - do profilu se neukladaji informace, ktere tam jiz jednou jsou
+    - moznost zapisu vsech hovoru do jednoho souboru
+    - graficky vylepsen setric obrazovky
+    - zjednoduseno ovladani v prostredi pluginu
+    - upraveno psani hlasek programu
+    - moznost nekterych akci z prikazoveho radku
+    - pri vymazu souboru se program pta i na smazani aktualne psaneho souboru
+    - upraveny nektere vtipy
+    - opravena drobna chyba (z verze 5.0) u psani vety
+
+** verze 6.2 (24.6.2001)  -  41kB + 137kB
+    - zvetsena slovni zasoba
+    - vylepsen system slovni zasoby i cteni vety
+    - pridan novy plugin Had
+    - pridan setric obrazovky  a parametr do nastaveni,  za jak dlouho  se ma
+      spustit
+    - moznost okamziteho zrychleni psani textu - staci zmacknout Alt a Ctrl
+    - pridana hlaska, kdy naposledy byl Pokyd spusten
+    - zlepseno ovladani nastaveni
+    - profil a minule vety rozdeleny do dvou extra souboru  -  upraven plugin
+      Cookies Editor - nyni verze 1.1
+    - opravena chyba, kdy se pocitac dost opakoval pri kecani sam od sebe
+    - opravena chyba v pluginu NajdiMe (nyni verze 1.3)  s vypisem poslednich
+      dnu v lednu
+    - pridana moznost totalniho ukonceni programu Ctrl-Breakem  -  ve Windows
+      okamzite zavreni okna a v DOSu resetnuti pocitace
+    - moznost zapnuti zacatecnickeho modu primo z prostredi
+    - nastaveni lze rychle ulozit klavesami Shift-F9
+    - setric lze spustit klavesou F6
+    - pri neuspechu se zapsanim souboru PROFIL.PKD se zobrazi varovne hlaseni
+      a nabidka na dalsi pokus
+    - cely program je celkove lepe udelan a zdokonalen,  pridany nektere nove
+      hlasky
+
+** verze 6.1 (9.4.2001)  -  40kB + 136kB
+    - pridano celkem dost nove inteligence
+    - opravena chyba ve slovniku,  kdy se vypsalo  chybove hlaseni  a program
+      zatuhl
+    - opraveno asi 10 vet ve slovniku zenskeho rodu pocitace
+    - zkvalitnen hovor, ktery pocitac vede, kdyz nemluvite
+    - pridana nova polozka do nastaveni, zda-li se ma pri ukonceni Ctrl-Brea-
+      kem smazat obrazovka
+    - program lze take ukoncit klavesami Ctrl-Q, Alt-Q, Alt-K, Alt-F4, Alt-F3
+    - nabidka zformatovani harddisku dana i do prostredi pluginu
+    - lze nyni rychle zapinat/vypinat zvuk klavesami Alt-S
+    - novy efekt pri smazani obrazovky
+    - zdokonalen testovaci program TestPkd, nyni verze 1.4
+    - soubor PUVODNI.PKD bude zpetne kompatibilni (nyni je kompatibilni pouze
+      s verzi 6.0)
+    - opravena chyba z verze 4.4, kdy se smaze ukazatel nalady pri "poradnem"
+      obnovenim obrazovky Ctrl-F9
+    - u karet nizsich nez VGA  dan pred prepnutim na vice radku kontrolni do-
+      taz, zda-li se obrazovka opravdu prepnula
+    - opraveno ztuhnuti, ktere nekdy nastane pri chybe ve slovniku
+    - dost aktualizovany textove soubory
+
+** verze 6.0 (11.3.2001)  -  39kB + 133kB
+    - moznost zenskeho rodu u pocitace
+    - pridana inteligence, opet hlavne podle uzivatelu Internetu
+    - novy modul (plugin) - Cookies Editor, ktery dokaze editovat fakta, kte-
+      ra si Pokyd behem hovoru zapamatoval
+    - moznost automatickeho ulozeni nastaveni na konci programu
+    - v nastaveni jsou pridany textove efekty (lze je vypnout)
+    - nova uvodni obrazovka
+    - opravena chyba, kdy pocitac psal, ze byl spusten 2x misto 1x
+    - misto vyrazu "obtiznost" je pouzito slovo "nalada".
+    - moduly prejmenovany na pluginy
+    - odstraneni pluginu Complex a Rovnice
+    - maximalni delka vtipu zvetsena z 2000 na 4000
+    - v nastaveni se pohlavi uzivatele meni pri nastaveni standardu
+    - kalendar dan do souboru SLOVNIK.DAT,  soubor POKYD.KAL  dan do PLUGINY\
+      \NAJDIME.KAL
+    - pridany 4 efekty pri smazani uvodni obrazovky
+    - nastaveni textovych efektu  ma mnohem  vetsi vliv,  napr.  i na smazani
+      obrazovky nebo na efekty pri psani vet clovekem
+    - pridan efekt "ztmavovani" a "rozsvecovani" obrazovky
+    - pri zmene barvy textu cloveka se zmena ihned projevi
+    - opravena mirna chyba,  kdy se stavovy radek  napsal dvakrat  pri utnuti
+      klavesami Ctrl-C
+    - v nastaveni lze jednotlive polozky menit i mezerou
+    - program se kontrolne zepta pri funkci standardniho nastaveni
+    - mirne zmenena ikona
+    - v pluginech jsou osetreny  kriticke chyby  (napr.  cteni z neexistujici
+      diskety apod.)
+
+** verze 5.51 (2.1.2001)  -  38kB + 109kB
+    - opravena chyba pri nacitani faktu
+    - program zestabilnen, maximalni delka slova je 14 znaku
+
+** verze 5.5 (17.12.2000)  -  38kB + 109kB
+    - nova inteligence, udelana hlavne podle uzivatelu Internetu
+    - program si zapamatovava dalsi udaje, konkretne co JSI a co JSEM
+    - pridano 166 vtipu
+    - lze zapnout/vypnout efektivni vypisovani pismen
+    - hovor se nezpomaluje, kdyz se dva pocitace bavi mezi sebou
+    - lepsi nouzove ukonceni Ctrl-Break pri pripadnem zacykleni programu
+    - upraven testovaci program TestPkd, nyni verze 1.3
+    - pocet spusteni se zvysuje i pri nepsani hovoru do souboru
+    - pocet vterin pred dalsim kydem je standardne 5 vteriny
+    - program jiz neztuhne pri Ctrl-Breaku pri prvnim spusteni programu
+    - opravena mirna chyba z verze 5.2 s kurzorem mysi v nastaveni
+    - opravena dalsi mirna chyba z verze 1.0 (!!!) s efektem pri psani
+    - odstranena dalsi  mala chyba  se standardnim nastavenim  barvy  druheho
+      pocitace
+    - program je vseobecne stabilnejsi
+
+** verze 5.4 (29.10.2000)  -  37kB + 107kB
+    - Klaban si zapamatuje nektere veci, ktere rekne clovek a pouziva je
+    - pridana inteligence
+    - program lze nyni pri psani ukoncit i klavesami Alt-X  (po potvrzeni do-
+      tazu) a v uvodni obrazovce klavesami F10 a Alt-X
+    - opravena chyba modulu NajdiMe (nyni verze 1.2)
+    - lepsi rozeznani slovenstiny
+    - pri napsani "uloz" se ulozi  i pouzite vety a fakta,  ktere se dozvedel
+      od cloveka
+    - cely program je stabilnejsi
+    - v souboru s kydama se rozlisuji jednotlive pocitace
+    - historie v tomto souboru je v obracenem poradi
+    - pridan jeden vtip a dalsi jsou upraveny
+    - dost aktualizovan soubor POKYD.TXT
+    - TestPkd najde i soubor MODULY.TXT (chyba z verze 5.0)
+
+** verze 5.3 (19.10.2000)  -  36 kB + 105 kB
+    - moznost mluvit se dvema pocitaci zaroven, ktere se pri uzivatelove ne-
+      cinnosti bavi mezi sebou
+    - pridana inteligence
+    - opraven (chyba pocitani!) a vylepsen modul Kalkul, nyni verze 1.3
+    - moznost spusteni programu primo, ne pres command.com
+    - vylepsene rozpoznani slovenskych slov
+    - pri samomluve se pocitace oddeluji barvou
+    - opraveno a upraveno spousta vtipu
+    - odstranena mala chyba prepsani pameti
+
+** verze 5.2 (23.9.2000)  -  36 kB + 102 kB
+    - masivne pridana inteligence
+    - v nastaveni si lze nastavit podporu slovenstiny
+    - Klaban uzivatele nevykopne po jeho dlouhodobem nicnedelani
+    - opravena chyba reknuti blbosti v real-time kecu z verze 5.0
+    - nastaveni je rozdeleno na 2 casti
+    - opravena chyba z verze 4.0 pri napsani znaku ASCII > 127 v nastaveni
+    - zacatecnicka napoveda ma jinou barvu, prijemnejsi zvuk, jsou v ni dode-
+      lany real-time kecy
+    - odrolovani obrazovky v 50 radcich je hezci
+    - vycentrovane vsechny hlasky pri ukonceni programu
+    - do kalendare pridany svatky 28.9. a 17.11.
+
+** verze 5.1 (7.9.2000)  -  35 kB + 96 kB
+    - vylepsena inteligence
+    - opravena chyba z verze 4.4, kdyz se nastavi pocatecni mod 50 radku
+    - opravena dalsi chyba z verze 5.0, kdy se spatne napise hlaseni o prvnim
+      spusteni
+    - znacne vylepsen modul Silnice (nyni v1.1),  ke kteremu je pridano inte-
+      ligentni demo,  moznost nastaveni  zvuku a  stinu,  je pridana  tabulka
+      vitezu, cas a zivoty se pridavaji po 500 bodech
+    - zlepsen modul Palba (nyni v1.1), ve kterem jsou delsi strely
+    - pridan parametr do nastaveni, jestli ma program  pri ukonceni cekat  na
+      klavesu
+    - v nastaveni jde zadavani cisla stornovat klavesou Esc  a rovnez pri nem
+      neblika zeleny kurzor
+    - upraveny vtipy
+    - sipka je na pocatku nastaveni nahore
+    - doplnen chybejici modul v souboru MODULY.TXT
+
+** verze 5.0 (29.8.2000)  -  35kB + 95kB
+    - pridan real-time hovor, tj. Klaban mluvi, i kdyz mu neodpovidate
+    - dopsano celkem 581 vet, nyni jich tedy je 1820!
+    - zlepseni odpovidani v zavislosti na jednotlivych slovech ve vete
+    - soubor se slovnikem je zpetne kompatibilni
+    - uvodni obrazovka ma novou podobu
+    - pridan novy modul Silnice,  coz je hra, ve ktere musite prechazet velmi
+      rusnou silnici
+    - vylepsen modul Kalkulacka (nyni verze 1.2)
+    - nyni se nabidne predchozi veta i po stisku Ctrl-E
+    - misto poctu vterin pred kecama  je v nastaveni pocet vterin  pred dalsi
+      vetou (to neni to same)
+    - pridan parametr do nastaveni -  jestli se pocet vterin pred dalsi vetou
+      ma postupne zvysovat
+    - tolerance pravopisu je standardne nastavena
+    - zaveden tento specialni soubor na informace o jednotlivych verzich
+    - 3x rychlejsi spousteni modulu
+    - na uvodni obrazovce se zobrazi velikost volne konvencni pameti
+    - pri nedostatku pameti pro spusteni modulu se tato skutecnost ohlasi
+    - stabilnejsi nacitani vtipu
+    - osetreno preruseni 0
+    - pri ukonceni se jiz tak osklive nesmaze radek
+    - udelana funkce na ztuhnuti - zmacknete 3x Ctrl-Break
+    - pridany, opraveny a upraveny vtipy
+    - zlepsen font
+    - opravena chyba u pocasi pri 286 Dobsonovych jednotek
+    - do textoveho souboru pridany nektere statisticke udaje
+    - zrychleno zapisovani do souboru PUVODNI.PKD
+    - zmenena adresa internetove stranky (http://kyblsoft.borec.cz)
+
+** verze 4.4 (13.7.2000)  -  32kB + 67kB
+    - pridana inteligence
+    - novy parametr nastaveni  -  pocatecni pocet radku:  25, 50  nebo tolik,
+      jako pri spusteni
+    - texty predelany, jako kdyz odpovida clovek, ne pocitac
+    - modul Pismena (v1.2) ma nastaveni zvuku a jiz nepadaji specialni znaky
+    - pamatuje si 200 vtipu, ktere jiz rekl (misto 100)
+    - pridano poradne obnoveni obrazovky - Ctrl-F9
+    - nyni lze program ukoncit i klavesou F10
+    - na konci programu se nezmeni horni rada ASCII tabulky
+    - pridan efekt do uvodni obrazovky
+    - nabidnuti minule vety klavesou F3 je hezci (kurzor je normalne)
+    - preventivne opraveny eventualni chyby s pointerama
+    - pridany 2 vtipy, nyni jich je 480
+
+** verze 4.3 (3.7.2000)  -  32kB + 66kB
+    - pridana inteligence
+    - pri prvnim spusteni se nabidne amatersky kurz, jak program pouzivat
+    - nyni se nenastve tak lehce, aby ukoncil program
+    - opravena chyba, kdy se nastval pri nejlehci obtiznosti
+    - v modulu Kalkul (nyni 1.1) lze pouzivat i cisla na numericke klavesnici
+    - neopakuji se vtipy  (max. po 100 vtipech  -  jestli jich tam  ani tolik
+      neni, tak rika vtipy porad ve stejnem poradi).
+    - program si zapamatuje vety a vtipy,  co rekl,  i po ukonceni,  takze se
+      neopakuje ani v pristim spusteni (zapisuje je do souboru PUVODNI.PKD)
+    - nelze odmacknout odpoved bez jakehokoliv znaku
+    - pomerove zpomaleno psani dlouhych odpovedi (vtipu a pocasi)
+    - zmensen a zrychlen slovnik (na P133 710x za sekundu)
+    - psani hlasky je lepe vycentrovano a je do ni pridan novy efekt
+    - frekvence pipani pri psani vety se pocita podle polohy znaku na klaves-
+      nici
+    - opraveny nektere chyby u vtipu
+    - doplneny zastarale nebo chybne udaje v soubory MODULY.TXT
+    - znacne rozsiren tento textovy soubor
+
+** verze 4.2 (27.6.2000)  -  30kB + 66kB
+    - pridana inteligence
+    - cela inteligence i s podminkami je v datovem souboru SLOVNIK.DAT,  cimz
+      se zmensil EXE soubor, ale zvetsil a zpomalil slovnik
+    - opravena fatalni chyba pri vynechani odpovedi nebo odpovedi paznakama
+    - pridana 1 polozka v nastaveni - kolikrat se ma odradkovat na novou vetu
+    - opravena chyba z verze 2.0 (!)  pri kliknuti v nastaveni na misto,  kde
+      nic neni
+    - vylepsen font
+    - pri spusteni z netextoveho rezimu, prepne se na spravny
+    - preventivne opraveny 2 male chyby s pameti
+    - pridan 1 vtip
+    - kdyz chcete zmenit mod  v CGA nebo EGA  (neumoznuji to),  program na to
+      upozorni
+    - sipka v modulech se o pulnoci nezastavi
+    - opravena chyba pri teoretickem nacteni vice nez 16.384 vtipu, to proto,
+      ze jsem driv myslel vetsi maximalni jejich pocet
+
+** verze 4.1 (13.6.2000)  -  32kB + 62kB
+    - lepsi inteligence
+    - zlepseni rozpoznavani otazky a zaporu
+    - pridan modul Palba
+    - svatky jsou barvou rozliseny na muzske a zenske
+    - prizpusobeni se modulem NajdiMe v1.1, ktery ma i nove funkce
+    - pri zapnute toleranci pravopisu  se vetsinou spravne oznaci jako otazka
+      i veta, ve ktere neni otaznik
+    - lze zmenit pocet radku na obrazovce stiskem Alt-F9
+    - opravena chyba pri nacitani souboru s inteligenci
+    - prejmenovan soubor POKYD.SLV  na SLOVNIK.DAT  a POKYD.VTP  na VTIPY.TXT
+      kvuli lepsi identifikaci u vtipu kvuli pripone
+    - opraveny nedostatky ze starsich verzi v tomto souboru a ve slovniku
+    - upraveny nektere vtipy
+
+** verze 4.0 (27.5.2000)  -  31kB + 61kB
+    - pridana inteligence
+    - upravena uvodni obrazovka
+    - pridano hodne vtipu, jejich pocet vzrostl o 344 (ze 133 na 477), coz je
+      o 258% vice
+    - novy modul Kalkul (kalkulacka)
+    - Klaban oslovuje nahodne (mimo nadavek) a podle pohlavi
+    - pri psani vet  lze psat  i s hacky a carkama,  ovsem ty  se prevedou na
+      pismena bez diakritiky
+    - nastaveni lze menit i sipkama
+    - vstup z klavesnice zmenen,  nyni pozna, zda-li jste napr. zmackli Enter
+      nebo ALT-13 a spousta dalsich zlepseni
+    - pridana moznost pouzivat klavesy Ctrl-Backspace pri psani vet
+    - kdyz clovek v prvni vete napise "ahoj", "cau" atd., program se neukonci
+    - pri psani vet lze pouzivat kombinace klaves Ctrl-sipka na rychly presun
+      mezi slovy
+    - vylepsena funkce umoznujici spoustet podprogram. Nyni lze spustit prog-
+      ram i neformatovane, kdyz se pred nej napise '*',  dale ignoruje mezery
+      pred nazvem programu
+    - pred spustenim podprogramu se  neuvolni pamet,  protoze to delalo porad
+      nejake problemy a nebylo to vubec stabilni
+    - pri skoku z hovoru na uvodni obrazovku a ukonceni z ni  se nesmaze sou-
+      bor s hovorem
+    - opravena  fatalni chyba  z verze 3.4  pri 50-radkovem modu  a prostredi
+      nastaveni
+    - opravena chyba s psanim ctvercu misto mezer
+    - vyresena "zapomenuta" barevna pismenka pri psani vety uzivatelem
+    - opravena chyba pri nedostatku pameti na vtipy
+    - opravena chyba pri spusteni souboru obsahujici pouze nepismenne znaky
+    - mirne vylepsen kalendar (presunun Den matek)
+    - Esc v uvodni obrazovce funguje pouze tehdy, pokud nezacnete kydat
+    - uplne vynechan efekt smazani radku pri nastavenem nulovem cekani
+    - vylepsen font (misto car jsou jakesi roury, lepsi znak zavinace)
+    - opravena chyba s fontem (neukazovaly se znaky 128, 129 a 130)
+    - opravena chyba s oteviranim souboru pri spouste vtipu a malo pameti
+    - zdrojovy kod presahnul 10.000 radku!
+
+** verze 3.5 (3.5.2000)  -  30kB + 60kB
+    - pridana inteligence +  1 zlepseni,  2 nove zpusoby  rozpoznavani smyslu
+      vety
+    - nastaveni standardniho fontu  je lepe udelano,  nyni se zmeni primo pri
+      jeho editaci v nastaveni,  nemusi se kvuli nemu mazat obrazovka  a font
+      neni poposunuty o bod dolu
+    - pocasi ma udelan novy efekt o nedelich a svatcich
+    - nechani fontu i v modulech, zavedeni znaku odmocniny
+    - moduly jsou (mimo Honicky) bez diakritiky
+    - kalendar se nacita ze souboru jen v nejnutnejsim pripade
+    - podminkova slova jsou v souboru POKYD.SLV (neni to vsak pravoplatny da-
+      tovy soubor!), zmenseni EXE souboru
+    - rolovani obrazovky je presnejsi
+    - mirne vylepsene mazani hovoru zadane z prikazoveho radku
+    - lepsi inicializace prostredi Pokydu po ukonceni podprogramu
+    - opravena chyba z verze 3.25 pri prepsani puvodni vety po smazani soubo-
+      ru s hovorem, zaroven se tim odstranila preventivni chyba
+    - opravena chyba z verze 3.3, kdy se svatky psaly jako normalni jmena
+    - opravena dalsi chyba z verze 3.0,  kdyz se nekdy nehybala sipka v pros-
+      tredi modulu
+
+** verze 3.45 (24.5.2000)  -  necelych 31kB + 57kB
+    - opravena chyba pri zavolani nastaveni z prikazoveho radku
+    - kdyz rozhovor zacne clovek, jeho veta se napise na obrazovku
+    - cas hovoru se nyni pocita jako cisty cas straveny v prostredi vlastniho
+      kydani
+    - opravena chyba, kdy se na konci napsal radek s nazvem programu
+
+** verze 3.4 (22.4.2000)  -  necelych 31kB + 57kB
+    - 2x vylepseno generovani vet, nyni se opakuje, az kdyz opravdu musi nebo
+      teprve po 50 vetach
+    - vetsi slovni zasoba
+    - udelan vlastni font (lze vypnout),  pridany hacky a carky v radce s au-
+      rem (kde jinde), pri ukonceni se sam vypne
+    - odkaz na napovedu z uvodni obrazovky
+    - nabidnuti samomluvy pocitace v obrazovce s moduly
+    - osetreni kritickych chyb (int 24h) napr. pri cteni z diskety, ktera ne-
+      ni v mechanice atd., nyni se nenapise DOSova chyba
+    - zmenen zpusob zadavani  smazani souboru z prostredi,  nyni se vrati  do
+      hovoru jako pri spousteni programu
+    - program Honicka je efektivneji udelan, ma mensi velikost i mensi naroky
+    - opravena chyba,  kdyz se  pri vypnutem psani hovoru do souboru  nepsaly
+      statistiky hovoru
+    - upraveny posledni hlasky pri skonceni Ctrl-Breakem
+
+** verze 3.3 (8.4.2000)  -  30kB + 54kB
+    - pridana inteligence
+    - udelano prostredi na vymazani souboru s hovorem a spusteni podprogramu
+    - dalsi funkcni klavesa - F5 vrati uvodni obrazovku
+    - obtiznost zustane po samomluve stejna
+    - pocatecni obrazovka se "smrskne", jenom kdyz hovor nezacina clovek
+    - hlaseni o chybejicim kalendari se napise jen jednou
+    - hezci napsani kurzoru pri psani doprostred textu
+    - oriznuti konce retezce pri zadani velmi dlouhe vety z prikazove radky
+    - pri vete nejdelsi delky jde prepisovat text
+    - slouceni textovych souboru u modulu do MODULY.TXT
+    - opravena mirna chyba v nastaveni pri psani barev
+    - zmenena hlavicka souboru s hovorem a napoveda
+    - program jde prerusit Ctrl-Break i behem rolovani obrazovky
+    - dalsi efekt
+
+** verze 3.25 (21.3.2000)  -  necelych 30kB + 52kB
+    - opravena chyba pri prechvaleni Klabana
+    - pridana a vylepsena inteligence
+    - po samomluve pocitace zustane zachovana predchozi uzivatelova veta
+    - novy uzivatel dostane doporuceni o nastaveni Pokydu dle sveho  (poznava
+      podle serioveho cisla disku C)
+    - rozsirena hlavicka souboru s hovorem
+    - preventivne opravena chyba s neukoncenim pole dat,  ktera se ale v dri-
+      vejsich verzich nemusela projevovat
+    - jeste vice zmenseno
+
+** verze 3.2 (18.3.2000)  -  30kB + 51kB
+    - pridana a vylepsena inteligence
+    - pocitac neopakuje nikdy stejnou vetu  ani ob 1 vetu,  minimalne po dvou
+      jinych vetach
+    - uplne VSECHNY odpovidaci vety dany do souboru, uz se opravdu neopakuje
+    - na napovedu udelalana specialni obrazovka, zavolat ji staci F1
+    - udelan efekt pri ukoncovani uvodni obrazovky a pri ukoncovani helpu
+    - na konci program napise delku hovoru do souboru a nove i na obrazovku
+    - program Test Pokydu  ma lepe udelany  soubor TESTPKD.TST,  nyni to bude
+      snad plne kompatibilni s pristimi verzemi
+    - prohozeny moduly Cas a Complex
+    - pocet vet se zveda i pri vtipech a pocasi
+    - pri spusteni souboru se vrati puvodni adresar na puvodnim disku
+    - opravena neprijemna chyba, kdy se jakykoli podprogram mohl pustit pouze
+      13x, potom nastala chyba pointeru
+    - utnuti jde i tesne po ukonceni podprogramu
+    - rychlejsi rolovani obrazovky
+    - hledani souboru udelano efektivneji, jiz zanecha i puvodni disk
+    - program zmensen na minimalni velikost, zmenena komprese (aPACK)
+
+** verze 3.1 (1.3.2000)  -  37kB + 48kB
+    - mirne vylepsena a dodana inteligence
+    - vtipy se nacitaji  do konvencni pameti.  Diky tomu  se jich muze nacist
+      pres 110.000 a je vice pameti na spusteni jineho programu
+    - moznost pouzit Insert na prepisovani psaneho textu
+    - efekty jsou pri psani textu hezci, "divne" se nesmazavaji
+    - hledani souboru, do ktereho se ma psat hovor, je rychlejsi
+    - pokud neexistuje adresar KYDY a nepodari se ho vytvorit, program to na-
+      hlasi a uz nehleda soubor, ktery stejne nemuze nikdy otevrit
+    - napsany text se neztrati ani po hlasce, ze tu "jeste je"
+    - simulace formatovani  je lepe  udelana,  nyni bezi  na vsech pocitacich
+      stejnou rychlosti
+    - vsechny texty vcetne hlasek byly prepsany do hovorove podoby
+    - opravena chyba pri psani obtiznosti po prostredi modulu
+    - pri rychlych odpovedich jde cas i kontrola utnuti
+    - tolerance pravopisu neni pri samomluve
+    - cely program optimalizovan na minimalni velikost
+    - lepsi cteni specialnich klaves u normalnich jednostiskovych hlasek
+    - pridan modul Pismena
+    - modul Cas vylepsen o jmeno dne a mirne vylepsen taky NoKomar
+
+** verze 3.0 (16.2.2000)  -  37kB + 47kB
+    - pridana inteligence
+    - poupraven slovnik, nektere vety vyrazeny
+    - pridana moznost autodetekce obtiznosti, nyni se chova skoro jako clovek
+    - nyni se lze pohybovat v psanem textu i sipkama
+    - konecne ma jmeno! Jmenuje se Klaban
+    - pocatecni obrazovka totalne predelana,  nyni sice "nezmrazuje"  puvodni
+      text, ale je o to rychlejsi
+    - moznost tolerance spatneho pravopisu u vybranych slov
+    - na moduly udelano prostredi jejich vyberu
+    - mnohem zrychleno!  Nyni na Pentiu 133 MHz  vygeneruje odpoved  3100x za
+      vterinu! Je to tedy vice nez 1.6x zrychleno
+    - cteni a zapisovani cele obrazovky je 300x (!) rychlejsi!
+    - dalsi zrychleni! Hlaseni o udalosti se vypisuje mnohem rychleji!
+    - kdyz se poradne nastve, ukonci se (mozno vypnout)
+    - z uvodni obrazovky je mnohem vice odkazu
+    - zmenen ukazatel obtiznosti hovoru
+    - moduly nelze spoustet primo z radku kvuli omylum, ale musi se pres nove
+      prostredi stiskem F2
+    - nelze psat znaky s ASCII hodnotou vyssi nez 127
+    - novy modul NajdiMe hleda jmena v kalendari podle jmena i data
+    - vyroben modul NoKomar na odpuzeni komaru a jine haveti z mistnosti
+    - soubor POKYD.KAL hodne "zhubl" z puvodnich 10248 B na 3597 B kvuli lep-
+      si organizaci jmen v souboru
+    - ze souboru POKYD.SLV se zaroven stal i trochu datovy soubor,  diky tomu
+      je EXE soubor mensi
+    - pokud ma byt veta napsana hned (0%), tak je opravdu hned
+    - pri exotickych textovych modech se program prepne do prijatelnejsiho
+    - opravena chyba pri spatnem vlozeni souradnic po vyvolani nastaveni F4
+    - opravena dalsi chyba,  kdyz se hlaska obcas psala spatne pri 50-ti rad-
+      kovem modu
+    - opravena dalsi malicka chyba pri "rozdvojeni" mysiho kurzoru v nastave-
+      ni pri velmi ojedinele pozici
+    - pridano hodne textu do textoveho souboru POKYD.TXT
+    - v nastaveni, kdyz se nepodari nainicializovat mys, jiz jde cas
+    - zrusen soubor POKYD.DOC
+
+** verze 2.5 (31.1.2000)  -  35kB + 46kB
+    - texty kompletne prepsany,  nyni je 46kB textu  misto 16kB,  coz znamena
+      1008 vet misto puvodnich 450!
+    - odpovedi na jeden pripad je 7 misto puvodnich 3
+    - moznost nastaveni 5 ruznych obtiznosti, ovladani z nastaveni nebo primo
+      z klavesnice klavesami F7 a F8
+    - opravena chyba z verze 2.3 pri zapnuti psani do souboru pod Windows
+    - opravena dalsi chyba z verze 2.3  pri zobrazeni vysledku po nacteni pu-
+      vodniho nastaveni
+    - vtipy promazany, nechany jen dobre, nyni je jich 133 (misto 190)
+    - vylepsen jeden efekt pri psani vety pocitacem
+    - vylepsen text v "credits"
+    - nastaveni z uvodni obrazovky lze vyvolat i standardnim F4
+    - program by mel byt 100% odolny proti blbostem v souboru POKYD.CFG
+    - opraven program TESTPKD, nyni verze 1.1 (oprava zblazneni se z chybeji-
+      ciho souboru, lze testovat i ze souboru jine verze)
+
+** verze 2.4 (26.12.1999)  -  35kB + 16kB (EXE soubor + soubor s inteligenci)
+    - inteligence dana do souboru, nyni se nacita do pameti
+    - pridany nove vety, nektere byly optimalizovany
+    - nastaveni bylo serazeno podle dulezitosti, a to jak na obrazovce, tak i
+      v souboru
+    - opravena neesteticka obrazovka pri prepnuti na "ano" u psani do souboru
+    - ukonceni programu Ctrl-Breakem je spolehlivejsi, melo by byt na 100%
+    - opravena chyba s opakovanim vet
+    - pridan efekt pri vymazani textu Escapem
+    - hlaska o spusteni modulu a testovani programu se napise do souboru
+    - pomerove zpomaleno psani dlouhych odpovedi (vtipu atd.)
+    - opravena chyba se znakem 0 pri psani specialnich svatku
+    - znacne rozsiren textovy soubor POKYD.TXT
+
+** verze 2.31 (12.12.1999)  -  42kB
+    - opravena chyba pri zavolani nastaveni klavesou F4
+
+** verze 2.3 (11.12.1999)  -  42kB
+    - masivne zlepsena inteligence
+    - pridan Pokyd-testovaci program (TESTPKD.EXE),  ktery po spusteni zjisti
+      kontrolni soucet vsech souboru k Pokydu a porovna zmeny
+    - odkaz na testovaci program byl dat na uvodni obrazovku a lze ho spustit
+      i prikazem napr. "otestuj se"
+    - v nastaveni pridan odkaz "Nacist nastaveni", zoptimalizovano
+    - do souboru se zapisem hovoru se  napise pocet vet,  celkova doba hovoru
+      a hlaska o ukonceni programu
+    - nastaveni lze vyvolat klavesou F4 a obnoveni fontu F9
+    - na zacatku  (pri nenalezeni konfiguracniho souboru)  je vzdy standardni
+      nastaveni
+    - opraveny dva nedostatky pri malo souboru:  lepsi hlaseni a nepise "dnes
+      jsi me spustil 1000x"
+    - pri samomluve neplati zensky rod
+    - kdyz je datum starsi nez datum vydani programu, na zacatku pise "SPATNE
+      DATUM !" (misto "NOVA VERZE")
+    - zrychleno nabihani obrazovky s nastavenim na zacatku programu
+    - pri mazani souboru s hovorem to pise "Mazu soubory, prosim cekejte... "
+      a zaroven jde cas
+    - drobne graficke upravy
+
+** verze 2.21 (29.11.1999)  -  40kB
+    - opravena chyba pri psani dlouheho textu pri radku delsim nez 78 znaku
+    - pridany vtipy, nyni jich je 190
+
+** verze 2.2 (27.11.1999)  -  40kB
+    - nektere vety jsou prerovnane, lepsi inteligence
+    - pocitac uz neopakuje dvakrat stejnou vetu za sebou
+    - konfiguracni soubor  je lepe zorganizovan  (napoveda je u kazdeho radku
+      zvlast), opraveny chybne texty v nem
+    - opravena chyba z verze 2.0 s psanim casu a radkovanim vubec
+    - opravena jina chyba z verze 2.1, kdy pri poctu vterin "pred kydama" ne-
+      chodilo nastaveni 0, pri kterem by se nemely psat vubec
+    - opravena dalsi chyba z verze 2.1,  kde se pri 50-radkove obrazovce nap-
+      sal dotaz o pohlavi jinam
+    - preventivne opravena chyba s pameti
+    - pridan dalsi efekt u vety psane pocitacem, celkem 12
+    - kdyz se zapisovani souboru vypne behem hovoru, tak jiz vytvoreny soubor
+      se smaze
+    - cas a ochrana Ctrl-Break chodi i pri simulaci formatovani harddisku
+    - pri predpovedi pocasi je mozny i snih
+    - kdyz nejaky vtipalek pusti Pokyd s argumentem ">nul", program bude cho-
+      dit tak, jak ma, cimz byly zaroven opraveny pripadne chyby na Pentiu II
+      a vyssim
+    - v nastaveni bylo zmeneno jedno klicove pismeno kvuli problemum se zame-
+      nou Y a Z
+
+** verze 2.1 (15.11.1999)  -  39kB
+    - moznost  nastaveni pohlavi  uzivatele!  Nyni to  na Vas  muze  mluvit i
+      v zenskem rode
+    - nyni si muzete nastavit,  od kolika hodin se bude predpovidat pocasi na
+      dalsi den, u pocasi sklonuje pady u slova "stupen"
+    - moznost smazani vsech souboru s hovorem (mimo toho, do ktereho se pise)
+      prikazem VYMAZ SOUBORY
+    - pridan efekt pri psani vety pocitacem. Nyni uz jich je 11
+    - pri ukonceni Escapem v uvodni obrazovce  se pripadny jiz vytvoreny sou-
+      bor smaze
+    - nastaveni se zapamatuje i pri neulozeni na zacatku
+    - kdyz je Pokyd cerstvy, objevi se na zacatku "NOVA VERZE"
+    - program kontroluje Ctrl-Break i pri hlaseni
+    - opravena chyba pri nicnemackani 1 sekundu
+    - zmena citlivosti mysi a zapisovani data (bez mezer)
+    - program si ohlida radkovani u vtipu
+    - pridany informace u hlavicky souboru s hovorem
+
+** verze 2.0 (3.11.1999)  -  42kB
+    - pridano mnoho zasadnich veci:
+    - zlepsena logika,  pridan  novy system  umoznujici reakci  v souvislosti
+      s vetou psanou pocitacem
+    - totalne predelane nastaveni, nyni uz ma i prostredi, ktere se muze (ale
+      nemusi) ovladat mysi, s casem, datem a kalendarem
+    - pridany 3 nove polozky v nastaveni:
+       - rychlost odpovedi:  kolik procent z normalni rychlosti se ma provest
+       - barva textu cloveka a pocitace:   kterou  barvou  ma psat  clovek  a
+                                           kterou pocitac
+    - pridan adresar MODULY s:
+       honicka: hra ovladana mysi,  kde musite sbirat premie a zaroven prchat
+                pred nepritelem
+       rovnice: zadate kvadratickou rovnici bez zavorek a vydroli se Vam vys-
+                ledek i s castecnym postupem
+       complex: tento program je urcen pro pokrocilejsi uzivatele oboru mate-
+                matiky, protoze pocita s komplexnimi cisly
+      Tyto moduly lze zavolat prikazem "honicka", "rovnice" ci "complex" nebo
+      je spustit primo z adresare MODULY.
+    - tyto moduly jsou ohlidany, zda existuji (ale nebude otravovat, dokud se
+      to nepokusis spustit)
+    - pridan kalendar se jmeny svatku primo na obrazovku
+    - ochrana proti utnuti Ctrl-Break
+    - cas, datum a ochrana proti Ctrl-Break jdou PORAD
+    - samozrejmosti jsou nove vety
+    - cele vtipy jsou upraveny, popr. opraveny
+    - pridany 3 vtipy
+    - na zacatku se nabidne vyber s nastavenim, ukoncenim nebo startem
+    - opravena chyba z v1.5,  kdy se obcas kazily vtipy  v dusledku preteceni
+      promenne
+    - opravena jina chyba z verze 1.5, kde se u 50-ti radkovem modu pri spus-
+      teni "znepruhlednila" jen polovina obrazovky
+    - upraveny hlasky o zapisu do souboru
+    - pridan prikaz "obnov font",  ktery (tohle asi nevis) obnovi font,  kdyz
+      se nejak zkazil (napr. prepinanim oken)
+    - zmeneno cteni ze souboru z nastavenim, nyni je kompatibilnejsi
+    - pri psani vet program klavesou F1 nabidne slovo "pomoc"
+    - pridan novy text do "credits"
+    - zrychleno zapisovani vet do pameti pripravene ke generovani
+    - zmenena ikona, nyni je to jeste vetsi huba nez predtim
+    - napsano hodne noveho textu do POKYD.TXT
+    - na zacatku programu se vymaze radek s casem, datem a svatkem
+    - smazane zbytecne otazky na nektera slova
+    - formatovani harddisku se zapise do souboru s hovorem
+    - zrychleno mazani znaku z obrazovky pri zadavani vety
+    - opraven nazev e-mailu
+    - nyni uz i na Internetu!
+
+** verze 1.5 (13.10.1999)  -  35kB
+    - zlepseni logiky
+    - simulace formatovani harddisku je ted na vsech pocitacich stejna
+    - soubor  za prikazem SPUST  se pusti vzdy  a opravena chyba  pri praci s
+      argumentem
+    - opravena chyba u efektu pri psani vety clovekem
+    - jmeno souboru s hovorem zmeneno na "11223444.txt", kde 11 je den, 22 je
+      mesic,  3 znaci posledni cifru roku  a 444 cislo poctu spusteni  v dany
+      den (zmeneno kvuli kompatibilite s priponou)
+    - lepe je udelano usporadani slov, precte opravdu cely radek
+    - delka vtipu je omezena z 900 na 2000 (!) znaku
+    - opravena chyba pri psani do souboru vety psane pocitacem
+    - opraveno neuzavreni souboru pri nastaveni nepsani souboru behem pokydu
+    - kdyz je hledany soubor na zapsani hovoru prazdny, prepise se
+    - oprava psani do neexistujiciho souboru pri jejich preteceni
+    - pridan text do "credits"
+
+** verze 1.41 (2.10.1999)  -  necelych 35kB
+    - drobne graficke upravy
+
+** verze 1.4 (25.9.1999)  -  necelych 35kB
+    - masivni pridani novych vet
+    - odpovida take na otazky
+    - odstraneny neobratne vety u nekterych odpovedi
+    - pridan datum a cas primo na obrazovku, odstranena zadost o to
+    - opravena chyba u zadavani vet pri vice nez 40 mezerach
+    - vytvorena ikona k Pokydu
+    - opravena chyba pri spusteni prikazoveho radku
+    - opraveno par chyb ve slovniku
+    - pridana simulace formatovani harddisku
+    - "vylepseni" stylu hledani odpovedi
+    - lepe testovano
+
+** verze 1.3 (14.9.1999)  -  33kB
+    - pridani hodne novych vet
+    - kompatibilnejsi smazani radku
+    - moznost samomluvy pocitace
+    - dalsi zmena jmena souboru s hovorem na P[den]_[mesic]_[posledni_cifra_
+      roku].[cislo]
+    - mirna zmena v psani vety clovekem
+    - pridana nahodne psana hlaska o opakovanem spusteni v jeden den
+    - opravena chyba z v1.1 u 2 efektu psani pocitacem pod Windows 95/98
+    - u nastaveni staci, kdyz se zadane slovo pouze v retezci vyskytuje
+    - pri spousteni souboru rozezna spusteni prikazoveho radku
+    - opraveno hlaseni pri prvnim ulozeni nastaveni
+    - zpresnen text v souboru s nastavenim
+
+** verze 1.2 (8.9.1999)  -  necelych 32kB
+    - zlepseni logiky
+    - pridan efekt u vety psane clovekem
+    - psani hovoru do podadresare KYDY (adresare podrazeneho tomu, kde je Po-
+      kyd umisten)
+    - soubor s hovorem se misto puvodniho POKYD[cislo].TXT jmenuje PKD[den]_
+      [mesic].[cislo]
+    - do prave zmineneho souboru se napise datum a cas
+    - po spusteni souboru se nastavi puvodni cesta
+    - u spousteni souboru rozezna argument
+    - opravena chyba pri hlaseni preteceni souboru z verze 1.1
+    - rychlejsi mazani radku
+    - moznost vypnuti pripominek pri nicnemackani
+    - pridano motto do uvodniho okna (motto vymysleno jiz v 1.1)
+
+** verze 1.1 (3.9.1999) - 31kB
+    - moznost spousteni souboru vcetne cesty a parametru prikazem SPUST <co>
+    - po spusteni souboru se vrati ten samy textovy mod
+    - do souboru POKYD.CFG pridan novy radek s dobou, jak dlouho se pri netk-
+      nuti klavesnice maji psat pripominky
+    - pri psani pripominek to nevynechava radek
+    - zlepseni logiky (pridani novych vet)
+    - odstranena chyba se zvukem u pomalych discich
+    - pridany 2 nove efekty u vet psanych pocitacem, celkem jich je 9
+    - mirne upravy v textech
+    - pridan text do "credits"
+
+** verze 1.0 (29.8.1999) - necelych 29kB
+    - 1. verze, freeware
+    - moznost predpovedi pocasi
+    - moznost psani vtipu
+    - lze si pridavat vlastni vtipy
+    - podporuje 25-ti i 50-ti radkovy mod
+    - nescroluji se 2 prvni radky
+    - lze si vyzadat napsani data a casu
+    - moznost vypnuti a zapnuti zvuku
+    - pri zapnuti zvuku, kdyz je uz zapnuty a naopak na to Pokyd upozorni
+    - muzete si nastavit konfiguraci prikazem NASTAV
+    - lze taky nastavit standardni konfiguraci prikazem NASTAV STANDARDNE
+    - moznost automatickeho ulozeni nastaveni prikazem ULOZ
+    - nastaveni lze menit i v souboru POKYD.CFG
+    - 6 konfiguracnich radku - nadmorska vyska,  zvuk, prohozeni Y a Z, psani
+      vtipu pri startu, psani predpovedi pocasi pri startu, ma-li se psat ho-
+      vor do souboru
+    - muzete stisknout F3 pro opakovani predchoziho prikazu
+    - take lze stisknout Esc pro smazani radky
+    - muze se psat malymi i velkymi pismeny
+    - ignoruje jine znaky nez pismena, otaznik a vykricnik
+    - pri napsani stejne vety jako predchozi na to Pokyd muze upozornit
+    - pri psani vtipu smaze pripadne pocatecni a konecne entery
+    - moznost zacit hovor prvni vetou napsanou z prikazove radky
+    - pri odpovedi pocitace se smaze kurzor
+    - osetreni psani specialnich znaku (sipek atd.) pri zadavani vet
+    - pri nicnemackani dele jak minutu ma Pokyd pripominky
+    - mnoho nerusicich  a kurzor neodvadejicich efektu  (1 tvuj a 7 pocitaco-
+      vych)
+    - umi hodne vet
+    - nemusi se spoustet  v adresari s Pokydem.  Program si sam najde cestu k
+      souboru POKYD.CFG a k souboru, kam pripadne bude hovor zapisovat
+
+
+    Predpokladane zmeny do budoucna
+   =================================
+
+    Tato verze Pokydu  bude pravdepodobne posledni.  System porozumeni vet je
+    totiz znacne nedokonaly a hlavne - nelze ho prilis vylepsovat.
+    Ovsem jiz se tvori  zcela odlisna  vetev Pokydu  zalozena  na uplne jinem
+    principu pochopeni vet.  Novy Pokyd se bude jmenovat  IQ Pokyd  a nabidne
+    mnohem inteligentnejsi hovor,  protoze pocitac opravdu bude "vedet, o cem
+    mluvi".
+    Do te doby  budou vychazet  stale  nove soubory  s inteligenci  pro tento
+    Pokyd!
+    Upozornuji, ze technicka podpora (e-mailem apod.) pro tento "stary" Pokyd
+    bude neustale (alespon dokud budou fungovat kontakty  zde uvedene).  Mame
+    zajem Pokyd podporovat  (je to take posledni Pokyd pro DOS),  takze pokud
+    si treba v roce 2020 vzpomenete a napisete, budeme jenom radi...
+
+ÿ
+    Nejdulezitejsi zmeny v historii Pokydu
+   ========================================
+
+   Serazeno podle dulezitosti.
+
+   verze 1.0 - vydani 1. verze
+   verze 2.5 - nastaveni nalady hovoru, pridano 558 vet
+   verze 5.0 - real-time hovor, pridano 581 vet
+   verze 2.1 - podpora zenskeho rodu u cloveka
+   verze 6.0 - podpora zenskeho rodu u pocitace
+   verze 3.0 - autodetekce nalady hovoru
+   verze 6.3 - vyber charakteru u pocitace
+   verze 6.4 - zapamatovani si jmena cloveka a automaticky prevod do 5. padu
+   verze 5.4 - pocitac si pamatuje nektera fakta, ktera mu rekl clovek
+   verze 5.5 - pocitac si pamatuje mnohem vic dat od cloveka
+   verze 3.0 - pocitac dostal jmeno Klaban
+   verze 1.4 - pridan datum a cas primo na obrazovku
+   verze 2.0 - pridany svatky do programu
+   verze 5.3 - moznost kecani se dvema pocitaci najednou
+   verze 2.0 - prvni 3 moduly
+   verze 3.0 - pri psani se lze pohybovat sipkama a editovat text uprostred
+   verze 2.0 - nastaveni ma prostredi
+   verze 3.4 - vlastni font
+   verze 6.4 - vice stranek napovedy podle temat
+   verze 4.0 - spousta zlepseni pri zadavani vety
+   verze 2.2 - pocitac se opakuje max. po 1 jine vete
+   verze 3.2 - pocitac se opakuje max. po 2 jinych vetach
+   verze 3.4 - opakovani se temer nevyskytuje, jedine po jinych 50 vetach
+   verze 4.3 - na zacatku se nabidne amatersky kurz ovladani programu
+   verze 4.0 - pridano 344 vtipu
+   verze 5.0 - soubor se slovnikem je teoreticky zpetne kompatibilni
+   verze 2.4 - inteligence je v extra souboru
+   verze 4.2 - cela inteligence i s podminkama je v extra souboru
+   verze 1.1 - moznost spusteni externiho programu
+   verze 2.3 - objevil se testovaci program TESTPKD.EXE
+   verze 4.1 - svatky jsou rozliseny odlisnou barvou
+   verze 1.2 - hovor se zapisuje do podadresare KYDY
+   verze 2.0 - prvni ochrana proti Ctrl-Break
+   verze 2.4 - ochrana Ctrl-Break je stoprocentni
+   verze 3.4 - osetreni kritickych chyb DOSu (int 24h)
+   verze 3.0 - nejrychlejsi verze vubec!
+
+
+                                                    Ales Janda, autor Pokydu

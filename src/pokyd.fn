@@ -1,0 +1,60 @@
+/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
+   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+
+   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+*/
+
+
+#define POCET_ZMENENYCH_ZNAKU 9
+
+BYTE zmeneneznaky[POCET_ZMENENYCH_ZNAKU]={
+	201,205,187,186,188,200,231,237,251};
+//struct REGPACK reg;
+
+void ZMENZNAKY(WORD zacatek,WORD kolik,BYTE *pamet) {
+  __emit__((char)(0x60));		//pusha
+  __emit__((char)(0x06));		//push es
+  _CX = kolik;
+  _DX = zacatek;
+  _ES = FP_SEG(pamet);
+  _BP = FP_OFF(pamet);
+  _AX = 0x1100;
+  _BX = 0x1000;
+  geninterrupt(0x10);
+  __emit__((char)(0x07));		//pop es
+  __emit__((char)(0x61));		//popa
+ }
+
+void NASTAVJEDENZNAK(BYTE znak) {
+static BYTE misto=0;
+BYTE kde=misto<<4;
+  ZMENZNAKY(znak,1,dlouhe+kde);
+  misto++; if (misto == POCET_ZMENENYCH_ZNAKU) misto=0;
+ }
+
+void NASTAVPOKYDFONT(void) {
+WORD pozice,celkem;
+  VRATDATA(9); celkem=strlen(dlouhe);
+  for (pozice=0; pozice < celkem; pozice++)
+   dlouhe[pozice]^=1;			//prevedeni nazpet (kvuli nulam)
+
+  ZMENZNAKY('!',128-33,dlouhe+160);
+
+  for (pozice=0; pozice < POCET_ZMENENYCH_ZNAKU; pozice++)
+   NASTAVJEDENZNAK(zmeneneznaky[pozice]);
+ }
+
+void NASTAVNORMALNIFONT(void) {
+  /* Use BIOS default 8x16 ROM font directly. This avoids fragile
+     Borland inline-assembly stack/register tricks that can lock up
+     under Open Watcom builds. */
+  _AX = 0x1114;
+  _BL = 0;
+  geninterrupt(0x10);
+ }
+
+void NASTAVSPRAVNYFONT(void) {
+  if (font == 1) NASTAVPOKYDFONT();
+  else NASTAVNORMALNIFONT();
+ }

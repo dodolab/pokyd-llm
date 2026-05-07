@@ -1,0 +1,1246 @@
+/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
+   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+
+   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+*/
+
+
+void NAPIS_ODSTAVEC(BYTE *text) {
+WORD pozice,celkem;
+  for (pozice=0,celkem=strlen(text); pozice < celkem; pozice++) {
+    switch(text[pozice]) {
+      case '~': pozice++; textattr(text[pozice]-100); break;
+      case '`': pozice++; textbackground(text[pozice]-100); break;
+      default: cprintf("%c",text[pozice]);
+     }
+   }
+ }
+
+void HELPF1(BYTE typ) {
+BYTE puvgrafika=grafika25,barva;
+WORD pozice,celkem;
+DWORD cassetric;
+  START:
+  SMAZOBRAZOVKU(1); SMAZKURZOR(); grafika25=1; jeli_nastaveni=2;
+  cassetric=time(NULL);
+  PIS(31,1," Pokyd - napoveda ",14+16);
+  PIS(44,24,"Blizsi informace v souboru POKYD.TXT.",2);
+
+DATA:
+  _AX=0x600; _CX=0x200; _DX=0x1650; _BH=0; geninterrupt(0x10);	//smaz okno
+  gotoxy(1,25);
+  if (typ == 1) barva=14+(6*16); else barva=14;
+  NAPISRETEZEC(" F1",15+16);
+  NAPISRETEZEC(" Zakladni udaje ",barva);
+  if (typ == 13) barva=14+(6*16); else barva=14;
+  NAPISRETEZEC(" F2",15+16);
+  NAPISRETEZEC(" Pluginy ",barva);
+  if (typ == 14) barva=14+(6*16); else barva=14;
+  NAPISRETEZEC(" F3",15+16);
+  NAPISRETEZEC(" Prostredi ",barva);
+  if (typ == 15) barva=14+(6*16); else barva=14;
+  NAPISRETEZEC(" F4",15+16);
+  NAPISRETEZEC(" Nastaveni ",barva);
+  if (typ == 16) barva=14+(6*16); else barva=14;
+  NAPISRETEZEC(" F5",15+16);
+  NAPISRETEZEC(" Funkce programu ",barva);
+
+  VRATDATA(typ); gotoxy(1,4);
+  textattr(15); NAPIS_ODSTAVEC(dlouhe);
+  ZAPISCAS(); ZAPIS_NALADU();
+CEKEJ:
+  while (kbhit() == 0) {
+    if (pocetsetricvterin != 0 && (cassetric+pocetsetricvterin) < time(NULL)) {
+SETRIC: SETRIC_OBRAZOVKY(); goto START;
+     }
+    if (SETRIC_KLAVESA() == 1) cassetric=time(NULL);
+    CAS(0); DATUM(0); KONTROLA_UTNUTI();
+   }
+  switch(getch()) {
+    case 0: switch(_BH=getch()) {
+      case 59: F1: if (typ != 1) { typ=1; goto DATA; } break;	//F1
+      case 60: F2: if (typ != 13) { typ=13; goto DATA; } break;	//F2
+      case 61: F3: if (typ != 14) { typ=14; goto DATA; } break;	//F3
+      case 62: F4: if (typ != 15) { typ=15; goto DATA; } break;	//F4
+      case 63: F5: if (typ != 16) { typ=16; goto DATA; } break;	//F5
+      case 64: goto SETRIC;					//F6
+      case 68: goto KONEC;					//F10
+      case 75: if (typ != 1) {					//doleva
+                 typ--; if (typ == 12) typ=1; goto DATA; }
+               else break;
+      case 77: if (typ != 16) {					//doprava
+                 typ++; if (typ == 2) typ=13; goto DATA; }
+               else break;
+      case 120: goto F1;				//Alt-1
+      case 121: goto F2;				//Alt-2
+      case 122: goto F3;				//Alt-3
+      case 123: goto F4;				//Alt-4
+      case 124: goto F5;				//Alt-5
+     } break;
+    case '\r': case ' ': case 0x1B: goto KONEC;     //Enter, mezera, Esc
+    case '1': goto F1;
+    case '2': goto F2;
+    case '3': goto F3;
+    case '4': goto F4;
+    case '5': goto F5;
+   }
+  goto CEKEJ;
+
+  KONEC:
+  jeli_nastaveni=1; grafika25=puvgrafika; NASTAVKURZOR();
+ }
+
+void INTRO_CARA(BYTE pozy,BYTE odkud,BYTE kam) {
+  if (kam > 80) kam=80;
+  while (odkud <= kam) {
+    gotoxy(odkud++,pozy);
+    NAPISZNAK(' ',96);
+   }
+ }
+
+void INTRO_NAPIS(BYTE pozx,BYTE pozy,BYTE *text,BYTE barva) {
+BYTE pozice=0,celkem=strlen(text),pozadi;
+  while (pozice < celkem) {
+    gotoxy(pozx++,pozy);
+    pozadi=(CTIBARVU()&240)+barva;
+    NAPISZNAK(text[pozice++],pozadi);
+   }
+ }
+
+void ZAPIS_NALADU(void) {
+BYTE nal[6]="     ",puvx=wherex(),puvy=wherey();
+  gotoxy(63,VRATPOZICI());
+  NAPISRETEZEC("",zenapocitac == 0 ? 14 : 12);
+  nal[nalada]='';
+  NAPISRETEZEC(nal,zenskyrod == 0 ? (1<<4)+15 : (4<<4)+15);
+  NAPISRETEZEC("!",zenapocitac == 0 ? 14 : 12);
+  gotoxy(puvx,puvy);
+ }
+
+void KONEC(void) {
+BYTE y=wherey(),puvctrlbreak=ctrlbreak;
+  if (xtrzapsani == 1) {
+    ctrlbreak=0; xtrzapsani=0; sprintf(dlouhe,"Nezapomen na ten bonusovy soubor %c:\\POKYD.XTR!",xtrzapiskam); HLASKA(dlouhe,4);
+    ctrlbreak=puvctrlbreak;
+   }
+  VYPNI_REZIDENTY(1);
+  nosound(); if (kydy != NULL) { fclose(kydy); kydy=NULL; }
+  if (vtipymisto != NULL) free(vtipymisto); if (datasoubor != NULL) free(datasoubor);
+  for (pocetiq=0; pocetiq < POCET_IQ; pocetiq++)
+   if (inteligence[pocetiq] != NULL)
+    free(inteligence[pocetiq]);
+  if (jeli_nastaveni == 1) {
+    font=0;
+    if (ctrlbreakc == 1 && wherey()-1 == delkastrany && pozicehlavicka > 1) pozicehlavicka--;
+    if (akcectrlbreak == 0)
+     NAPISHLAVICKOVYRADEK();	//vypnuti diakritiky u hlavicky
+   }
+  if (ctrlbreak == 0 || akcectrlbreak == 0) {
+    if (grafika25 == 1 || delkastrany == 24) NASTAVNORMALNIFONT();
+    textattr(7); gettext(1,y,80,y,dlouhe);
+    gotoxy(1,y); BARVA(7);
+    puttext(1,y,80,y,dlouhe);
+    textattr(7); cprintf(" \n\r");
+    NASTAVKURZOR();
+   }
+  exit(0);
+ }
+
+void KONTROLA_UTNUTI(void) {
+  if (ctrlbreak > 0) {
+    if (akcectrlbreak != 0) SMAZOBRAZOVKU(0);
+    else {
+      STRANA(1);
+      PIS(20,wherey()," Pokyd byl prerusen klavesami Ctrl-Break! ",12+128+7*16);// cprintf("\n\r");
+     }
+    ZAVRISOUBORSKYDAMA("\n!Hlaseni! Pokyd byl prerusen klavesami Ctrl-Break!",1);
+    if (nactenyslovnik == 1) ZAPIS_INFORMACE_O_VETACH(3,1);
+    if (akcectrlbreak == 2) geninterrupt(0x19);	//tvrde ukonceni, v DOSu reset
+    KONEC();
+   }
+  if (int0 == 1) {				//nastal interrupt 0
+    int0=0;
+    HLASKA("Nastalo preruseni 0. Kontaktuj autora! Toto preruseni nesmi nikdy nastat!",4);
+   }
+ }
+
+void KALENDAR(BYTE cteni) {
+BYTE delkajm,den,mesic,barva=13,puvx=wherex(),puvy=wherey();
+WORD pozice=0,pozicesvatek;
+
+  PIS(21,VRATPOZICI(),"                                                    ",13);
+  if (cteni == 0)
+   if (svatek[0] == 0) goto KONEC; else goto PSANI;
+
+  _AH = 0x2A; geninterrupt(0x21);
+  den=_DL-1; mesic=_DH;
+  if (mesic-- > 1) pozice+=31;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=29;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=31;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=30;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=31;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=30;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=31;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=31;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=30;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=31;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=30;
+  else goto DAL;
+  if (mesic-- > 1) pozice+=31;
+  DAL:
+  pozice+=den;
+
+  VRATDATA(11);
+  for (pozicesvatek=0; pozicesvatek < 4000; pozicesvatek++)
+   dlouhe[pozicesvatek]^=1;
+
+  for (pozicesvatek=0; pozice > 0; pozice--)
+   pozicesvatek+=strlen(dlouhe+pozicesvatek)+1;
+
+  strcpy(svatek,dlouhe+pozicesvatek);
+
+PSANI:
+  pozice=0; delkajm=strlen(svatek);
+  for (pomoc=0; pomoc < delkajm; pomoc++)
+   if (svatek[pomoc] != '#' && svatek[pomoc] != '' && svatek[pomoc] != '')
+    pozice++;					//spocitani delky jm
+  pozice+=8;					//pridani "Svatek: "
+
+  PIS(40-(pozice>>1),VRATPOZICI(),"Svatek: ",13);
+  for (pomoc=0; pomoc < delkajm; pomoc++) {
+    switch(svatek[pomoc]) {
+      case '#': pomoc++; barva=15; break;
+      case '~': pomoc++; barva=7; break;
+      case '': pomoc++; barva=9; break;
+      case '': pomoc++; barva=4; break;
+      case ',': barva=13; break;
+     }
+    NAPISZNAK2(svatek[pomoc],barva);
+   }
+
+  KONEC: gotoxy(puvx,puvy);
+ }
+
+void DATUM(BYTE ano_nebo_ne) {
+DWORD rok;
+BYTE puvx=wherex(),puvy=wherey(),r[20],mesic,den,novyden=0;
+
+  _AH = 0x2A; geninterrupt(0x21);
+  rok = _CX; mesic = _DH; den = _DL;
+
+  if (den != datum) novyden=1;
+  if (ano_nebo_ne == 0 && novyden == 0) goto KONEC;
+  textcolor(13); datum=den; VRATNAZEVDNE(r,1);
+  gotoxy(1,VRATPOZICI()); NAPISRETEZEC(r,13);
+
+  sprintf(r," %d.%d.",den,mesic); NAPISRETEZEC(r,13);
+  sprintf(r,"%lu     ",rok); NAPISRETEZEC(r,13);
+  KALENDAR(novyden);
+  textcolor(barvapocitac0); gotoxy(puvx,puvy);
+  KONEC:;
+ }
+
+void CAS(BYTE ano_nebo_ne) {
+BYTE hodina,minuta,sekunda,puvx=wherex(),puvy=wherey();
+BYTE r[20];
+  if (cas != time(NULL) || ano_nebo_ne == 1) {
+    textcolor(13);
+    cas=time(NULL);
+    _AH = 0x2C; geninterrupt(0x21);
+    hodina = _CH; minuta = _CL; sekunda = _DH;
+    sprintf(r,"%02d:%02d:%02d",hodina,minuta,sekunda);
+    PIS(73,VRATPOZICI(),r,13); gotoxy(puvx,puvy);
+    textcolor(barvapocitac0);
+    DATUM(ano_nebo_ne);
+   }
+ }
+
+BYTE HLASKA(BYTE *text,BYTE barvapozadi) {
+WORD barva,kdejey=24;
+BYTE znak,puvpozx=wherex(),puvpozy=wherey(),predtim[161],odkud;
+BYTE pozadi,otazka=0,pozicex,kolik;
+char klavesa;
+
+  if (barvapozadi >= 100) { barvapozadi-=100; otazka=1; }
+  SMAZKURZOR();
+  if (delkastrany == 49 && grafika25 == 0) kdejey=49;
+  gettext(1,kdejey,80,kdejey,predtim);
+
+  pozadi=barvapozadi<<4;
+  for (odkud=40,kolik=strlen(text)>>1; kolik > 0; kolik--,odkud--) {
+    PIS(odkud,kdejey," ",pozadi); PIS(80-odkud,kdejey," ",pozadi); delay(150/strlen(text));
+   }
+
+  odkud=40-(strlen(text)>>1);
+  PIS(odkud,kdejey," ",pozadi); NAPISRETEZEC(text,pozadi); NAPISRETEZEC(" ",pozadi);
+  if (zvuk==1) { if (barvapozadi == 5) sound(200); else sound(500); }
+  delay(50); PIS(odkud+1,kdejey,text,pozadi+8);
+  delay(50); PIS(odkud+1,kdejey,text,pozadi+7);
+  delay(50); nosound(); PIS(odkud+1,kdejey,text,pozadi+15);
+  pozicex=wherex()-1;
+  while (kbhit() == 0) {
+    if (jeli_nastaveni != 0) CAS(0);
+    KONTROLA_UTNUTI();
+    _AX=3; geninterrupt(0x33); if (_BX%2 == 1) goto DAL;
+    if (otazka != 0) {
+      gotoxy(pozicex,kdejey);
+      if (otazka == 1) NAPISZNAK(' ',pozadi); else NAPISZNAK(text[strlen(text)-1],pozadi+15);
+      delay(150); otazka^=3;		//1 nebo 2
+     }
+   }
+  klavesa=CTIKLAVESU();
+  DAL:
+  puttext(1,kdejey,80,kdejey,predtim);
+
+  gotoxy(puvpozx,puvpozy);
+  return(klavesa);
+ }
+
+void ZHLTNI_MYS(void) {
+  do {
+    CAS(0); KONTROLA_UTNUTI();
+    _AX = 3; geninterrupt(0x33);
+   } while ((_BX&3) != 0);
+ }
+
+void CEKEJ(DWORD jakdlouho) {
+DWORD cyklus;
+  if (spustenipodprogramu > 0) jakdlouho=3;
+  else if ((bioskey(2)&15) == 12) jakdlouho=3;
+  else jakdlouho=jakdlouho*delayprocenta/100;
+
+  cyklus=0;
+  do {
+    if (jeli_nastaveni > 0) CAS(0); KONTROLA_UTNUTI();
+    if (jakdlouho-cyklus < 100) { delay(jakdlouho-cyklus); cyklus=jakdlouho; }
+    else { cyklus+=100; delay(100); }
+
+    if (jeli_nastaveni == 1 && puvodnicas != time(NULL)) {
+      puvodnicas=time(NULL); cashovoru++;			//pricteni
+     }								//doby hovoru
+   } while (cyklus < jakdlouho);
+ }
+
+void PIPNI(DWORD frekvence, WORD delka) {
+  if (zvuk == 1) sound(frekvence);
+  CEKEJ(delka);
+  nosound();
+ }
+
+void NASTAV50RADKU(void) {
+//  _AX = 2; geninterrupt(0x10); _AX = 3; geninterrupt(0x10);
+/*  _AX = 0x1102; _BL = 0; geninterrupt(0x10);		//Font
+  _AX = 0x1112; _BL = 0; geninterrupt(0x10);		//Font
+  _AX = 0x1202; _BL = 0x30; geninterrupt(0x10);		//Radky*/
+  textmode(C4350);
+ }
+
+void NASTAVSPRAVNYMOD(void) {
+  if (delkastrany > 24 && grafika25 == 0) NASTAV50RADKU();
+  else SMAZOBRAZOVKU(1);
+  SMAZKURZOR();
+ }
+
+void HLEDEJSOUBOR(void) {
+BYTE den,mesic,nazevdne[10];
+WORD cislosouboru=0;
+DWORD rok;
+  if (readonlymod == 1) { psani=2; return; }
+  chybaint24=0;
+  SOUBOR("KYDY");
+  getcurdir(0,retezec2);
+  strcpy(retezec1+3,retezec2); retezec1[0]=getdisk()+'A';
+  retezec1[1]=':'; retezec1[2]='\\';		//na zacatku je disk
+  if (chdir(soubor) == -1) {			//test existence adresare
+    if (mkdir(soubor) == -1) {
+      HLASKA("Adresar KYDY neexistuje a dokonce ani nejde vytvorit. Hovor teda nezapisuju.",4);
+      psani=2; goto KONEC;
+     }
+   }
+  else chdir(retezec1);
+  strcat(soubor,"\\");
+  _AH = 0x2A; geninterrupt(0x21);
+  rok = _CX; den = _DL; mesic = _DH;
+  if (extrasouborpsani == 1) {
+    sprintf(retezec1,"%02d",den); strcat(soubor,retezec1);
+    sprintf(retezec1,"%02d",mesic); strcat(soubor,retezec1);
+    sprintf(retezec1,"%d",rok%10); strcat(soubor,retezec1);
+    pocetslov=strlen(soubor);			//kde bude 0
+    SOUBOR:
+    if (chybaint24 == 1) {
+      HLASKA("Nastala kriticka chyba, takze nebudu psat hovor.",4);
+      psani=2; chybaint24=0; goto KONEC;
+     }
+    sprintf(retezec2,"%003u",cislosouboru);
+    soubor[pocetslov]=0; strcat(soubor,retezec2); strcat(soubor,".TXT");
+    if (cislosouboru == 1000) {
+      HLASKA("Je to zvlastni, ale neni dostatek souboru! Rozhovor nebude zapsan!",4);
+      psani=2; goto KONEC;
+     }
+    cislosouboru++;
+    if (findfirst(soubor,&ffblk,6) == 0 && ffblk.ff_fsize > 0) goto SOUBOR;
+    if ((kydy=fopen(soubor,"w")) == NULL) goto SOUBOR;
+
+    VRATDATA(4); ODRIZNIENTERY(); fprintf(kydy,dlouhe);
+    strcpy(kydaniny,soubor+pocetslov-5);
+   }
+  else {
+    SOUBOR("KYDY\\kydy.txt");
+    if (findfirst(soubor,&ffblk,6) == 0 && ffblk.ff_fsize > 0) {
+      if ((kydy=fopen(soubor,"a")) == NULL) {
+        HLASKA("Soubor s hovorem existuje, ale nelze zapisovat! Hovor nebude zaznamenan!",4);
+        psani=2; goto KONEC;
+       }
+      fprintf(kydy,"\n\n dalsi spusteni");
+     }
+    else {
+      if ((kydy=fopen(soubor,"w")) == NULL) {
+        HLASKA("Soubor s hovorem nelze vytvorit! Hovor se nebude zapisovat!",4);
+        psani=2; goto KONEC;
+       }
+      VRATDATA(4); ODRIZNIENTERY(); fprintf(kydy,"%s- prvni spusteni",dlouhe);
+     }
+    strcpy(kydaniny,"KYDY.TXT");
+   }
+  VRATNAZEVDNE(nazevdne,0);
+  fprintf(kydy,"\nDatum:  %s %d.%d.",nazevdne,den,mesic);  fprintf(kydy,"%lu",rok);
+  _AH = 0x2C; geninterrupt(0x21); mesic = _CH; den = _CL;
+  fprintf(kydy,"  Cas: %d:%02d",mesic,den);
+  VRAT_NAZEV_NALADY(retezec1); OREZ_MEZERY(retezec1);
+  fprintf(kydy,"\nPocatecni nalada: %s",retezec1);
+  VRAT_NAZEV_CHARAKTERU(retezec1); OREZ_MEZERY(retezec1);
+  fprintf(kydy,", charakter: %s\n\n",retezec1);
+
+  KONEC:;
+ }
+
+void RUZNASLOVA(BYTE *co,BYTE *naco) {
+char pozice;
+  pozice=SLOVO(co);
+  if (pozice != -1) strcpy(veta[pozice],naco);
+ }
+
+void RUZNASLOVAZAC(BYTE *co,BYTE *naco) {
+char pozice;
+  pozice=ZACATEK(co);
+  if (pozice != -1) strcpy(veta[pozice],naco);
+ }
+
+void ROD1(BYTE *text0,BYTE zmena,DWORD cislo) {
+BYTE celkem,pomoc;
+BYTE text[160];
+  strcpy(text,text0);
+  if (zenskyrod == 1 && samomluva == 0) {
+    if (zmena < 255) {
+      if (zmena < 80) text[zmena-1]='a';	//pouhe nahrazeni znaku
+      else if (zmena > 160) {			//nahrazeni 2 znaku jednim
+        zmena-=160; celkem=strlen(text);
+        for(pomoc=zmena; pomoc <= celkem; pomoc++)
+         text[pomoc-1]=text[pomoc];
+        text[zmena-1]='a';
+       }
+      else {					//vlozeni 1 znaku
+        zmena-=80; celkem=strlen(text);
+        for(pomoc=celkem; pomoc >= zmena; pomoc--)
+         text[pomoc]=text[pomoc-1];
+        text[celkem+1]=0;				//ukonceni
+        text[zmena-1]='a';
+       }
+     }
+   }
+  ODP(text,cislo);
+ }
+
+void ODPOVED(BYTE odradkovani) {
+DWORD pozice=0,pozice2,celkempozice;
+BYTE pozice3;
+  KONTROLA_UTNUTI(); SMAZKURZOR();
+  textcolor(barvapocitac0); textbackground(0);
+  if (odradkovani == 1) STRANA(pocetradku);
+  gotoxy(1,wherey());
+  if (pozodp == 100) {					//Dlouhe zpravy
+    if (kydy != NULL) fprintf(kydy,"P: ");
+    pozice2=ODRIZNIENTERY();
+    for (pozice=0; pozice < pozice2; pozice++) {
+      if (dlouhe[pozice] == '\n' || wherex() == 80) STRANA(1);
+      else NAPISZNAKODP(dlouhe[pozice]);
+      PIPNI(50,45);
+     }
+    if (kydy != NULL) fprintf(kydy,"%s\n",dlouhe);
+    PIPNI(140,30); pocetvet++;
+   }
+  else {
+    if (pozodp == 0) pozodp=1;		//Zabraneni pripadnemu Divide error
+    cislo=VYBER_ODPOVED();			//Vyber odpoved
+    celkempozice=strlen(odpovedi[cislo]);
+
+    if (delayprocenta == 0 || textefekty == 0) {	//odpoved napsana hned
+      NAPISRETEZEC(odpovedi[cislo],barvapocitac0); goto DAL;
+     }
+
+    switch(rand()%12) {			//Vyber efektu
+      case 0:					//Normalni efekt
+	pozice=0; while (pozice < celkempozice) {
+	  NAPISZNAKODP(odpovedi[cislo][pozice++]);
+	  PIPNI(30,30);
+	 } break;
+      case 1:					//Vykreslovani 2. bodu
+	pozice2=0; while (pozice2++ < 2) {		//Opakuj 2x
+	  pozice=pozice2-1; gotoxy(pozice2,wherey());
+	  while (pozice < celkempozice) {
+	    gotoxy(pozice+1,wherey());
+	    NAPISZNAKODP(odpovedi[cislo][pozice]);
+	    pozice+=2;
+	    PIPNI(30,30);
+	   }
+	 } break;
+      case 2:					//Padajici pismenka zprava
+	pozice=0; while (pozice < celkempozice) {
+	  pozice2=79; while (--pozice2 > pozice) {
+	    gotoxy(pozice2,wherey());
+	    cprintf("%c ",odpovedi[cislo][pozice]);
+	    if (pozice2%15 == 0) PIPNI(30,6);
+	   }
+	  pozice++;
+	  PIPNI(30,pozice2/15);
+         } break;
+      case 3:					//Prijizdejici text zleva
+	pomoc=celkempozice; while (pomoc-- > 0) {
+	  gotoxy(1,wherey());
+	  cprintf("%s",odpovedi[cislo]+pomoc);
+	  PIPNI(30,30);
+         } break;
+      case 4:					//Obmena standardniho textu
+				// ****   minimalne znaku: 3   ****
+	cprintf("\r%c%c",odpovedi[cislo][0],odpovedi[cislo][1]);
+	PIPNI(30,30);				//Pocatecni pismena
+	pozice=2; while (pozice < celkempozice) {
+	  gotoxy(pozice+1,wherey());
+	  pozice2=odpovedi[cislo][pozice-1];
+	  if (pozice2 > 96 && pozice2 < 123) pozice2&=0x5F;
+	  cprintf("%c\b\b\b%c%c",odpovedi[cislo][pozice],odpovedi[cislo][pozice-2],pozice2);
+	  pozice++;
+	  PIPNI(30,30);
+	 }
+	cprintf("\b%c%c",odpovedi[cislo][celkempozice-2],odpovedi[cislo][celkempozice-1]);
+	break;							//Konec
+      case 5:					//Vypis po slovech
+	pozice=0; cprintf("\r"); while (pozice < celkempozice) {
+	  pozice2=0; while (odpovedi[cislo][pozice] != ' ' && pozice < celkempozice) {
+	    NAPISZNAKODP(odpovedi[cislo][pozice++]);
+	    pozice2+=20;
+	   }
+	  if (pozice < celkempozice) { pozice++; cprintf(" "); }
+          PIPNI(30,pozice2);
+         }
+	pozice--; while (pozice+1 > 0) {		//Odjizdejici *
+	  gotoxy(pozice+1,wherey());
+	  NAPISZNAK(odpovedi[cislo][pozice],barvaclovek+(((rand()%7)+1)<<4));
+	  PIPNI(50,10);
+          NAPISZNAKODP(odpovedi[cislo][pozice--]);
+	 }
+        break;
+      case 6:					//Nahodne vypisovani pismen
+        strcpy(retezec2,odpovedi[cislo]);
+        pozice2=0; while (pozice2++ < celkempozice) {
+          do {				//nalezeni nehvezdickovyho znaku
+            pozice=rand()%celkempozice;
+	   } while (retezec2[pozice] == '*');
+	  gotoxy(pozice+1,wherey());
+	  NAPISZNAK2(retezec2[pozice],VYBERBARVU());
+	  PIPNI((rand()%30)+20,30);
+	  textcolor(barvapocitac0); cprintf("\b%c",retezec2[pozice]);
+	  retezec2[pozice]='*';
+         } break;
+      case 7:					//Vypisovani 10 pismen
+	pozice3=strlen(odpovedi[cislo]); if (pozice3 > 10) pozice3=10;
+	pozice=0; while (pozice++ < pozice3) {
+	  pozice2=pozice; while (pozice2-1 < celkempozice) {
+            gotoxy(pozice2,wherey());
+	    NAPISZNAKODP(odpovedi[cislo][pozice2-1]);
+            pozice2+=10;
+	   }
+	  PIPNI(30,(celkempozice*30)/pozice3);
+         } break;
+      case 8:				//Vjezd doprostred a roztazeni do stran
+	pozice=0; pozice2=strlen(odpovedi[cislo]) >> 1;
+        while (pozice < pozice2) {		//Jizda pismenem doprostred
+          gotoxy(pozice+1,wherey());
+          NAPISZNAKODP(odpovedi[cislo][pozice++]);
+	  PIPNI(20,40);
+          cprintf("\b ");
+         }
+	pozice=0; pozice3=pozodp;
+        while (pozice < pozice2+1) {		//Roztazeni vety do stran
+	  gotoxy(pozice2-pozice+1,wherey());
+	  NAPISZNAKODP(odpovedi[cislo][pozice2-pozice++]);
+	  if (odpovedi[cislo][pozice2+pozice] > 0 && pozice3 < 100) {
+					  //Omezeni pismena vpravo pri konci
+	    gotoxy(pozice2+pozice+1,wherey());
+	    NAPISZNAKODP(odpovedi[cislo][pozice2+pozice]);
+	   }
+	  else pozice3=100;			//posledni pismeno
+	  PIPNI(40,30);
+         }
+        break;
+      case 9:			//Vypisovani ob jedno pismeno z obou stran
+	pozice=0; pozice2=celkempozice; odpovedi[cislo][strlen(odpovedi[cislo])]='1';
+	if (pozice2 >> 1 << 1 == pozice2) pozice2++;   //je-li sude, bude liche
+	while (pozice < celkempozice) {
+          gotoxy(pozice+1,wherey());
+          NAPISZNAKODP(odpovedi[cislo][pozice]);
+	  pozice+=2; pozice2-=2;
+	  if (pozice2 < celkempozice) {
+	    gotoxy(pozice2+1,wherey());
+            NAPISZNAKODP(odpovedi[cislo][pozice2]);
+           }
+	  PIPNI(30,60);
+         }
+        break;
+      case 10:		//Nejprve tecky ruzne barvy, pak text a sjednoceni barev
+        for (pozice=0; pozice < celkempozice; pozice++) {	//tecky
+          if (odpovedi[cislo][pozice] != ' ') {
+            NAPISZNAK2('.',VYBERBARVU());
+	   }
+	  else NAPISZNAKODP(' ');
+          PIPNI(20,10);
+         }
+        while (pozice-- > 0) {				//barevny text
+          gotoxy(pozice+1,wherey());
+          NAPISZNAK2(odpovedi[cislo][pozice],VYBERBARVU());
+          PIPNI(40,10);
+         }
+        gotoxy(1,wherey());
+        for (pozice=0; pozice < celkempozice; pozice++) {
+          NAPISZNAKODP(odpovedi[cislo][pozice]);
+          PIPNI(60,10);
+         }
+        break;
+      case 11:				//text zrcadlove, pak zezadu normalne
+        for (pozice=celkempozice; pozice > 0; pozice--) {
+          gotoxy(pozice,wherey());
+          NAPISZNAKODP(odpovedi[cislo][celkempozice-pozice]);
+	  PIPNI(20,10);
+	 }
+	gotoxy(1,wherey());
+        for (pozice=0; pozice < celkempozice; pozice++) {
+          NAPISZNAKODP(odpovedi[cislo][pozice]);
+          if (wherey() < 80) cprintf(" \b");
+          PIPNI(50,20);
+         }
+        break;
+     }
+    DAL:
+    odpovedi[cislo][celkempozice]=0;
+    if (kydy != NULL) {
+      if (samomluva == 0) fprintf(kydy,"P: ");
+      else fprintf(kydy,"P%d: ",cisloaktualnihopocitace);
+      fprintf(kydy,"%s\n",odpovedi[cislo]);
+     }
+    ZAPISPUVODP(cislaodp[cislo]);
+    PIPNI(100,30); pocetvet++;
+    SMYSL_VETY_POCITACE();
+   }
+ }
+
+void SETRID(void) {
+BYTE poziceveta1=0,poziceveta2=0,pozice=0,pozice2=0,celkem=strlen(retezec1);
+
+  for (cislo=0; cislo < 20; cislo++) veta[cislo][0]=0;
+
+  otazka=0;
+  for(cislo=0; cislo < celkem; cislo++) {
+    switch(retezec1[cislo]) {
+      case '?': otazka=1; break;
+      case '!': if (otazka == 0) otazka=2; break;
+      case '(': retezec1[cislo]='<'; break;
+      case ')': retezec1[cislo]='>'; break;
+      default: break;
+     }
+   }
+  pozice=0;
+  while (pozice != celkem) {			//mala pismena a zahozeni
+    if ((retezec1[pozice] >= 'A' && retezec1[pozice] <= 'Z') ||
+     (retezec1[pozice] >= 'a' && retezec1[pozice] <= 'z') ||
+     (retezec1[pozice] >= '0' && retezec1[pozice] <= '9'))
+      retezec2[pozice2]=retezec1[pozice];
+    else retezec2[pozice2]=' ';
+    pozice2++; pozice++;
+   }
+  retezec2[pozice2]=0;
+
+  pozice=0;
+  while (pozice < celkem) {			//roztrideni do slov
+    if (retezec2[pozice] == ' ') {		//nove slovo
+      if (poziceveta2 > 0) {
+	veta[poziceveta1++][poziceveta2]=0;
+	poziceveta2=0;
+       }
+     }
+    else if (poziceveta2 < 14) veta[poziceveta1][poziceveta2++]=retezec2[pozice];
+    POZICEPLUS: pozice++;
+   }
+  veta[poziceveta1++][poziceveta2]=0;
+  for (pocetslov=0; veta[pocetslov][0] != 0 && pocetslov < 20; pocetslov++);
+
+  if (slovenstina == 1) {
+    RUZNASLOVA("som","jsem");
+    RUZNASLOVA("jsom","jsem");
+    RUZNASLOVA("su","jsou");
+    RUZNASLOVA("jsu","jsou");
+    RUZNASLOVA("nie","ne");
+    RUZNASLOVAZAC("bol","byl");
+    RUZNASLOVA("sa","se");
+    RUZNASLOVA("ako","jak");
+    RUZNASLOVA("volas","jmenujes");
+    RUZNASLOVA("volam","jmenuji");
+    RUZNASLOVA("ak","kdyz");
+    RUZNASLOVA("lenom","jenom");
+    RUZNASLOVA("povedaj","rekni");
+    RUZNASLOVA("este","jeste");
+    RUZNASLOVA("dufam","doufam");
+    RUZNASLOVA("ak","jestli");
+   }
+
+  if (pravopis == 1 && samomluva == 0) {
+    RUZNASLOVA("di","jdi");
+    RUZNASLOVA("si","jsi");
+    RUZNASLOVA("jses","jsi");
+    RUZNASLOVA("jsis","jsi");
+    RUZNASLOVA("sem","jsem");
+    RUZNASLOVA("du","jdu");
+    RUZNASLOVA("furd","furt");
+    RUZNASLOVA("poves","rekni");
+    RUZNASLOVA("slisis","slysis");
+    RUZNASLOVA("polip","polib");
+    RUZNASLOVA("odpoves","odpovez");
+    RUZNASLOVA("totis","totiz");
+   }
+
+  if (pravopis == 1 && otazka != 1 && samomluva == 0) {
+    if (SLOVO("kdo") != 255) otazka=1;
+    else if (SLOVO("kde") != 255) otazka=1;
+    else if (SLOVO("kdy") != 255) otazka=1;
+    else if (SLOVO("jak") != 255) otazka=1;
+    else if (SLOVO("proc") != 255) otazka=1;
+    else if (SLOVO("kam") != 255) otazka=1;
+    else if (SLOVO("co") != 255) otazka=1;
+    else if (SLOVO("coze") != 255) otazka=1;
+   }
+
+  RUZNASLOVA("napis","rekni");
+  RUZNASLOVA("povez","rekni");
+  RUZNASLOVA("tvem","svem");
+  RUZNASLOVA("te","tebe");
+  RUZNASLOVA("mne","mi");
+  RUZNASLOVA("me","mi");
+  RUZNASLOVA("jo","ano");
+  RUZNASLOVA("ses","jsi");
+  RUZNASLOVA("rikej","mluv");
+  RUZNASLOVA("pis","mluv");
+  RUZNASLOVA("nepovidej","mlc");
+  RUZNASLOVA("nemluv","mlc");
+  RUZNASLOVA("nekecej","mlc");
+  RUZNASLOVA("nemel","mlc");
+  RUZNASLOVA("nerikej","mlc");
+  RUZNASLOVA("fakt","opravdu");
+  RUZNASLOVA("fakticky","opravdu");
+  RUZNASLOVA("doopravdy","opravdu");
+  RUZNASLOVA("nechapes","nerozumis");
+  RUZNASLOVA("tedy","teda");
+
+  if (ZACATEK("ne") == 255 && ZACATEK("nikoli") == 255) souhlas=1;
+  else souhlas=0;						//Souhlas?
+
+  while ((pozice=KONECSLOVA("ji")) != 255) 
+   veta[pozice][strlen(veta[pozice])-1]='u';
+ }
+
+
+void NASTAVSOUBOR(BYTE hlaska) {
+  if (readonlymod == 1) {
+    if (hlaska == 1) HLASKA("Pokyd je v modu \"jen ke cteni\". Nastaveni nemuze byt ulozeno.",4);
+    return;
+   }
+  SOUBOR("POKYD.CFG");
+  if ((nastaveni = fopen(soubor,"w")) == NULL) {
+    if (ctrlbreak == 0)				//zacyklil by se
+     HLASKA("Sakra! To nastaveni nejak nejde ulozit, nebo co! Tak trapne nic, no!",4);
+   }
+  else {
+    VRATDATA(5); ODRIZNIENTERY(); fprintf(nastaveni,dlouhe,zenskyrod,zenapocitac,nalada,charakter,jmenomuzpocitac,jmenozenapocitac,pocetpocitacu-1,nastvani,zvuk,yz);
+    VRATDATA(6); ODRIZNIENTERY(); fprintf(nastaveni,dlouhe,pocetvterin,zvysovani,delayprocenta,font,pocetradku,textefekty,pocetsetricvterin,mod/25,slovenstina,pravopis);
+    VRATDATA(7); ODRIZNIENTERY(); fprintf(nastaveni,dlouhe,(psani == 0) ? 0 : 1,extrasouborpsani,vyska,svtipy,spocasi,vkolikhodin,yz,cekaniklavesy,ulozeninakonci,akcectrlbreak,barvaclovek,barvapocitac1,barvapocitac2,VRAT_SERIOVE_CISLO());
+    fclose(nastaveni); nastaveni=NULL;
+    if (hlaska == 1) HLASKA("V poradku. Nastaveni jsem v pohode ulozil.",2);
+   }
+ }
+
+void VTIPYSOUBOR(void) {
+DWORD maxvtipu;
+BYTE hlaska[80];
+  celkemvtipu=0; pozvtipy=0; pozvtips=0; SOUBOR("VTIPY.TXT");
+  if ((vtipys = fopen(soubor,"rb")) == NULL) return;
+  vtipy=1; fseek(vtipys,0,SEEK_END); delkavtipu=ftell(vtipys); fseek(vtipys,0,SEEK_SET);
+  maxvtipu=VOLNAPAMET()>>2; if (maxvtipu > 32768) maxvtipu=32768;
+  vtipymisto=malloc(maxvtipu<<2);		   //prideleni pameti
+  while (delkavtipu-- != 0) {
+    if ((getc(vtipys)) == '#') {
+      if (++celkemvtipu == maxvtipu) {
+	sprintf(hlaska,"Clovece, hodne vtipu a malo pameti! Bude holt nacteno jen prvnich %lu.",maxvtipu-1);
+	HLASKA(hlaska,4);
+	celkemvtipu--; goto KONEC;
+       }
+      while (--delkavtipu > 1 && (getc(vtipys)) != '\n') pozvtips++;
+      fseek(vtipys,1,SEEK_CUR); pozvtips++;
+      vtipymisto[pozvtipy++]=pozvtips++;
+     }
+     pozvtips++;
+   }
+  fseek(vtipys,0,SEEK_END);
+  vtipymisto=realloc(vtipymisto,(celkemvtipu+1)<<2);
+  KONEC:
+  vtipymisto[pozvtipy]=ftell(vtipys);
+  fclose(vtipys); vtipys=NULL;
+//  sprintf(hlaska," Je nacteno celkem %lu vtipu z %lu. ",celkemvtipu,maxvtipu);
+//  HLASKA(hlaska,1);
+ }
+
+void VTIPY(void) {
+DWORD misto,delka,pozdlouhe=0,znak;
+  if (celkemvtipu != 0) {
+    SOUBOR("VTIPY.TXT"); if ((vtipys=fopen(soubor,"rb")) == NULL) goto NIC;
+    misto=VRAT_POZICI_VTIPU();
+    fseek(vtipys,vtipymisto[misto]+1,SEEK_SET);
+    delka=vtipymisto[misto+1]-vtipymisto[misto]-1;
+    if (delka > 4000) delka=4000;
+    while (delka != 0 && (znak=getc(vtipys)) != '#') {
+      dlouhe[pozdlouhe++]=znak;
+      delka--;
+     }
+    dlouhe[pozdlouhe]=0;
+    while (strcmp(dlouhe+(strlen(dlouhe)-2),"\xD\xA") == 0)
+      dlouhe[strlen(dlouhe)-2]=0;		//Smazani enteru na konci
+    while (dlouhe[0] == '\r' || dlouhe[0] == '\n')
+      strcpy(dlouhe,dlouhe+1);			//Smazani enteru na zacatku
+    fclose(vtipys); vtipys=NULL;
+    smyslpocvety=3;
+   }
+  else {
+    NIC: VRATDATA(2); smyslpocvety=3;	//Bohuzel, nenasel jsem zadne vtipy....
+   }
+  pozodp=100; ODPOVED(1);
+ }
+
+WORD NAJDIDALSI(WORD odkud,BYTE okolik) {
+  while (okolik-- > 0) {
+    odkud+=strlen(inteligence[intpozice]+odkud+1);
+    odkud+=2;		//nula na konci a mozna pocatecni hodnota na rod
+   }
+  return(odkud);
+ }
+
+void REALTIMEKEC(void) {
+BYTE pozice,celkem=celkemodp,ktera,pozice1,pozice2,pozice3,puvnalada,zmenapozice;
+WORD najit,poziceodp;
+ 
+  if (pocetrealtimekecu == 0) goto JINYKEC;
+  if (nadavani == 1) {
+    puvnalada=nalada; nalada=rand()%5;
+   }
+  for (pozice=0; pozice < celkem; pozice++) {
+    intpozice=realodp[pozice][0]; najit=realodp[pozice][1];
+
+    switch(nalada) {
+      case 0: case 1:
+	if (VETA_PREDTIM(intpozice*10+7) >= VETA_PREDTIM(intpozice*10+8)) ktera=7;
+	else ktera=8; break;
+      case 2:
+	pozice1=VETA_PREDTIM(intpozice*10+7); pozice2=VETA_PREDTIM(intpozice*10+8); pozice3=VETA_PREDTIM(intpozice*10+9);
+	if (pozice2 >= pozice1 && pozice2 >= pozice3) ktera=8;
+	else if (pozice3 >= pozice1) ktera=9;
+	else ktera=7; break;
+      case 3: case 4:
+	if (VETA_PREDTIM(intpozice*10+9) >= VETA_PREDTIM(intpozice*10+8)) ktera=9;
+	else ktera=8; break;
+     }
+    DAL:
+    poziceodp=NAJDIDALSI(najit,ktera);
+    if (inteligence[intpozice][najit-2] == '5') {
+      if (zenapocitac == 1 && strchr(inteligence[intpozice]+poziceodp+1,12) != NULL) {
+	for (zmenapozice=0; inteligence[intpozice][poziceodp+zmenapozice] != 12; zmenapozice++);
+	zmenapozice++;
+       }
+      else zmenapozice=0;
+      ROD1(inteligence[intpozice]+poziceodp+zmenapozice+1,inteligence[intpozice][poziceodp+zmenapozice],intpozice*10+ktera);
+     }
+    else ODP(inteligence[intpozice]+poziceodp,intpozice*10+ktera);
+
+    pozice1=puvodp[0]/10;
+    if (realodp[pozice][0] == pozice1) {	  //prednost real-time kecu
+      if (VETA_PREDTIM(pozice1*10+ktera) == 50)	{ //prislusny posledni vete
+	if (pozodp > 1) {
+	  strcpy(odpovedi[0],odpovedi[pozodp-1]);
+	  cislaodp[0]=cislaodp[pozodp-1];
+	  pozodp=1;
+	 }
+        skutecnychodp=celkemodp;	//nastaveni na skutecnou (vyssi) hodnotu
+					// - posledni odpovedi se preskocily
+	goto ODPOVED0;
+       }
+     }
+   }
+ODPOVED0: ODPOVED(0); pocetrealtimekecu--; strcpy(retezec2,odpovedi[cislo]); return;
+
+  JINYKEC:
+  if (smyslpocvety == 3) { EXTRA_VETA(12); goto ODPOVED; }
+  if (smyslpocvety == 4) { EXTRA_VETA(13); goto ODPOVED; }
+  if (rand()%3 > 0 && pocetpocitacu == 2) {
+    ZMEN_POCITAC(); strcpy(retezec1,retezec2); samomlbody=naladabody; SETRID();
+    CTIPODMINKY(); retezec1[0]=0; naladabody=samomlbody; goto ODPOVED;
+   }
+  if (rand()%2 == 0 && pocetpocitacu == 2 && pocetrealtimekecu2 < 5) {
+    ZMEN_POCITAC();
+    if (rand()%2 == 0) EXTRA_VETA(14); else EXTRA_VETA(15);
+    goto ODPOVED;
+   }
+  if (rand()%3 == 0) {					//vtip
+    puvnalada=nalada; nalada=rand()%5; EXTRA_VETA(11); ODPOVED(0);
+    nalada=puvnalada; VTIPY(); goto KONEC;
+   }
+  if (pocetrealtimekecu2 < 5) EXTRA_VETA(10);
+  if (pocetrealtimekecu2 > 0 && pocetpocitacu == 1) { EXTRA_VETA(5); EXTRA_VETA(6); }
+  if (pocetpocitacu == 2) { ZMEN_POCITAC(); EXTRA_VETA(18); }
+ODPOVED:
+  ODPOVED(0); strcpy(retezec2,odpovedi[cislo]);
+KONEC: pocetrealtimekecu=0; pocetrealtimekecu2++;
+ }
+
+void NAHODAX(WORD misto) {
+BYTE poradivety;
+  if (charakter != 0) docasnenaladabody+=SPOCITEJ_NALADU(inteligence[intpozice][misto]);
+  misto++;				//vynechani naladove hodnoty
+  poradivety=GENERUJ_ODPOVED(misto);
+  realodp[pozodp][0]=intpozice; realodp[pozodp][1]=misto;     //real-time kec
+  pocetrealtimekecu+=2;
+  ODP(inteligence[intpozice]+mistovint,intpozice*10+poradivety);
+ }
+
+void RODX(WORD misto) {
+BYTE poradivety,zmenapozice=0;
+  if (charakter != 0) docasnenaladabody+=SPOCITEJ_NALADU(inteligence[intpozice][misto]);
+  misto++;				//vynechani naladove hodnoty
+  poradivety=GENERUJ_ODPOVED(misto);
+  realodp[pozodp][0]=intpozice; realodp[pozodp][1]=misto;     //real-time kec
+  pocetrealtimekecu+=2;
+  if (zenapocitac == 1 && strchr(inteligence[intpozice]+mistovint+1,12) != NULL) {
+    for (zmenapozice=0; inteligence[intpozice][mistovint+zmenapozice] != 12; zmenapozice++);
+    zmenapozice++;
+   }
+  else zmenapozice=0;
+  ROD1(inteligence[intpozice]+mistovint+zmenapozice+1,inteligence[intpozice][mistovint+zmenapozice],intpozice*10+poradivety);
+ }
+
+void HLASENI_SPATNEHO_CFG(void) {
+  if (hlasenispatnehocfg == 0) {
+    HLASKA("V souboru POKYD.CFG jsou nejaky blbosti. Stiskni cokoliv.",4);
+    HLASKA("Ty polozky, ktere maji spatnou hodnotu, budou nastaveny standardne.",1);
+    HLASKA("Doporucuji vsak prekontrolovat cele nastaveni (klavesa F4).",1);
+    hlasenispatnehocfg=1;
+   }
+ }
+
+DWORD CTINASTAVENI(BYTE jeli_zacatek,int minimal,DWORD maximal,int normal) {
+BYTE celkem;
+signed int znak;
+DWORD vysledek=0;
+
+  if (jeli_zacatek == 1) celkem=4; else celkem=2;  //kolik radku ma preskocit
+  for (vysledek=0; vysledek < celkem; vysledek++)
+   do {
+     znak=getc(nastaveni);
+    } while (znak != EOF && znak != '\n');		  //preskoc 1 radek
+  vysledek=0;
+  while ((znak=getc(nastaveni)) >= '0' && znak <= '9' && znak != EOF) {
+    vysledek*=10; vysledek+=znak-'0';
+   }
+  if (vysledek > maximal || vysledek < minimal || znak == EOF) {
+    HLASENI_SPATNEHO_CFG();
+    vysledek=normal;
+   }
+  return(vysledek);
+ }
+
+void CTINASTAVENITEXT(BYTE *kam,BYTE *standard) {
+signed int znak;
+BYTE pozice,chyba=0;
+  for (pozice=0; pozice < 2; pozice++)		//preskoc 2 radky
+   do {
+     znak=getc(nastaveni);
+    } while (znak != EOF && znak != '\n');
+  pozice=0;
+  while ((znak=getc(nastaveni)) != '\r' && znak != EOF && chyba == 0) {
+    if (znak < 32) chyba=1;
+    else if (pozice == 15) chyba=1;
+    else kam[pozice++]=znak;
+   }
+  kam[pozice]=0;
+  if (chyba == 1 || pozice == 0) {
+    HLASENI_SPATNEHO_CFG();
+    strcpy(kam,standard);
+   }
+ }
+
+/*void ZJISTI_ALT(void) {
+BYTE stav;
+  _AH = 2; geninterrupt(0x16); stav=_AL;
+  stav<<=4; if (stav != 128) goto NIC;
+  else {
+    CTISOURADNICE(); SMAZKURZOR();
+    PIS(5,wherey()," F1 - pomoc, F3 - opakovat, F4 - nastaveni, F9 - obnov font - BEZ ALTU! ",15+32);
+    do {
+      CAS(0); KONTROLA_UTNUTI();
+      _AH = 2; geninterrupt(0x16); stav=_AL; stav<<=4;
+     } while (stav == 128 && kbhit() == 0);
+   }
+  BARVA(barvaclovek); textbackground(0); cprintf(retezec1);
+  VLOZSOURADNICE(); NASTAVKURZOR();
+NIC:;
+ }*/
+
+BYTE VYBER_PLUGINU(void) {
+
+#define POCET_PLUGINU 10
+#define ZACATEK_PLUGINU 7
+
+BYTE pozice=ZACATEK_PLUGINU,puvpozx=wherex(),puvpozy=wherey(),pomoc,pomoc2,sipkapozice=1;
+DWORD blikaninazvu=0,pohybsipky=0,cassetric;
+WORD pomoc3;
+BYTE pluginy[POCET_PLUGINU][9]={"CookEdit","Cas","Had","Honicka","Kalkul","NajdiMe","NoKomar","Palba","Pismena","Silnice"};
+BYTE komentar[70],navrathodnota=0,cookinfo,znak;
+
+  ZACATEK:
+  SMAZOBRAZOVKU(1); SMAZKURZOR(); jeli_nastaveni=2;
+  PIS(29,1," Pokyd - vyber pluginu ",14+16);
+  PIS(21,5," Vyber si plugin, ktery chces spustit: ",16+15);
+  PIS(34,24," Esc - zpet ",12+(4<<4));
+  ZAPISCAS();
+  VRATDATA(3); pomoc3=0;
+  for (pomoc=ZACATEK_PLUGINU; pomoc < ZACATEK_PLUGINU+POCET_PLUGINU; pomoc++) {
+    pomoc2=0;
+    while (dlouhe[pomoc3] != '\r') {
+      komentar[pomoc2]=dlouhe[pomoc3];
+      pomoc2++; pomoc3++;
+     }
+    komentar[pomoc2]=0; pomoc3+=2;		//vynechani znaku '\n'
+    PIS(16,pomoc,komentar,10);
+   }
+  PIS(2,19,"Dalsi funkce:",13);
+  ZVYRAZNOVAC(10,20,"Spustit jiny program",1);
+  ZVYRAZNOVAC(41,20,"Vymazat soubory s hovorem",1);
+  ZVYRAZNOVAC(17,21,"Kydani pocitacu",1);
+  ZVYRAZNOVAC(50,21,"Zformatovat harddisk",2);
+
+  VYBER:
+  for (pomoc=ZACATEK_PLUGINU; pomoc < ZACATEK_PLUGINU+POCET_PLUGINU; pomoc++) {
+    PIS(2,pomoc,pomoc == pozice ? "ÍÍÍ" : "    ",15);
+    PIS(7,pomoc,pluginy[pomoc-ZACATEK_PLUGINU],pomoc == pozice ? 15 : 3);
+   }
+
+  ZACATECNIK("Tady si muzes vybrat nejaky plugin, napr. hru ci jiny program a spustit ho.",31);
+  ZACATECNIK("Pohybujes se sipkama. Specialni akce (dole) vyberes zvyraznenou klavesou.",32);
+
+  GETCH:
+  cassetric=time(NULL);
+  while (kbhit() == 0) {
+    if (pocetsetricvterin != 0 && (cassetric+pocetsetricvterin) < time(NULL)) {
+SETRIC: SETRIC_OBRAZOVKY(); goto ZACATEK;
+     }
+    if (CAS18() < pohybsipky) {				//pulnoc
+      pohybsipky=CAS18(); blikaninazvu=pohybsipky; }
+    if (CAS18() > pohybsipky+5) {			//pokyb sipky
+      PIS(2,pozice,sipkapozice == 1 ? "ÍÍÍ" : " Í ",15);
+      pohybsipky=CAS18();
+      if (sipkapozice == 1) sipkapozice=0; else sipkapozice=1;
+     }
+    if (CAS18() > blikaninazvu+8) {			//blikani nazvu
+      PIS(7,pozice,pluginy[pozice-ZACATEK_PLUGINU],(rand()%6)+10);
+      blikaninazvu=CAS18();
+     }
+    if (SETRIC_KLAVESA() == 1) cassetric=time(NULL);
+    KONTROLA_UTNUTI(); CAS(0);
+   }
+
+  znak=getch();
+  if (znak >= '0' && znak <= '9') {
+    if (znak == '0') pozice=ZACATEK_PLUGINU+9;
+    else pozice=znak-'1'+ZACATEK_PLUGINU;
+    goto SPUST;
+   }
+  else switch(znak) {
+    case 0: znak=getch(); if (znak >=120 && znak <=129) {
+      pozice=znak-120+ZACATEK_PLUGINU; goto SPUST;
+     } else switch(znak) {
+      case 59: HELPF1(13); goto ZACATEK;		//F1
+      case 64: goto SETRIC;				//F6
+      case 68: goto KONEC;				//F10
+      case 72:						//nahoru
+	if (pozice > ZACATEK_PLUGINU) { pozice--; goto VYBER; }
+        goto GETCH;
+      case 80: 						//dolu
+	if (pozice < ZACATEK_PLUGINU+POCET_PLUGINU-1) { pozice++; goto VYBER; }
+        goto GETCH;
+      default: goto GETCH;
+     }
+    case '\r': case ' ':				//enter, mezera
+SPUST:  SOUBOR("PLUGINY\\"); strcat(soubor,pluginy[pozice-ZACATEK_PLUGINU]); strcat(soubor,".exe");
+      if (findfirst(soubor,&ffblk,6) == -1) {		//plugin neexistuje
+        HLASKA("Ha! Plugin neexistuje! Porid si funkcni verzi a ne tuhle vykuchanou hruzu!",4);
+        goto VYBER;
+       }
+      SMAZOBRAZOVKU(1); textcolor(7); cprintf("Spoustim plugin %s...\r",pluginy[pozice-ZACATEK_PLUGINU]); jeli_nastaveni=0;
+      if (strcmp(pluginy[pozice-ZACATEK_PLUGINU],"CookEdit") == 0) {
+	ZAPIS_INFORMACE_O_VETACH(3,0); cookinfo=1; SOUBOR("PLUGINY\\CookEdit.exe");
+       }
+      else cookinfo=0;
+      SPUST(soubor,0,1); jeli_nastaveni=2; SMAZKURZOR();
+      if (cookinfo == 1) CTI_INFORMACE_O_VETACH();
+      blikaninazvu=CAS18(); pohybsipky=blikaninazvu; goto ZACATEK;
+    case 0x1B: goto KONEC;
+    case 's': case 'S': navrathodnota=1; goto KONEC;
+    case 'v': case 'V': navrathodnota=2; goto KONEC;
+    case 'k': case 'K': navrathodnota=3; goto KONEC;
+    case 'f': case 'F': navrathodnota=4; goto KONEC;
+    default: goto GETCH;
+   }
+  KONEC: NASTAVSPRAVNYMOD();
+  gotoxy(puvpozx,puvpozy); jeli_nastaveni=1; NASTAVKURZOR();
+  return(navrathodnota);
+ }
+
+BYTE SETRIC_KLAVESA(void) {
+  if (kbhit() != 0) return(1);
+  if ((bioskey(2)&15) != 0) return(1);
+  _AX = 3; geninterrupt(0x33); if (_BX != 0) return(1);
+
+  return(0);
+ }
+
+void SETRIC_POPOSUN_OBRAZOVKU(void) {
+BYTE pozice,pomocne;
+WORD cisloradku,poz1,poz2;
+  gettext(1,1,80,25,dlouhe);
+  for (cisloradku=0; cisloradku < 4000; cisloradku+=160) {
+
+    pomocne=dlouhe[cisloradku];
+    for (pozice=0; pozice < 160-2; pozice+=2)
+     dlouhe[pozice+cisloradku]=dlouhe[pozice+2+cisloradku];
+    dlouhe[158+cisloradku]=pomocne;
+
+    pomocne=(dlouhe[1+cisloradku]&15)+(dlouhe[159+cisloradku]&240);
+    for (pozice=1; pozice < 160-2; pozice+=2)
+     dlouhe[pozice+cisloradku]=(dlouhe[pozice+2+cisloradku]&15)+(dlouhe[pozice+cisloradku]&240);
+    dlouhe[159+cisloradku]=pomocne;
+   }
+  for (pozice=0; pozice < 30; pozice++) {
+    poz1=((rand()%25)*160)+158; poz2=((rand()%25)*160)+158; pomocne=dlouhe[poz1];
+    dlouhe[poz1]=dlouhe[poz2]; dlouhe[poz2]=pomocne;
+    poz1++; poz2++; pomocne=dlouhe[poz1];
+    dlouhe[poz1]=dlouhe[poz2]; dlouhe[poz2]=pomocne;
+   }
+
+  puttext(1,1,80,25,dlouhe);
+ }
+
+void SETRIC_OBRAZOVKY(void) {
+BYTE barva1,pozicey1,pozicex2,pozicey2,hvezda=0,pokyd=0,typhvezdy;
+signed char pozicex1;
+BYTE zacatek=0,mazani,cas,rychlost=4,puvr,puvg,puvb,br=0,bg=0,bb=0,pr,pg,pb;
+DWORD cas18;
+  SMAZOBRAZOVKU(0); SMAZKURZOR(); NASTAVPOKYDFONT();
+  _AX = 0x1003; _BL = 0; geninterrupt(0x10);		//zakaz blikani
+  _AX = 0x1015; _BX = 1; geninterrupt(0x10);
+  puvr=_DH; puvg=_CH; puvb=_CL;
+  cas18=CAS18();
+START:
+  while (kbhit() == 0 && (bioskey(2)&15) == 0) {
+    if (hvezda == 0) {
+      HVEZDA1:
+      pozicex1=(rand()%80)+1; pozicey1=(rand()%25)+1; barva1=(rand()%14)+2;
+      gotoxy(pozicex1,pozicey1);
+      _AL = CTIZNAK(); if (_AL != ' ') goto HVEZDA1;
+      switch(rand()%3) {
+        case 0: typhvezdy='.'; break;
+        case 1: typhvezdy=''; break;
+        case 2: typhvezdy='*'; break;
+       }
+      NAPISZNAK(typhvezdy,(CTIBARVU()&240)+barva1);
+      hvezda=1;
+     }
+    else if (hvezda++ == 5) hvezda=0;
+
+    if (zacatek == 100) {
+      for (mazani=0; mazani < 3; mazani++) {
+        gotoxy((rand()%80)+1,(rand()%25)+1);	//mazani hvezd
+        NAPISZNAK(' ',CTIBARVU()&240);
+       }
+     }
+
+    if (pokyd == 0) {
+      if (zacatek == 100 && (rand()%10) == 0) {
+	pozicex2=(rand()%(79-OBRAZEK_POKYDU_X+1))+1; pozicey2=(rand()%(25-OBRAZEK_POKYDU_Y+1))+1;
+	BARVY:
+	pr=rand()%3; pg=rand()%3; pb=rand()%3;
+	if (pr != 2 && pg != 2 && pb != 2) goto BARVY;
+	br=0; bg=0; bb=0;
+	OBRAZEK_POKYDU(pozicex2,pozicey2,1,1); pokyd=1;
+       }
+     }
+    else if (pokyd < 33) {
+      br+=pr; bg+=pg; bb+=pb;
+     }
+    else if (pokyd < 70) {
+      if (br < 15) { if (br != 0) br--; }	//vyhlazenejsi zmizeni
+      else br-=pr;
+      if (bg < 15) { if (bg != 0) bg--; }
+      else bg-=pg;
+      if (bb < 15) { if (bb != 0) bb--; }
+      else bb-=pb;
+     }
+    else if (pokyd == 70) {
+      OBRAZEK_POKYDU(pozicex2,pozicey2,0,1);
+     }
+    NASTAVBARVU(br,bg,bb,1);
+
+    if (zacatek == 100 && pokyd > 0) {
+      pokyd++; if (pokyd == 90) pokyd=0;
+     }
+
+    while (cas18 == CAS18()) {
+      KONTROLA_UTNUTI();
+      if (SETRIC_KLAVESA() == 1) goto KONEC;
+     }
+    cas18=CAS18();
+    SETRIC_POPOSUN_OBRAZOVKU();
+    pozicex1--; if (pozicex1 < 1) pozicex1+=80;	//posun hvezd
+    if (zacatek < 100) zacatek++;
+   }
+  KONEC:
+  if (kbhit() != 0) _CL = getch();
+  if (_CL == '+') { rychlost--; goto START; }
+  else if (_CL == '-') { rychlost++; goto START; }
+  if (kbhit() != 0) CTIKLAVESU();
+  NASTAVBARVU(puvr,puvg,puvb,1);
+  _AX = 0x1003; _BL = 1; geninterrupt(0x10);		//povol blikani
+ }

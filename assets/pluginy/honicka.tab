@@ -1,0 +1,81 @@
+#include <stdio.h>#include <conio.h>#include <dos.h>int smerx=1,smery=1,pozicex=0,pozicey=0,srazka=0;int nepritelx=79,nepritely=24,obtiznost=2,maxobtiznost;int premiex=39,premiey=12;unsigned long cas;signed long body=0,maxbody;unsigned char tabulka[20][66];FILE *tab;#include "honicka.vo"void main() {#include "honicka.in"HRA:_AX = 3; geninterrupt(0x33);			//zavolani interruptu 33smerx = _CX>>3; smery = _DX>>3;			//zjisteni pozicegotoxy(pozicex,pozicey);_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 16; geninterrupt(0x10);gotoxy(pozicex+1,pozicey);_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 16; geninterrupt(0x10);							//smazani hraceif (smerx == 0 && pozicex > 1) pozicex-=2;else if (smerx == 2 && pozicex < 79) pozicex+=2;if (smery == 0 && pozicey > 1) pozicey--;else if (smery == 2 && pozicey < 24) pozicey++;gotoxy(pozicex,pozicey);_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 32; geninterrupt(0x10);gotoxy(pozicex+1,pozicey);_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 32; geninterrupt(0x10);							//nakresleni hracewhile (CAS18() == 0) {}if (srazka > 0) {  srazka--; if (srazka == 0) {    _AX = 0x1010; _BX = 0; _CH = 0; _CL = 255; _DH = 0;    geninterrupt(0x10);		//navrat barvy 0 na modrou kvuli okrajum   } }if (rand()%obtiznost != 0 && srazka == 0) {		//nahodne nicnedelani  if (nepritelx == premiex && nepritely == premiey) {    gotoxy(premiex,premiey);    _AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 112; geninterrupt(0x10);    gotoxy(premiex+1,premiey);    _AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 112; geninterrupt(0x10);						//nakresleni premie
+}
+  else {
+gotoxy(nepritelx,nepritely);
+_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 16; geninterrupt(0x10);
+gotoxy(nepritelx+1,nepritely);
+_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 16; geninterrupt(0x10);
+							//smazani nepritele
+   }
+  if (nepritelx < pozicex) nepritelx+=2;
+  else if (nepritelx > pozicex) nepritelx-=2;
+  if (nepritely < pozicey) nepritely++;
+  else if (nepritely > pozicey) nepritely--;	//inteligence protihrace
+ }
+
+gotoxy(nepritelx,nepritely);
+_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 64; geninterrupt(0x10);
+gotoxy(nepritelx+1,nepritely);
+_AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 64; geninterrupt(0x10);
+						//nakresleni protihrace
+
+if (nepritelx == pozicex && nepritely == pozicey && srazka == 0) {//chytnul te!
+  _AX=0x1010; _BX=0; _CX=0; _DH=0xFF; geninterrupt(0x10);//zcervenani barvy 0
+  sound(rand()%100+50); delay(500); nosound(); srazka=10; body-=50;
+ }
+else body++;
+
+if (premiex == pozicex && premiey == pozicey) {		//chytl jsi premii
+
+  _AX = 0x1010; _BX = 0; _CH = 0xFF; _CL = 0; _DH = 0xFF;
+  geninterrupt(0x10);		//zmena barvy 0 na zlutou kvuli premii
+
+  body+=150; sound(1000); delay(200); nosound();
+  premiex=rand()%40; premiex<<=1; premiex++; premiey=(rand()%24)+1;
+  gotoxy(premiex,premiey);
+  _AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 112; geninterrupt(0x10);
+  gotoxy(premiex+1,premiey);
+  _AH = 9; _BH = 0; _AL = ' '; _CX = 1; _BL = 112; geninterrupt(0x10);
+						//nakresleni premie
+
+  _AX = 0x1010; _BX = 0; _CH = 0; _CL = 255; _DH = 0;
+  geninterrupt(0x10);		//navrat barvy 0 na modrou kvuli okrajum
+ }
+
+if (body > maxbody) maxbody=body;
+if (obtiznost > maxobtiznost) maxobtiznost=obtiznost;	//maximalni vykony
+
+if (body > 0) obtiznost=body/100+2;
+else obtiznost=2;
+
+gotoxy(53,25); printf("%4ld/%4ld ",body,maxbody);
+gotoxy(75,25); printf("%2ld",obtiznost-2);
+printf("/%2ld",maxobtiznost-2);
+
+if (kbhit() == 0) goto HRA;
+else switch(getch()) {
+  case 0x1B: goto KONEC;
+  case 'M': case 'm': body=maxbody; goto HRA;			//cheat
+  case 'P': case 'p':						//pauza
+gotoxy(31,23); textcolor(14+128); textbackground(5);
+cprintf(" Stiskni cokoliv "); getch();
+gotoxy(31,23); textbackground(1); cprintf(" ");
+  default: goto HRA;
+ }
+
+KONEC:
+
+clrscr();
+_AX = 0x1010; _BX = 0; _CH = 0xFF; _CL = 0; _DH = 0xFF;
+geninterrupt(0x10);		//zmena barvy 0 na zlutou
+
+for(pozicex=0; pozicex < 20; pozicex++) {
+  cprintf("%d. %s",pozicex+1,tabulka[pozicex]); cprintf(" - %lu bodu\n\r",tabulka[pozicex]+61);
+ }
+
+
+_AX=0x1010; _BX=0; _CX=0; _DH=0; geninterrupt(0x10);	//navraceni barvy 0
+_AX=0x1010; _BX=1; _CH = 0; _CL=0x28; _DH=0; geninterrupt(0x10);//navrat barvy 1
+_AX=0x1010; _BX=7; _CH = 40; _CL=40; _DH=40; geninterrupt(0x10);//navrat barvy 7
+textbackground(0); textcolor(7); clrscr();
+}

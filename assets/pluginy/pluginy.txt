@@ -1,0 +1,483 @@
+
+             ÛÛÛÛÛ  ÛÛ    ÛÛ    ÛÛ  ÛÛÛÛ   ÛÛ ÛÛ    ÛÛ ÛÛ  ÛÛ  
+             ÛÛ  ÛÛ ÛÛ    ÛÛ    ÛÛ ÛÛ      ÛÛ ÛÛÛ   ÛÛ ÛÛ  ÛÛ  
+             ÛÛÛÛÛ  ÛÛ     ÛÛ   ÛÛ ÛÛ ÛÛÛ ÛÛ  ÛÛÛÛ ÛÛ   ÛÛÛÛ
+              ÛÛ    ÛÛ     ÛÛ  ÛÛ  ÛÛ  ÛÛ ÛÛ ÛÛ  ÛÛÛÛ    ÛÛ
+              ÛÛ     ÛÛÛÛ   ÛÛÛÛ    ÛÛÛÛ  ÛÛ ÛÛ   ÛÛÛ   ÛÛ 
+
+            P L U G I N Y   k   p r o g r a m u  * P O K Y D *
+
+  Jednotlive pluginy jsou tyto:
+    CookEdit v1.1
+        Cas v1.2
+            Had v1.0
+                Honicka v1.1
+                    Kalkul v1.3
+                        NajdiMe v1.5
+                            NoKomar v1.01
+                                Palba v1.1
+                                    Pismena v1.3
+                                        Silnice v1.1
+
+  ÚÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂÂÄÄÄÄÂ¿
+  ÀÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÁÄÄÄÄÁÙ
+
+
+             ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+             º     CookEdit - Cookies Editor pro Pokyd     º
+             º               - verze 1.1 -                 º
+             º        Ales Janda (C) KYBLSoft 2001         º
+             ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+
+  Timto programem muzete editovat fakta, ktere si program Pokyd behem hovoru
+  zapamatoval. Cely program je rozdelen do 3 kategorii:
+
+  1) Editace kratkych vet typu <podmet> <sloveso> <predmet>
+     Priklady:  Pokyd je skvelej
+                Klaban nema hlavu
+
+  2) Editace slov, kterymi se nazval clovek, tedy "jsem <slovo>"
+     Priklady:  (jsem) skvelej
+                (jsem) clovek
+
+  3) Editace slov, kterymi clovek nazval pocitace, tedy "jsi <slovo>"
+     Priklady:  (jsi) suprovej
+                (jsi) vul
+
+  Ovladani programu:
+  ------------------
+
+   - pri prochazeni polozek:
+      sipky    - posun mezi polozkami o 1 misto
+      Enter    - editace aktualni polozky - je-li 1 polozka delena do 3 casti,
+                 edituje se pouze polozka, na ktere je kurzor. Pri stisknuti
+                 Enteru na konci za polozkama se prida nova polozka
+      PageDown - posun na konec obrazovky; je-li uz kurzor na konci, posune se
+                 o stranku dolu
+      PageUp   - posun na zacatek obrazovky; je-li uz kurzor na zacatku,
+                 posune se o stranku nahoru
+      Home     - presun na 1. polozku
+      End      - presun za posledni polozku
+      Insert   - vlozi polozku pred polozku, na ktere je kurzor. Pri teto
+                 funkci nesmi jiz byt zaplneno vsech 50 polozek
+      Delete   - smaze aktualni polozku
+      Esc, F10 - vrati se na vyber jednotlivych kategorii
+
+  - pri editaci polozky
+      mala pismena  - psani slova
+      velka pismena - pokud needitujete 1. kategorii a 2. nebo 3. polozku,
+                      prevede se na mala pismena (dulezite pro rozpoznani slova
+                      Pokydem), pokud jste v 1. kategorii a 2. nebo 3. polozce,
+                      muzete je normalne pouzit jako velka pismena
+      cisla a jine specialni znaky - pokud jste v 1. kategorii a 2. nebo
+                      3. polozce, muzete s nimi psat; v jinych polozkach jsou
+                      tyto znaky ignorovany
+      Backspace     - smaze posledni napsany znak
+      Enter         - potvrdi napsane slovo a ukonci editaci polozky; pokud
+                      je slovo prazdny retezec, nema tato klavesa vyznam a
+                      editujete dal
+      Esc           - vrati na polozku puvodni slovo a ukonci editaci, tj.
+                      stornuje zmenu slova. Pokud bylo tato polozka pridavana,
+                      vymaze se cela polozka. Pokud jste v 1. kategorii a
+                      pridavate polozku, ma tato klavesa vyznam pouze
+                      v pripade, ze pisete 1. slovo (kolonku); v opacnem
+                      pripade nelze editaci stornovat
+
+  Co si tedy Pokyd vsechno zapamatovava, je z tohoto programu zrejme.
+  Fakta se ctou a zapisuji do souboru PROFIL.PKD, ktery je v adresari
+  nadrazenem adresari, ve kterem je tento plugin.
+
+  Pozn.: Pri spusteni z programu Pokyd z prostredi pluginu se nastaveni ulozi
+         a az potom se spusti Cookies Editor. Pri ukonceni se vety zase nactou.
+         Ne tak ovsem, kdyz ho z Pokydu spustite prikazem
+         "spust pluginy\cookedit.exe". Sice se Cookies Editor spusti, ale
+         nebude mit aktualni vety a zmeny nejen, ze se neprojevi, ale po
+         skonceni Pokydu se prepisou puvodnimi vetami. Doporucuji tedy spoustet
+         budto z prostredi pluginu, nebo uplne mimo Pokyd.
+
+
+  Verze 1.1:  Profil se cte ze souboru ..\PROFIL.PKD namisto puvodniho souboru
+              PUVODNI.PKD s jinou strukturou (v souladu se zmenami v Pokydu)
+
+
+                                                            Ales Janda, autor
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+     ÚÄÄÄÄÄÄÄÄÄ¿
+   ÚÄÙ^   º   ^ÀÄ¿       N A S T A V E N I
+  ÚÙ.     º     .À¿
+  ³       º       ³           D A T A
+  ³^      ^      ^³                         verze 1.2
+  À¿.     È»    .ÚÙ              A
+   ÀÄ¿.   .   .ÚÄÙ
+     ÀÄÄÄÄÄÄÄÄÄÙ              C A S U
+
+
+   Autor Ales Janda - KYBLSoft 2002 - soucast programu Pokyd
+
+
+   Timto programem si muzete presne nastavit systemovy cas a datum. Program
+   pouziva podfunkce preruseni DOSu INT 21h ke cteni i nastavovani hodin.
+
+   Ovladani:      (sipky)  - pohyb po jednotlivych hodnotach
+              + - (plus,minus) - pridat a ubrat dane hodnoty
+              'Z'              - zastavit cas (bezi-li)
+              'O'              - opetovne obnoveni casu
+
+   Verze 1.1: pridan nazev dne
+   Verze 1.2: pridan text, cim se ma datum a cas zmenit
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+       HH  HH   AAAA   DDDDD
+       HH  HH  AA  AA  DD  DD
+       HHHHHH  AAAAAA  DD  DD                   verze 1.0  -  6/2001
+       HH  HH  AA  AA  DD  DD
+       HH  HH  AA  Aa  DDDDD
+
+    Plugin had je kopii spousty her jako Nibbles, Had na telefonech atd.
+    Princip je ten, ze ovladate hada, ktery zere bonusy a prodluzuje, pricemz
+    nesmi nabourat do zdi (neni-li "modulo"), do sam sebe ani do druheho hada.
+    V pripade dvou hracu se oba hadi navzajem predbihaji ve sbirani bonusu.
+
+    Pokud hru spoustite pod Windows, VYRAZNE DOPORUCUJI mit celoobrazovkovy
+    rezim - okno zobrazi kazdy nekolikaty tah a hraje se obecne dost spatne.
+
+    Ovladani:
+     Hrac 1:
+       nahoru:   sipka nahoru
+       dolu:     sipka dolu
+       vlevo:    sipka vlevo
+       vpravo:   sipka vpravo
+     Hrac 2:   
+       nahoru:   W
+       dolu:     S nebo X
+       vlevo:    A
+       vpravo:   D
+
+     Pauza:         P
+     Ukonceni hry:  Esc
+
+
+    Tento plugin ma spoustu moznosti nastaveni. Vysvetleni jednotlivych
+    polozek nastaveni:
+
+     Velikost hraci plochy:  udava, v jakem rozliseni se bude hrat. Jedna
+        se o textove mody 40x25 a 80x50, pricemz je dolni radek vyhrazen
+        pro udaje o hre
+     Pocet hracu:  vyber je 1 nebo 2 hraci
+     Delka hada:  urcuje, jak je dlouhy had na zacatku hry. Vyber je ze 2, 5,
+        10, 15, 20, 25 a 30 jednotek
+     Prodlouzeni:  udava miru prodlouzeni pri snezeni bonusu hadem. Pri
+        volbe `zadne' se had neprodluzuje nikdy
+     Pocet zivotu:  kolik ma kazdy had celkem zivotu, nez se ukonci hra.
+        Rozsah je 1-9 zivotu
+     Rychlost:  rychlost obou hadu
+     Zvuk:  zapne/vypne veskere zvuky u hry
+     Tolerance nabourani:  urcuje, jak dlouho ma had "cekat" pred prekazkou,
+        nez opravdu naboura. Pri hodnote `zadna' had naboura ihned, pri `mala'
+        ceka 1 tah, u `stredni' 2 tahy, u `velka' 4 tahy a pri `uplna' nenarazi
+        nikdy
+     Konec obrazovky:  pri volbe `zed' po dojeti na konec obrazovky had naboura.
+        V pripade `modulo' se had objevi na druhem konci obrazovky - hra je
+        "dokola"
+        Pozn.: Pokud je nastavena `zed', ma obrazovka modry okraj - tento
+               okraj neni videt ve Windowsovem okne
+     Rastr:  ma-li se zobrazovat rastr (tecky) a tim zlepsit orientaci
+        snadnym zjistenim delek a primek. Vyber je `nikde', `pozadi', `had'
+        nebo `vsude'
+     Cary za hadama:  v pripade volby `ano' se za hady tvori cary jejich barvy
+
+    Cele nastaveni se po ukonceni hry ulozi do souboru HAD.CFG ve stejnem
+    adresari jako je plugin sam.
+
+
+    Prijemnou hru Vam preje
+                                                      Ales Janda, autor
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿                        É» É»
+³                 ³                        ÈÊÍÊ¼              
+³                 ³ É»  É» ÉËÍË» É»  É» É» ÉËÍË» É»  É» ÉËÍÍË»
+³  ÛÛ             ³ ºº  ºº ºº ºº ºÌ» ºº ºº ºº È¼ ºº ÉÎ¼ ºº  ºº
+³                 ³ ºÌÍÍ¹º ºº ºº ººÈ»ºº ºº ºº    ºÌËÎ¼  ºÌÍÍ¹º
+³            ÛÛ   ³ ºº  ºº ºº ºº ºº È¹º ºº ºº    ººÈÎ»  ºº  ºº
+³        ÛÛ       ³ ºº  ºº ºº ºº ºº  ºº ºº ºº É» ºº ÈÎ» ºº  ºº
+³                 ³ È¼  È¼ ÈÊÍÊ¼ È¼  È¼ È¼ ÈÊÍÊ¼ È¼  È¼ È¼  È¼
+³                 ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ  ÛÛÛÛÛÛÛÛÛ        ÛÛÛÛÛÛÛÛÛ
+                     ÛÛÛÛÛÛÛÛÛ        ÛÛÛÛÛÛÛÛÛ
+                          ÛÛÛÛ             ÛÛÛÛ
+                          ÛÛÛÛ             ÛÛÛÛ
+                          ÛÛÛÛ  ÛÛÛÛ       ÛÛÛÛ
+                          ÛÛÛÛ  ÛÛÛÛ       ÛÛÛÛ
+
+
+                       Vyrobil KYBLSoft (11/1999)
+
+   Tato hra je velmi primitivni, ale i zabavna. Princip je jednoduchy:
+   
+      Mysi se pohybujes po monitoru ZELENYM ctvereckem. Chyta te CERVENY
+      ctverecek a ZLUTY ctverecek je premie.
+
+   Aby si nikdo nemyslel, ze jednim posunutim mysi o dost mista se smahem
+   dostane na druhou pulku obrazovky a ze nepritel se svym pomalym chodem
+   na nej nema prazadnou sanci,  muze se clovek poposunout v jeden moment
+   o jeden dil.
+
+   Kdyz si chces dat oddych, zmackni 'P'.
+
+   Bodovani:
+
+   za jednu chvili      -      1 bod (pripocitava se takrka porad)
+   chyceni nepritelem   -   -100 bodu
+   chyceni premie       -    150 bodu
+
+   Preji Vam prijemnou zabavu!
+
+   Autor:     Ales Janda
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+            ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ Kalkulacka v1.3 ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+            ³ 12  56    123    89      67  01  45   90  34     ³
+ Ales Janda ³ 23 56    12 45   90      78 01   56   01  45     ³ KYBLSoft 2000
+            ³ 3456    12   67  01      8901    67   12  56     ³
+            ³ 45 78   2345678  12      90 23   78   23  67     ³
+            ³ 56  90  34   89  234567  01  45   90123   789012 ³
+            ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+   Tato kalkulacka funguje na principu NAPIS CELY PRIKLAD - SPOCITEJ.
+   To znamena, ze zadate cely priklad a program ho sam cely spocita.
+
+   Pocetni operace:
+    +  - scitani
+    -  - odcitani
+    *  - nasobeni
+    /  - deleni
+    ^  - mocnina (spocita cislo na cislo)
+
+    Ve vyrazu se muzou vyskytovat zavorky, a to v jakemkoli mnozstvi. Program
+    vypisuje take priklad, ktery skutecne pocita (tzn. s ozavorkovanim
+    nasobeni pred souctem apod.). Podle toho si muzete zkontrolovat, zda-li
+    zadany priklad pochopil spravne.
+    Odmocninu spocitate tak, ze dany vyraz umocnite prevracenou hodnotou
+    odmocnovatele (cesky: za vyraz napisete " ^ (1/odmocnitel)").
+    Priklad:
+    druha odmocnina z 3+7:    (3+7)^(1/2)
+    treti odmocnina z 6*7^8:  (6*7^8)^(1/3)
+
+    Priority:  Nejvetsi prioritu ma mocnina, nasleduje nasobeni a deleni
+               a scitani a odcitani maji nejmensi prioritu.
+
+    Jako desetinnou carku muzete psat tecku i carku, je to uplne jedno.
+
+    Priklad muzete take zadavat jako parametr z prikazoveho radku.
+
+    Nedoporucuji timto programem vypocitavat let kosmickych raket, chod
+    atomovych elektraren a podobne blbosti.
+
+    Za pripadne skody chybou v programu nenesu odpovednost.
+
+    verze 1.1 - lze pouzivat i cisla na numericke klavesnici
+    verze 1.2 - po vypocitani prokladu lze pocitat dalsi, vylepseno psani
+                vysledku
+    verze 1.3 - opraveni velke chyby pri pocitani, vylepseni zarovnani,
+                normalni upozorneni na spatne umocnovani
+
+
+    Spravne pocty Vam preje
+                                                          Ales Janda, autor
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿                 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³  Autor Ales Janda ÚÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄ¿ KYBLSoft 8/2002  ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´  NAJDI ME! verze 1.5  ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                           ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+   Pomoci tohoto programu muzete najit, kdy ma kdo svatek (podle jmena), nebo
+   kdo ma kdy svatek (podle data).  Program vypise vsechna jmena, ktera obsa-
+   ji zadane znaky. Lze napsat i '#', coz je znak urcujici, ze za nim je jme-
+   no nejakeho svatku.
+
+   Pouziti:   ALES   -  program vypise 1 jmeno
+              AL     -  program vypise  vsechna jmena,  ktera obsahuji  znaky
+                        "AL"
+              *      -  vypise vsechna muzska jmena
+              %M     -  vypise vsechna zenska jmena zacinajici na M
+              #S     -  vypise vsechny svatky zacinajici na S
+              13.4.  -  program vypise jmeno, ktere nalezi tomuto dni
+
+   Jmena nebo data lze psat rovnou z prikazove radky, tj. NAJDIME.EXE Ales.
+
+   Program cte jmena ze souboru NAJDIME.KAL, ktery je ve stejnem adresari ja-
+   ko soubor NAJDIME.EXE.
+   Program lze spustit i odkazem z jineho adresare,  sam si najde cestu,  kde
+   je a podle toho hleda soubor se jmeny.
+
+   Specialni znaky (pred jmenem):
+       * - muzske jmeno
+       % - zenske jmeno
+       # - svatek
+       ~ (klavesa nad Tabem) - vyznamny den
+
+   Verze 1.1:  prizpusobeni se rozliseni mezi muzskymi a zenskymi jmeny (roz-
+               liseni barvou), lze psat i mezery, carky, a znaky  (ASCII 11)
+               a  (ASCII 12), napsana k tomu napoveda primo do programu, ne-
+               vypisuje se znak '#'.
+   Verze 1.2:  Opravena chyba, ktera je od Pokydu 5.2, kdy se nenacetla uplne
+               vsechna jmena
+   Verze 1.3:  Opravena chyba s poslednimi dny v roce
+   Verze 1.4:  Pridani psani aktualnich dni a svatku u nich, pocet nalezenych
+               jmen  se pise  v prubehu psani,  rozliseni svatku a vyznamnych
+               dnu, zprehledneni  psani  datumu,  autodetekce poctu radku  na
+               strance
+   Verze 1.5:  Opravena chyba rychleho ukazani svatku na konci roku, misto
+               znaku s ASCII hodnotou 11 a 12 (samec a samice) se pouzivaji
+               jednodussi znaky * a % (puvodni znaky lze pouzivat take)
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+   NoKomar verze 1.01
+ ***********************
+     plugin k programu Pokyd - KYBLSoft 2000
+       autor Ales Janda
+
+  Tento program ma za ukol odehnat komary z Vaseho pokoje. Pouziva k tomu PC
+  speaker, na kterem zapne ton o frekvenci 5000Hz. Tato frekvence by mela
+  odehnat komary i jinou letajici havet zpatky ven.
+  Prosim prectete si pozorne navod, aby program opravdu fungoval tak, jak ma.
+
+  Pozn.:  Test bohuzel nebyl proveden, protoze jak na potvoru v dobe tvorby
+          zadna havet neletela kolem.
+
+  Tento program neni zcela originalni,  jiz existuje podobny program  stejneho
+  nametu i nazvu. Toto je tedy pouze obmena puvodniho programu.
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+    ************************
+    *   P A L B A   v1.1   *             Autor Ales Janda (C) KYBLSoft 2000
+    ************************
+
+   Strileci hra.
+   Vy jste zelene delo vlevo, strilite po cervenem delu vpravo.
+
+   Ovladani:  sipky nahoru/dolu - pohyb, Shift - strileni
+
+   Lze nastavit rychlost hry, pocet zivotu, obtiznost a hustotu strelby.
+
+   Doporuceni:  dobra hra je pri standardnim nastaveni, nebo pri maximalnich
+                zivotech, maximalni hustote, maximalni obtiznosti a minimalni
+                rychlosti.
+
+   V pripade, ze pod Windows hra samovolne meni rychlost, ukoncete vsechny
+   ulohy bezici na pozadi nebo spustte hru pod DOSem.
+
+   Verze 1.1 - 2.5x delsi strely
+
+   Prijemne strileni Vam preje
+                                                             Ales Janda
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+ a  U          x           Ales Janda predstavuje program
+ a  U          x
+ a  U          x             P I S M E N A  verze 1.3
+ a  U          x
+ a  U          x            jako plugin programu Pokyd
+ a  U          x
+    U          x             ****  KYBLSoft 2000 ****
+    U          x
+    U
+    U
+
+  Tento program procvicuje orientaci na klavesnici. Pouziva mala i velka pis-
+  mena.
+
+  Cilem hry je stisknout padajici pismeno driv, nez spadne na dolni konec
+  obrazovky. Vyber ze 4 obtiznosti, cim vyssi obtiznost, tim vyssi body.
+
+  Pozn.: Puvodni verze 1.0 je z roku 1998, kdy jeste Pokyd vubec neexistoval.
+
+   verze 1.1 - 1. verze, ktera byla zaclenena v Pokydu
+   verze 1.2 - odstraneni specialnich znaku, nastaveni zvuku
+   verze 1.3 - celkove vylepseni zejmena graficke upravy programu
+
+  Autor Ales Janda
+
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+     
+
+     ÛÛÛÛ   ÛÛÛÛ  ÛÛÛÛ     ÛÛÛ   ÛÛÛÛ  ÛÛÛÛ   ÛÛÛÛ   ÛÛÛÛÛÛÛ
+    ÛÛ  ÛÛ   ÛÛ    ÛÛ       ÛÛÛ   ÛÛ    ÛÛ   ÛÛ  ÛÛ   ÛÛ  ÛÛ    v e r z e
+    ÛÛ       ÛÛ    ÛÛ       ÛÛÛÛ  ÛÛ    ÛÛ   ÛÛ       ÛÛ   
+     ÛÛÛÛ    ÛÛ    ÛÛ       ÛÛ ÛÛ ÛÛ    ÛÛ   ÛÛ       ÛÛÛÛ 
+        ÛÛ   ÛÛ    ÛÛ       ÛÛ  ÛÛÛÛ    ÛÛ   ÛÛ       ÛÛ          1 . 1
+    ÛÛ  ÛÛ   ÛÛ    ÛÛ  ÛÛ   ÛÛ   ÛÛÛ    ÛÛ   ÛÛ  ÛÛ   ÛÛ  ÛÛ
+     ÛÛÛÛ   ÛÛÛÛ  ÛÛÛÛÛÛÛ  ÛÛÛÛ   ÛÛÛ  ÛÛÛÛ   ÛÛÛÛ   ÛÛÛÛÛÛÛ
+
+
+  V teto hre jste bily panacek dole. Pohybujete se sipkama vsemi ctyrmi
+  smery. Vasim ukolem je dostat se na druhou stranu bez toho, abyste narazili
+  do nektereho auta, ktere prave prejizdi.
+  Auta jsou barevne rozliseny; zelene jedou vlevo, modre vpravo. Svetla barva
+  znamena dvojnasobnou rychlost auta oproti jinym.
+  Body se pricitaji pri kazdem poposunuti nahoru a na konci levele o zbyvajici
+  cas + cislo levele.
+  Za kazdych 500 bodu dostava hrac zivot navic
+  Kdyz se dostanete az nahoru, ocitnete se v dalsi leveli, ktera je tezsi
+  tim, ze:
+  a) auta jsou hustsi
+  b) auta jsou rychlejsi
+  c) auta jsou delsi
+  
+  Pokud si chcete dat pauzu, stisknete 'P'.
+
+  Verze 1.1 - pridan uvodni vyber, inteligentni demo, cas, tabulka vitezu,
+              levele jsou lehci, zivotu je 5 a pridavaji se
+
+  Prijemnou zabavu Vam preje
+                                                            Ales Janda, autor
+
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+  Adresa na autora (KYBLSoft):
+                                          
+                      -------------------------------------
+                      |  Adresa:   Ales Janda             |**
+                      |      Sidl. U Cukrovaru 1069       |**
+                      |       Kralupy nad Vltavou         |**
+                      |           PSC:  278 01            |**
+                      |-----------------------------------|**
+                      |  Telefon:       777 641 869       |**
+                      |-----------------------------------|**
+                      |  E-mail:                          |**
+                      |    iqpokyd@kyblsoft.cz            |**
+                      |  Internet (aktualizace):          |**
+                      |    http://iqpokyd.kyblsoft.cz     |**
+                      -------------------------------------**
+                         ************************************
+
+ÿ

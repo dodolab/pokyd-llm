@@ -1,0 +1,87 @@
+/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
+   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+
+   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+*/
+
+
+#define BYTE unsigned char
+#define WORD unsigned short
+#define DWORD unsigned long
+
+
+//             promenne pro generovani odpovedi:
+
+BYTE veta[40][15],retezec1[81],retezec2[81],odpovedi[20][80];
+BYTE puvretezec[81],soubor[80],predtimretezec[81],kydaniny[15];
+WORD intpozice;
+
+signed short naladabody=37,samomlbody;
+signed short docasnenaladabody;
+BYTE nalada=2;			//0 - nejlehci ... 4 - nejtezsi
+signed char pocetslov,otazka,souhlas,pozodp;
+
+
+BYTE slovapamet[50][3][16],slovajsem[50][16],slovajsi[50][16];
+BYTE jmenocloveka[15],jmenocloveka5pad[16];
+BYTE pocetslpamet,pocetjsem,pocetjsi,cisloslpamet=255,cislojsem=255,cislojsi=255;
+
+
+//            promenne pro nastaveni
+
+BYTE ulozeninakonci=1;
+BYTE pocetpocitacu=1;
+DWORD pocetvterin=5,pocetsetricvterin=180;
+signed char zvuk=1,yz=0,psani=2;
+DWORD vyska=300;
+BYTE akcectrlbreak=0,charakter=3,extrasouborpsani=0,hlasenispatnehocfg=0;
+BYTE jmenomuzpocitac[16]="Klaban",jmenozenapocitac[16]="Daria";
+
+
+signed char svtipy=2,spocasi=0,stranaradek=0,delkastrany;
+BYTE obrazovka[50*80*2],samomluva=0,ctrlbreak=0,ctrlbreakc=0,chybaint24=0,smyslpocvety=0;
+BYTE textpredsamomluvou[81],spustenipodprogramu=0,pocetradku=2,mod=25,pravopis=1;
+DWORD datum=0,pomoc,delayprocenta=100,pocetvet=0,pocetuzivvet=0,cashovoru=0;
+BYTE barvapocitac1=10,barvapocitac2=11,barvapocitac0=10,textefekty=1;
+BYTE barvaclovek=14,zenskyrod=0,zenapocitac=0,vkolikhodin=16,jeli_nastaveni=0;
+BYTE pozicedatumcas,x,y,grafika25,nastvani=1,svatek[35];
+BYTE *datasoubor,nazevdne[10],font=1,pozicehlavicka,zapisovani=0,slovenstina=0;
+BYTE *inteligence[POCET_IQ],pocetextravet,poslednislovo;
+DWORD cas=0-1,*vtipymisto,puvodp[50],cislaodp[20],mistovint,puvodnicas;
+WORD puvvtipy[200],pocetiq=POCET_IQ,realodp[20][2],celkemodp,skutecnychodp;
+BYTE pocetrealtimekecu,pocetrealtimekecu2,int0=0,zvysovani=1,cekaniklavesy=0;
+BYTE cisloaktualnihopocitace=1,realtsamoml=0,verzeslovniku;
+
+//                    ostatni promenne
+
+BYTE nadavani=0;
+BYTE nactenyslovnik=0;
+WORD pocetsouboru=0;
+DWORD celkemvtipu;
+BYTE vtipy=0;
+BYTE dlouhe[4001];
+BYTE masterboot=0;
+signed char konec=0;
+DWORD pozvtips,pozvtipy,delkavtipu,nahodacislo;
+DWORD cislo;
+
+
+BYTE puvodnipkdmesic=0,puvodnipkdden,puvodnipkdhodina,puvodnipkdminuta;
+WORD puvodnipkdrok;
+BYTE puvodnipkdzapsani=0,introakcespusteni=0,xtrzapsani=0,xtrzapiskam=0;
+BYTE readonlymod=0,vypnutecheaty=0,psanivetyskryto=0;
+
+
+#if test == 1
+DWORD testcyklus;
+#endif
+
+struct ffblk ffblk;
+struct d { int nuly; long seriove; char rebeliny[20]; } data;
+
+FILE *kydy, *nastaveni, *vtipys, *intel, *vety;
+
+#define OBRAZEK_POKYDU_X 37
+#define OBRAZEK_POKYDU_Y 8
+
