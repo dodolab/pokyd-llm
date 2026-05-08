@@ -977,12 +977,8 @@ void interrupt (*stara_adresa23)(void);
 void interrupt (*stara_adresa24)(void);
 
 void VYPNI_REZIDENTY(BYTE int24) {
-  setvect(0x1B,stara_adresa0);			//deleni nulou
-
-  setvect(0x1B,stara_adresa1B);
-  setvect(0x23,stara_adresa23);			//Ctrl-Break
-
-  if (int24 == 1) setvect(0x24,stara_adresa24);	//kriticka chyba DOSu
+  /* Compatibility mode: startup no longer installs custom vectors. */
+  (void)int24;
  }
 
 void PREKRESLI_RADEK(BYTE insert) {

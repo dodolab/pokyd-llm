@@ -1,8 +1,8 @@
-/* Tento zdrojovı kód je pod licencí GNU/GPL. Mùete ho pouít k vlastní
-   potøebì, ale nesmíte jej ani programy zaloené na tomto kódu vyuít komerènì!
+/* Tento zdrojov kd je pod licenc GNU/GPL. Mete ho pout k vlastn
+   poteb, ale nesmte jej ani programy zaloen na tomto kdu vyut komern!
 
-   Jedná se o zdrojovı kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedn se o zdrojov kd programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alee Jandy, aktivn vyvjenho 1999 - 2002
 */
 
 
@@ -13,17 +13,17 @@ BYTE zmeneneznaky[POCET_ZMENENYCH_ZNAKU]={
 //struct REGPACK reg;
 
 void ZMENZNAKY(WORD zacatek,WORD kolik,BYTE *pamet) {
-  __emit__((char)(0x60));		//pusha
-  __emit__((char)(0x06));		//push es
-  _CX = kolik;
-  _DX = zacatek;
-  _ES = FP_SEG(pamet);
-  _BP = FP_OFF(pamet);
-  _AX = 0x1100;
-  _BX = 0x1000;
-  geninterrupt(0x10);
-  __emit__((char)(0x07));		//pop es
-  __emit__((char)(0x61));		//popa
+  union REGPACK regs;
+  /* Use int86x with explicit segment registers instead of legacy inline
+     assembly register saves, which are not available in this Watcom port. */
+  memset(&regs,0,sizeof(regs));
+  regs.w.cx = kolik;
+  regs.w.dx = zacatek;
+  regs.w.es = FP_SEG(pamet);
+  regs.w.bp = FP_OFF(pamet);
+  regs.w.ax = 0x1100;
+  regs.w.bx = 0x1000;
+  intr(0x10,&regs);
  }
 
 void NASTAVJEDENZNAK(BYTE znak) {
@@ -34,15 +34,9 @@ BYTE kde=misto<<4;
  }
 
 void NASTAVPOKYDFONT(void) {
-WORD pozice,celkem;
-  VRATDATA(9); celkem=strlen(dlouhe);
-  for (pozice=0; pozice < celkem; pozice++)
-   dlouhe[pozice]^=1;			//prevedeni nazpet (kvuli nulam)
-
-  ZMENZNAKY('!',128-33,dlouhe+160);
-
-  for (pozice=0; pozice < POCET_ZMENENYCH_ZNAKU; pozice++)
-   NASTAVJEDENZNAK(zmeneneznaky[pozice]);
+  /* Temporary safety fallback for DOSBox-X + Watcom build:
+     keep ROM font instead of uploading custom glyph tables. */
+  NASTAVNORMALNIFONT();
  }
 
 void NASTAVNORMALNIFONT(void) {

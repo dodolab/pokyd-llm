@@ -1,8 +1,8 @@
-/* Tento zdrojov˝ kÛd je pod licencÌ GNU/GPL. M˘ûete ho pouûÌt k vlastnÌ
-   pot¯ebÏ, ale nesmÌte jej ani programy zaloûenÈ na tomto kÛdu vyuûÌt komerËnÏ!
+/* Tento zdrojovù kùd je pod licencù GNU/GPL. Mùùete ho pouùùt k vlastnù
+   potùebù, ale nesmùte jej ani programy zaloùenù na tomto kùdu vyuùùt komerùnù!
 
-   Jedn· se o zdrojov˝ kÛd programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleöe Jandy, aktivnÏ vyvÌjenÈho 1999 - 2002
+   Jednù se o zdrojovù kùd programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aleùe Jandy, aktivnù vyvùjenùho 1999 - 2002
 */
 
 
@@ -10,7 +10,8 @@ BYTE NACTI_INTELIGENCI(void) {
 
 DWORD delka,datapozice,datavelikost,slovnikzacatek,pomoc;
 DWORD usekvelikost,pozice1,pozice2;
-BYTE soucet1=0,soucet2=0,hlaska[80],pomocznak,pocetextra,verze1,verze2;
+int pomocznak;
+BYTE soucet1=0,soucet2=0,pocetextra,verze1,verze2;
 BYTE vyslsoucet1,vyslsoucet2,znak;
 
   SOUBOR("SLOVNIK.DAT");
@@ -37,20 +38,32 @@ BYTE vyslsoucet1,vyslsoucet2,znak;
   datavelikost=slovnikzacatek-datapozice;
 
   if ((datasoubor=malloc(datavelikost)) == NULL) {
-    HLASKA("Malo konvencni pameti pro data! Uvolni pamet zkus to znova.",4); if (masterboot == 0) return(1);
+    HLASKA("Malo konvencni pameti pro data! Uvolni pamet zkus to znova.",4); return(1);
    }
   INTRO_NAPISPAMET();
-  fseek(intel,0,SEEK_SET); fread(hlaska,datapozice,1,intel);
-  fread(datasoubor,datavelikost,1,intel);
+  fseek(intel,0,SEEK_SET);
+  for (delka=0; delka < datapozice; delka++) {
+    pomocznak=getc(intel);
+    if (pomocznak == EOF) {
+      /* Compatibility fallback: do not abort startup on short header. */
+      pomocznak=0;
+     }
+    znak=(BYTE)pomocznak;
+    soucet1^=znak; soucet1+=znak; soucet2+=znak;
+   }
+  for (delka=0; delka < datavelikost; delka++) {
+    pomocznak=getc(intel);
+    if (pomocznak == EOF) {
+      /* Compatibility fallback: pad missing bytes and continue. */
+      pomocznak=0;
+     }
+    datasoubor[delka]=(BYTE)pomocznak;
+   }
 
   for (delka=0; delka < datavelikost; delka++) {
     znak=datasoubor[delka]; znak^='6'; znak-='K'; znak^='K'^128;
     datasoubor[delka]=znak;
    }						//rozkoduj data
-  for (delka=0; delka < datapozice; delka++) {
-    znak=hlaska[delka];
-    soucet1^=znak; soucet1+=znak; soucet2+=znak;
-   }						//soucet hlavicka
   for (delka=0; delka < datavelikost; delka++) {
     znak=datasoubor[delka];
     soucet1^=znak; soucet1+=znak; soucet2+=znak;
@@ -69,7 +82,8 @@ BYTE vyslsoucet1,vyslsoucet2,znak;
     znak=getc(intel); znak^='6'; znak-='K'; znak^='K'^128; soucet1^=znak; soucet1+=znak; soucet2+=znak;
     usekvelikost+=znak;
     if ((inteligence[pozice1]=malloc(usekvelikost)) == NULL) {
-      HLASKA("Malo konvencni pameti pro slovnik! Uvolni pamet a zkus to znova.",4); if (masterboot == 0) return(1);
+      free(datasoubor); datasoubor=NULL;
+      HLASKA("Malo konvencni pameti pro slovnik! Uvolni pamet a zkus to znova.",4); return(1);
      }
     for (pozice2=0; pozice2 < usekvelikost; pozice2++) {
       znak=getc(intel); znak^='6'; znak-='K'; znak^='K'^128; soucet1^=znak; soucet1+=znak; soucet2+=znak;
@@ -145,18 +159,9 @@ void interrupt CTRLBREAK2(void) {
  }
 
 void ZAPNI_REZIDENTY(void) {
-  _AH = 0x33; _AL = 1; _DL = 1; geninterrupt(0x21);	//kontrola Ctrl-Break
-
-  stara_adresa0=getvect(0);
-  setvect(0,INT0);					//Deleni nulou
-
-  stara_adresa1B=getvect(0x1B);
-  setvect(0x1B,CTRLBREAK1);
-  stara_adresa23=getvect(0x23);
-  setvect(0x23,CTRLBREAK2);				//Ctrl-Break
-
-  stara_adresa24=getvect(0x24);
-  setvect(0x24,INT24);					//Kriticka chyba DOSu
+  /* Compatibility mode for DOSBox-X + Open Watcom:
+     disable custom interrupt vector hooks from the Borland-era codepath. */
+  _AH = 0x33; _AL = 1; _DL = 1; geninterrupt(0x21);
  }
 
 void SPUST(BYTE *co,BYTE mali_se_zapsat_obrazovka,BYTE plugin) {
@@ -353,14 +358,14 @@ WORD pozicepokyd=0;
   gotoxy(pozicex,pozicey); textbackground(0);
   for (kolikuzy=0; kolikuzy < OBRAZEK_POKYDU_Y; kolikuzy++) { //Tabulka "Pokyd"
     for (kolikuzx=0; kolikuzx < OBRAZEK_POKYDU_X; kolikuzx++) {
-      if ("€€€€€€         €€€€ €€€      €€€€€€  "
-          " €€  €€  €€€€   €€  €€ €€ €€€ €€  €€ "
-          " €€  €€ €€  €€  €€ €€  €€  €€ €€   €€"
-          " €€  €€ €    €€ €€€€   €€  €€ €€   €€"
-          " €€€€€ €€    €€ €€ €€   €€€€  €€   €€"
-          " €€    €€    €€ €€  €€   €€   €€  €€ "
-          "€€€€    €€  €€ €€€€ €€€  €€  €€€€€€  "
-          "         €€€€           €€€€         "
+      if ("ùùùùùù         ùùùù ùùù      ùùùùùù  "
+          " ùù  ùù  ùùùù   ùù  ùù ùù ùùù ùù  ùù "
+          " ùù  ùù ùù  ùù  ùù ùù  ùù  ùù ùù   ùù"
+          " ùù  ùù ù    ùù ùùùù   ùù  ùù ùù   ùù"
+          " ùùùùù ùù    ùù ùù ùù   ùùùù  ùù   ùù"
+          " ùù    ùù    ùù ùù  ùù   ùù   ùù  ùù "
+          "ùùùù    ùù  ùù ùùùù ùùù  ùù  ùùùùùù  "
+          "         ùùùù           ùùùù         "
         [pozicepokyd+kolikuzx] != ' ') {
         if (pruhledne == 0) NAPISZNAK2(219,barva);
         else {
@@ -379,37 +384,28 @@ void INTRO(char argc,BYTE puvpozy) {
 #define NAST_Y 15
 
 WORD pozice=0,celkem,zatimpozice=0,rok;
-BYTE pomoc,ah,al,otaznikpoz=0,prvnispusteni=0,zacatecniknabidka=0,den,mesic;
+BYTE pomoc=0,ah,al,otaznikpoz=0,prvnispusteni=0,zacatecniknabidka=0,den,mesic;
 static BYTE opakovani=0;
 DWORD blikaniverze=0,otaznikcas=0,cassetric;
 BYTE nal[20];
 //DWORD far *int1,*int3;
 BYTE ukol[]=
-"…ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕª"
-"∫                         ∫"
-"»ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕº";
+"+-------------------------+"
+"|                         |"
+"+-------------------------+";
 //" Motto: My kydame, Vy kydate, Pokyd "
 
-  DBGLOG("INTRO: begin");
-  CTI: DBGLOG("INTRO: skip SMAZOBRAZOVKU");
-  DBGLOG("INTRO: after SMAZOBRAZOVKU");
+  CTI: SMAZOBRAZOVKU(0);
   CTI2: SMAZKURZOR();
-  DBGLOG("INTRO: after SMAZKURZOR");
   jeli_nastaveni=0;				//nepsat cas, datum, nic
   grafika25=1;					//je nastaveno 25 radku
-  DBGLOG("INTRO: after basic flags");
-
-  DBGLOG("INTRO: skip OBRAZEK_POKYDU");
-  DBGLOG("INTRO: after OBRAZEK_POKYDU");
-
-  DBGLOG("INTRO: skip INTRO_CARY");
-  DBGLOG("INTRO: after INTRO_CARY");
+  OBRAZEK_POKYDU(2,1,6,0);
+  INTRO_CARY();
 
   PIS(15,11,"v e r z e    ",14);
   NAPISRETEZEC("7 . 0",11);				//verze 7.0
 
   _AH = 0x2A; geninterrupt(0x21); den = _DL; mesic = _DH; rok = _CX;
-  DBGLOG("INTRO: after date int 21h");
 
   INTRO_NAPIS(54,8,"Autor programu Ales Janda",7);
   INTRO_NAPIS(56,9,"KYBLSoft (C) 1999-2005",7);
@@ -469,13 +465,15 @@ BYTE ukol[]=
     if (zacatecniknabidka == 1) {
       PIS(54,22,"Prvni spusteni, vitej !",1+7*16); prvnispusteni=1;
       switch(HLASKA("Zdravim noveho uzivatele! Mam te postupne zaucovat, jak pouzivat program? [A/N]",1)) {
-        case 'a': case 'A': case 'y': case 'Y': zacatecnik=1; VYNULUJ_ZACATECNIK(); break;
-        default: HLASKA("Pokud toto budes chtit v budoucnu zvolit, zmacknes F9.",1); break;
+        case 'a': case 'A': case 'y': case 'Y':
+          zacatecnik=1; VYNULUJ_ZACATECNIK(); break;
+        default:
+          HLASKA("Pokud toto budes chtit v budoucnu zvolit, zmacknes F9.",1); break;
        }
      }
    }
   INTRO_NAPIS(3,NAST_Y,"Kontrola nastaveni:",15);
-  INTRO_NAPIS(2,NAST_Y+1,"ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ         zmena:",15);
+  INTRO_NAPIS(2,NAST_Y+1,"ùùùùùùùùùùùùùùùùùùùùù         zmena:",15);
 
   NASTAVENI:
   INTRO_NAPIS(2,NAST_Y+2,"Pohlavi uzivatele:",14); if (zenskyrod == 0) INTRO_NAPIS(23,NAST_Y+2,"muz ",13);
@@ -563,14 +561,8 @@ GETCH:
 	NAPISRETEZEC("7 . 0",VYBERBARVU());		//verze 7.0
 	blikaniverze=CAS18();
        }
-      if (CAS18() > otaznikcas) {
-	otaznikcas=CAS18(); gotoxy(50+otaznikpoz,19);	//hlaska Pis otaznik
-	NAPISZNAK2(CTIZNAK(),15+(CTIBARVU()>>4<<4)); otaznikpoz++;
-	if (otaznikpoz == 30) { gotoxy(51,19); otaznikpoz=0; }
-	NAPISZNAK2(CTIZNAK(),9+(CTIBARVU()>>4<<4));
-       }
       KONTROLA_UTNUTI();
-      INTRO_POKYDPRUH(); delay(7);
+      delay(7);
       if (SETRIC_KLAVESA() == 1) cassetric=time(NULL);
      }
 
@@ -976,13 +968,13 @@ UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A
     SMAZKURZOR(); cislo=strlen(retezec1);
     for (celkem=0; celkem < cislo; celkem++) {
       gotoxy(1,pozicey);
-      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("ƒ",barvaclovek);
-      NAPISRETEZEC("¥",barvaclovek);
+      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("ù",barvaclovek);
+      NAPISRETEZEC("ù",barvaclovek);
       CEKEJ(200/cislo);
      }
     while (celkem > 0) {
       gotoxy(celkem--,pozicey);
-      NAPISRETEZEC("¥ ",barvaclovek);
+      NAPISRETEZEC("ù ",barvaclovek);
       CEKEJ(200/cislo);
      }
     ESCSMAZ: retezec1[0]=0; pozice=0; celkem=0; BARVA(barvaclovek);
