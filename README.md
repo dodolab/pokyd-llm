@@ -1,6 +1,6 @@
 # Pokyd (MS-DOS, Open Watcom)
 
-Pokyd is a classic Czech conversational MS-DOS application originally developed in Borland C++ era code. This repository is modernized for Windows-hosted builds with Open Watcom and execution in DOSBox-X.
+Pokyd is a classic Czech conversational MS-DOS application originally developed in Borland C++ era code. This repository is modernized for Windows-hosted builds with Open Watcom and execution in DOSBox-X, and now also includes a macOS flow using DOSBox-X.
 
 ## Project Layout
 
@@ -13,11 +13,21 @@ Runtime-generated/writable files remain in root (hybrid layout), such as `POKYD.
 
 ## Prerequisites
 
+### Windows flow
+
 - Windows (PowerShell available)
 - Open Watcom toolchain bundled in `watcom/`
 - DOSBox-X (auto-detected or auto-downloaded by script)
 
+### macOS flow
+
+- macOS with Bash available
+- DOSBox-X installed (`dosbox-x` available on PATH, or set `NOTES_DOSBOX_X`)
+- Open Watcom DOS-capable tree in repo-local `watcom/` (same layout expected by Windows flow)
+
 ## Build and Run
+
+### Windows
 
 From repository root:
 
@@ -40,6 +50,32 @@ Or run only (after build):
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1
 ```
+
+### macOS
+
+From repository root:
+
+```bash
+./build-and-run.sh
+```
+
+This command:
+1. Builds `pokyd.exe` and `slova.exe` with Open Watcom host tools (auto-detected from `WATCOM` or `watcom/`).
+2. Starts DOSBox-X and runs `pokyd.exe`.
+
+You can also build only:
+
+```bash
+./build.sh
+```
+
+Optional:
+
+```bash
+./build-and-run.sh --exit-after-pokyd
+```
+
+This closes DOSBox-X automatically after `pokyd.exe` exits.
 
 ## Czech Text and DOS Font
 
