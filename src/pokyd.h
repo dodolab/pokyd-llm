@@ -5,6 +5,8 @@
    od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
 */
 
+/* DOS console split: keep COMMAND.COM / autoexec lines visible above Pokyd (see -consplit). */
+extern unsigned char pokyd_shell_rows;
 
 void INTRO_CARY(void);
 DWORD VOLNAPAMET(void);
@@ -140,7 +142,7 @@ void SMYSL_VETY_POCITACE(void);
 BYTE NASTAVENI(void);
 void INTRO_NAPISPAMET(void);
 void OBRAZEK_POKYDU(BYTE pozicex,BYTE pozicey,BYTE barva,BYTE pruhledne);
-void INTRO(char argc,BYTE puvpozy);
+void INTRO(int argc,BYTE puvpozy);
 void NAPIS_GOTOXY(BYTE x,BYTE y);
 void NAPIS(void);
 void interrupt INT0(void);

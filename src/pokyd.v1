@@ -652,6 +652,7 @@ BYTE pozice3;
     PIPNI(100,30); pocetvet++;
     SMYSL_VETY_POCITACE();
    }
+  NASTAVKURZOR();
  }
 
 void SETRID(void) {
@@ -1132,8 +1133,10 @@ SPUST:  SOUBOR("PLUGINY\\"); strcat(soubor,pluginy[pozice-ZACATEK_PLUGINU]); str
 BYTE SETRIC_KLAVESA(void) {
   if (kbhit() != 0) return(1);
   if ((bioskey(2)&15) != 0) return(1);
-  _AX = 3; geninterrupt(0x33); if (_BX != 0) return(1);
-
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AX = 3;
+  geninterrupt(0x33);
+  if (_BX != 0) return(1);
   return(0);
  }
 

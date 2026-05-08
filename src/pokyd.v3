@@ -35,6 +35,7 @@ BYTE mod;
  }
 
 void VRATNAZEVDNE(BYTE *pointer,BYTE velke_pismeno) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x2A; geninterrupt(0x21);
   switch(_AL) {
     case 1: strcpy(pointer,"pondeli"); break;
@@ -49,6 +50,7 @@ void VRATNAZEVDNE(BYTE *pointer,BYTE velke_pismeno) {
  }
 
 BYTE CTIZNAK(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 8; _BH = 0; geninterrupt(0x10);
   return(_AL);
  }
@@ -72,29 +74,34 @@ BYTE VYBERBARVU(void) {
  }
 
 void SMAZKURZOR(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 1;
   _CX = 0x2000;
   geninterrupt(0x10);		//smaz kurzor
  }
 
 void PLNYKURZOR(void){
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 1;
   _CX = 0x1F;
   geninterrupt(0x10);
  }
 
 BYTE CTIBARVU(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 8; _BH = 0; geninterrupt(0x10);
   return(_AH);
  }
 
 void NASTAVBARVU(BYTE r,BYTE g,BYTE b,BYTE barva) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _BX = barva; _DH = r; _CH = g; _CL = b;
   _AX = 0x1010; geninterrupt(0x10);
  }
 
 void BARVA(BYTE barva) {
   gotoxy(1,wherey());
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 9;
   _BH = 0; _AL = ' '; _CX = 80; _BL = barva;
   geninterrupt(0x10);
@@ -104,6 +111,7 @@ void BARVA(BYTE barva) {
 DWORD CAS18(void) {
 DWORD cas;
 
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH=0;
   geninterrupt (0x1A);
   cas=_CX;
@@ -120,6 +128,7 @@ BYTE TESTSTRANY(void) {
  }
 
 void NAPISZNAK(BYTE znak,BYTE barva) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   if (znak != 0) _AL = znak;
   else _AL = ' ';				//vymena nuly za mezeru
   _CX = 1; _BH = 0; _BL = barva; _AH = 9;

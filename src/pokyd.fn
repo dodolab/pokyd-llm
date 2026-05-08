@@ -40,12 +40,12 @@ void NASTAVPOKYDFONT(void) {
  }
 
 void NASTAVNORMALNIFONT(void) {
-  /* Use BIOS default 8x16 ROM font directly. This avoids fragile
-     Borland inline-assembly stack/register tricks that can lock up
-     under Open Watcom builds. */
-  _AX = 0x1114;
-  _BL = 0;
-  geninterrupt(0x10);
+  /* Use BIOS default 8x16 ROM font directly. Clear the full REGPACK first:
+     leftover BH/BX bits from earlier INT 10h calls have crashed DOSBox-X. */
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  pokyd_regs.w.ax = 0x1114;
+  pokyd_regs.w.bx = 0;
+  intr(0x10, &pokyd_regs);
  }
 
 void NASTAVSPRAVNYFONT(void) {

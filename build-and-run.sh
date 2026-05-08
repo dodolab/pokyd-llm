@@ -40,7 +40,8 @@ if not exist C:\SLOVNIK.DAT if exist C:\assets\slova.pkd copy C:\assets\slova.pk
 if not exist C:\SLOVNIK.DAT if exist C:\assets\pokydx.pkd copy C:\assets\pokydx.pkd C:\POKYDX.PKD >nul
 if not exist C:\SLOVNIK.DAT if exist C:\slova.exe slova.exe
 echo [pokyd] Starting pokyd.exe ...
-pokyd.exe
+REM -pokyd skips full-screen intro; -consplit keeps COMMAND.COM/autoexec lines above Pokyd
+pokyd.exe -pokyd -consplit
 echo.
 echo pokyd.exe ended with errorlevel %ERRORLEVEL%
 echo Staying at C:\ prompt --- type EXIT to close DOSBox.
@@ -49,7 +50,7 @@ EOF
 
 if [[ "$EXIT_AFTER_POKYD" -eq 1 ]]; then
   AUTOEXEC_TAIL=$(cat <<'EOF'
-pokyd.exe
+pokyd.exe -pokyd -consplit
 exit
 EOF
 )

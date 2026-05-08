@@ -208,6 +208,7 @@ void interrupt CTRLBREAK2(void) {
 void ZAPNI_REZIDENTY(void) {
   /* Compatibility mode for DOSBox-X + Open Watcom:
      disable custom interrupt vector hooks from the Borland-era codepath. */
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x33; _AL = 1; _DL = 1; geninterrupt(0x21);
  }
 
@@ -227,7 +228,7 @@ signed char chyba;
     else fseek(kydy,0,SEEK_END);
    }
   if (mali_se_zapsat_obrazovka == 1) { NASTAVSPRAVNYMOD(); ZAPISOBRAZOVKU(); }
-  else { _AX = 0x1003; _BL = 1; geninterrupt(0x10); }	//povol blikani
+  else { memset(&pokyd_regs, 0, sizeof(pokyd_regs)); _AX = 0x1003; _BL = 1; geninterrupt(0x10); }	//povol blikani
   if (chyba == -1) HLASKA("Nedostatek pameti pro spusteni!",4);
 //  if (NACTI_INTELIGENCI() == 1) { ZAPISOBRAZOVKU(); KONEC(); }
 //  VTIPYSOUBOR();
@@ -427,7 +428,7 @@ WORD pozicepokyd=0;
    }
  }
 
-void INTRO(char argc,BYTE puvpozy) {
+void INTRO(int argc,BYTE puvpozy) {
 #define NAST_Y 15
 
 WORD pozice=0,celkem,zatimpozice=0,rok;
@@ -435,6 +436,7 @@ BYTE pomoc=0,ah,al,otaznikpoz=0,prvnispusteni=0,zacatecniknabidka=0,den,mesic;
 static BYTE opakovani=0;
 DWORD blikaniverze=0,otaznikcas=0,cassetric;
 BYTE nal[20];
+BYTE dbgintro[64];
 //DWORD far *int1,*int3;
 BYTE ukol[]=
 "+-------------------------+"
@@ -442,6 +444,8 @@ BYTE ukol[]=
 "+-------------------------+";
 //" Motto: My kydame, Vy kydate, Pokyd "
 
+  memset(nal,0,sizeof(nal));
+  DBGLOG("INTRO: entry");
   CTI: SMAZOBRAZOVKU(0);
   CTI2: SMAZKURZOR();
   jeli_nastaveni=0;				//nepsat cas, datum, nic
@@ -452,6 +456,7 @@ BYTE ukol[]=
   PIS(15,11,"v e r z e    ",14);
   NAPISRETEZEC("7 . 0",11);				//verze 7.0
 
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x2A; geninterrupt(0x21); den = _DL; mesic = _DH; rok = _CX;
 
   INTRO_NAPIS(54,8,"Autor programu Ales Janda",7);
@@ -530,10 +535,11 @@ BYTE ukol[]=
   else INTRO_NAPIS(23,NAST_Y+3,"zena",13); INTRO_NAPIS(34,NAST_Y+3,"F3",11);
 
   INTRO_NAPIS(2,NAST_Y+4,"Nalada pocitace:",14); VRAT_NAZEV_NALADY(nal);
-  INTRO_NAPIS(23,NAST_Y+4,nal,13); INTRO_NAPIS(34,NAST_Y+4,"F7/F8",11);
+  /* PIS/NAPISRETEZEC: stable attribute; INTRO_NAPIS+CTIBARVU() caused garbage glyphs here. */
+  PIS(23,NAST_Y+4,nal,13); INTRO_NAPIS(34,NAST_Y+4,"F7/F8",11);
 
   INTRO_NAPIS(2,NAST_Y+5,"Charakter pocitace:",14); VRAT_NAZEV_CHARAKTERU(nal);
-  INTRO_NAPIS(23,NAST_Y+5,nal,13); INTRO_NAPIS(34,NAST_Y+5,"F5",11);
+  PIS(23,NAST_Y+5,nal,13); INTRO_NAPIS(34,NAST_Y+5,"F5",11);
 
   INTRO_NAPIS(6,NAST_Y+6,"...vsechna nastaveni - F4, ulozit - 'U'",10);
 
@@ -596,6 +602,7 @@ ZACATECNIK:
   ZACATECNIK("Kazdou napovedu ti ukazu pouze jednou, takze cti pozorne!",12);
   ZACATECNIK("Prohledni si text na obrazovce a rozhodni se. Hovor zacnes napr. Enterem.",13);
 GETCH:
+  DBGLOG("INTRO: enter GETCH");
   cassetric=time(NULL);
   if (argc < 2) {
     while (kbhit() == 0) {
@@ -613,7 +620,9 @@ GETCH:
       if (SETRIC_KLAVESA() == 1) cassetric=time(NULL);
      }
 
-    switch(pomoc=getch()) {		//neni-li pritomen argument, cekej na klavesu
+    pomoc=getch();
+    sprintf(dbgintro,"INTRO: key=%u",pomoc); DBGLOG(dbgintro);
+    switch(pomoc) {		//neni-li pritomen argument, cekej na klavesu
       case 0: switch(getch()) {
         case 16: case 37: case 45: goto SKONCI;		//Alt-Q, Alt-K, Alt-X
 	case 59: HELP: HELPF1(1); goto CTI;			//F1
@@ -663,10 +672,23 @@ SKONCI:         pocetsouboru--;			//pocet spusteni
 #endif
 
 KONEC:
-  if (argc < 2) ODROLUJ();
+  sprintf(dbgintro,"INTRO: exit KONEC argc=%d",(int)argc);
+  DBGLOG(dbgintro);
+  /* Always safe handoff to main: never NASTAVSPRAVNYMOD/SMAZOBRAZOVKU here (DOSBox-X crash). */
+  ODROLUJ();
+  DBGLOG("INTRO: after ODROLUJ");
+  if (argc >= 2) {
+    grafika25=0;
+    gotoxy(1,puvpozy);
+   }
+  return;
 UPLNYKONEC:
-  grafika25=0; NASTAVSPRAVNYMOD(); ZAPISOBRAZOVKU();
+  /* Return from plugin picker: restore saved screen without video mode reset. */
+  DBGLOG("INTRO: UPLNYKONEC");
+  grafika25=0;
+  ZAPISOBRAZOVKU();
   gotoxy(1,puvpozy);
+  return;
  }
 
 void NAPIS_GOTOXY(BYTE x,BYTE y) {

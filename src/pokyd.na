@@ -379,6 +379,7 @@ void VRAT_NAZEV_NALADY(BYTE *retezec) {
     case 2: strcpy(retezec,"normalni"); break;
     case 3: strcpy(retezec,"spatna  "); break;
     case 4: strcpy(retezec,"hrozna  "); break;
+    default: strcpy(retezec,"normalni"); break;
    }
  }
 
@@ -405,6 +406,7 @@ void VRAT_NAZEV_CHARAKTERU(BYTE *retezec) {
     case 4: strcpy(retezec,"neduverivy"); break;
     case 5: strcpy(retezec,"naladovy  "); break;
     case 6: strcpy(retezec,"vybusny   "); break;
+    default: strcpy(retezec,"prumerny  "); break;
    }
  }
 

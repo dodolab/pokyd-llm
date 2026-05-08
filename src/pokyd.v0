@@ -54,6 +54,17 @@ void NASTARTUJ_PROGRAM(void) {
   SMAZKURZOR();
   DBGLOG("NASTARTUJ: after SMAZKURZOR");
   delkastrany=TESTSTRANY();
+  if (pokyd_shell_rows != 0) {
+    if (delkastrany > 24) pokyd_shell_rows = 0;
+    else {
+      int avail = 25 - (int)pokyd_shell_rows;
+      if (avail < 10) pokyd_shell_rows = 0;
+      else {
+        signed char nd = (signed char)(avail - 1);
+        if (delkastrany > nd) delkastrany = nd;
+      }
+     }
+   }
   DBGLOG("NASTARTUJ: after TESTSTRANY");
   srand(nahodacislo=time(NULL));
   DBGLOG("NASTARTUJ: after srand");
@@ -304,6 +315,7 @@ WORD cislo;
   for (pozice=0; pozice < pozodp; pozice++)
    if (mista[pozice] == cislo)
     nejlepsi[pozice2++]=pozice;
+  if (pozice2 == 0) return(0);
   return(nejlepsi[rand()%pozice2]);
  }
 
@@ -395,8 +407,14 @@ BYTE poz=49;
 void ODROLUJ(void) {
 BYTE pozice,pozice2,pocetradku=24,celkem,typ,strzeno[80];
 DWORD cas=0;
+  DBGLOG("ODROLUJ: begin");
   SMAZKURZOR();
-  if (textefekty == 0) { SMAZOBRAZOVKU(1); return; }
+  if (textefekty == 0) { SMAZOBRAZOVKU(1); DBGLOG("ODROLUJ: SMAZOBRAZOVKU done"); return; }
+  if (pokyd_shell_rows != 0) {
+    clrscr();
+    DBGLOG("ODROLUJ: consplit region clear only");
+    return;
+   }
   if (delkastrany == 49 && grafika25 == 0) pocetradku=49;
 
   switch(rand()%8) {
@@ -404,19 +422,23 @@ DWORD cas=0;
     celkem=(pocetradku>>1)+1; typ=rand()%2;
     for (pozice=0; pozice < celkem; pozice++) {
       do KONTROLA_UTNUTI(); while (cas == CAS18());
+      memset(&pokyd_regs, 0, sizeof(pokyd_regs));
       _AH = typ+6; _DH = celkem-1; _CX = 0; _DL = 79; _BH = 0; _AL = 1; geninterrupt(0x10);
+      memset(&pokyd_regs, 0, sizeof(pokyd_regs));
       _AH = (typ^1)+6; _DH = pocetradku; _CH = celkem-1; _CL = 0; _DL = 79; _BH = 0; _AL = 1; geninterrupt(0x10);
       cas=CAS18();
      }
     break;
    case 2:				//zleva
     for (pozice=0; pozice < 80; pozice++) {
+      memset(&pokyd_regs, 0, sizeof(pokyd_regs));
       _CX = pozice; _DL = pozice; _DH=pocetradku; _AX = 0x600; _BH = 0; geninterrupt(0x10);
       delay(6); KONTROLA_UTNUTI();
      }
     break;
    case 3:				//zprava
     for (pozice=80; pozice > 0; pozice--) {
+      memset(&pokyd_regs, 0, sizeof(pokyd_regs));
       _CX = pozice-1; _DL = pozice-1; _DH=pocetradku; _AX = 0x600; _BH = 0; geninterrupt(0x10);
       delay(6); KONTROLA_UTNUTI();
      }
@@ -487,6 +509,7 @@ DAL7:    strzeno[typ]++;
       }
     break;
    }
+  DBGLOG("ODROLUJ: end");
  }
 
 BYTE CTIKLAVESU(void) {
@@ -501,9 +524,12 @@ BYTE klavesa;
  }
 
 void NASTAVKURZOR(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   if (grafika25 == 0 && delkastrany == 49) _CX = 0x0709;
   else _CX = 0x0C0D;
-  _AH = 1; geninterrupt(0x10);		//nastav kurzor
+  _AH = 1;
+  _BH = 0;
+  geninterrupt(0x10);		//nastav kurzor (BH=video page)
  }
 
 void VRATDATA(BYTE poradidat) {
@@ -556,10 +582,21 @@ void VLOZSOURADNICE(void) {
  }
 
 void SMAZOBRAZOVKU(BYTE jeli_font) {
+  BYTE prepnuto_50na25 = 0;
 //  if (delkastrany > 24) { _AX = 4; geninterrupt(0x10); }//kvuli zblblymu fontu
-  if (delkastrany > 24 && jeli_font == 1) { _AX = 3; geninterrupt(0x10); }  //prepnuti 50 radku na 25 (upr.2005)
+  if (delkastrany > 24 && jeli_font == 1 && pokyd_shell_rows == 0) {
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+    pokyd_regs.w.ax = 0x0003;
+    intr(0x10, &pokyd_regs);  //prepnuti 50 radku na 25 (upr.2005)
+    prepnuto_50na25 = 1;
+    /* Keep globals in sync with hardware (was 49 rows, now 25). */
+    delkastrany = 24;
+    pozicehlavicka = 1;
+    pozicedatumcas = 2;
+   }
   clrscr();
-  if (jeli_font == 1 && font == 1) NASTAVPOKYDFONT();
+  /* After AX=0003 some DOSBox-X builds hang on INT 10h font reload; BIOS mode set already picks ROM font. */
+  if (jeli_font == 1 && font == 1 && prepnuto_50na25 == 0) NASTAVPOKYDFONT();
  }
 
 void PRECTIOBRAZOVKU(BYTE efekt) {
@@ -640,9 +677,12 @@ void STRANA(BYTE kolik) {
     kolik--;
    }
   if (kolik > 0) {			//Rolovani okna
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
     _AL = kolik; _BH = 0;
-    _CH =  2; _CL =  0;
-    _DH = delkastrany; _DL = 79;
+    _CH =  (unsigned char)(2 + pokyd_shell_rows);
+    _CL =  0;
+    _DH = (unsigned char)(delkastrany + pokyd_shell_rows);
+    _DL = 79;
     _AH =  6;
     geninterrupt(0x10);
    }
@@ -966,7 +1006,10 @@ PRES2:
  }
 
 void NAPISZNAKODP(BYTE znak) {
-  NAPISZNAK2(znak,barvapocitac0);
+  BYTE b = barvapocitac0;
+  /* barvapocitac* are usually conio fg indices 0-15; BIOS needs full attribute (bg|fg). */
+  if ((b & 0xF0) == 0) b = (BYTE)(0x00 | (b & 0x0F));
+  NAPISZNAK2(znak,b);
  }
 
 void interrupt (*stara_adresa0)(void);

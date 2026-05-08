@@ -47,6 +47,10 @@ static unsigned short pokyd_ss = 0;
 #define _DL pokyd_regs.h.dl
 #define geninterrupt(no) intr((no),&pokyd_regs)
 
+/* Logical 1..n maps to physical rows below COMMAND.COM output when non-zero. */
+unsigned char pokyd_shell_rows = 0;
+static unsigned char pokyd_do_consplit = 0;
+
 /* Borland compatibility names used across included legacy units. */
 #define C80 _TEXTC80
 #define C4350 4350
@@ -86,6 +90,7 @@ static unsigned char *searchpath(unsigned char *filename) {
 }
 
 static int wherex(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x03;
   _BH = 0;
   geninterrupt(0x10);
@@ -93,28 +98,46 @@ static int wherex(void) {
 }
 
 static int wherey(void) {
+  int py;
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x03;
   _BH = 0;
   geninterrupt(0x10);
-  return _DH + 1;
+  py = _DH + 1;
+  if (pokyd_shell_rows != 0) {
+    if (py <= (int)pokyd_shell_rows) return 1;
+    return py - (int)pokyd_shell_rows;
+  }
+  return py;
 }
 
 static void gotoxy(int x,int y) {
+  int phys_y = y;
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x02;
   _BH = 0;
-  _DH = (unsigned char)(y - 1);
+  if (pokyd_shell_rows != 0 && y >= 1) phys_y = y + (int)pokyd_shell_rows;
+  _DH = (unsigned char)(phys_y - 1);
   _DL = (unsigned char)(x - 1);
   geninterrupt(0x10);
 }
 
 static void clrscr(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x06;
   _AL = 0;
   _BH = 0x07;
-  _CH = 0;
-  _CL = 0;
-  _DH = 24;
-  _DL = 79;
+  if (pokyd_shell_rows != 0) {
+    _CH = (unsigned char)pokyd_shell_rows;
+    _CL = 0;
+    _DH = 24;
+    _DL = 79;
+  } else {
+    _CH = 0;
+    _CL = 0;
+    _DH = 24;
+    _DL = 79;
+  }
   geninterrupt(0x10);
   gotoxy(1,1);
 }
@@ -134,15 +157,19 @@ static void textattr(int attr) {
 
 static void textmode(int mode) {
   if (mode == C4350) {
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
     _AX = 0x0003;
     geninterrupt(0x10);
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
     _AX = 0x1112;
     _BL = 0;
     geninterrupt(0x10);
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
     _AX = 0x1202;
     _BL = 0x30;
     geninterrupt(0x10);
   } else {
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
     _AX = 0x0003;
     geninterrupt(0x10);
   }
@@ -159,6 +186,10 @@ static int gettext(int left,int top,int right,int bottom,void *buffer) {
   unsigned short far *video = (unsigned short far *)MK_FP(0xB800,0);
   unsigned short *dst = (unsigned short *)buffer;
   int x,y;
+  if (pokyd_shell_rows != 0) {
+    top += (int)pokyd_shell_rows;
+    bottom += (int)pokyd_shell_rows;
+  }
   for (y=top; y<=bottom; y++) {
     for (x=left; x<=right; x++) {
       *dst++ = video[(y-1)*80 + (x-1)];
@@ -171,6 +202,10 @@ static int puttext(int left,int top,int right,int bottom,void *buffer) {
   unsigned short far *video = (unsigned short far *)MK_FP(0xB800,0);
   unsigned short *src = (unsigned short *)buffer;
   int x,y;
+  if (pokyd_shell_rows != 0) {
+    top += (int)pokyd_shell_rows;
+    bottom += (int)pokyd_shell_rows;
+  }
   for (y=top; y<=bottom; y++) {
     for (x=left; x<=right; x++) {
       video[(y-1)*80 + (x-1)] = *src++;
@@ -179,11 +214,15 @@ static int puttext(int left,int top,int right,int bottom,void *buffer) {
   return 1;
 }
 
+static FILE *pokyd_dbglog;
+
 static void DBGLOG(const char *msg) {
-  FILE *dbg = fopen("debug.log","a");
-  if (dbg != NULL) {
-    fprintf(dbg,"%s\n",msg);
-    fclose(dbg);
+  if (pokyd_dbglog == NULL) {
+    pokyd_dbglog = fopen("debug.log","a");
+  }
+  if (pokyd_dbglog != NULL) {
+    fprintf(pokyd_dbglog,"%s\n",msg);
+    fflush(pokyd_dbglog);
   }
 }
 
@@ -199,9 +238,8 @@ static void DBGLOG(const char *msg) {
 #include "pokyd.sl"
 
 void main(int argc, char *argv[]) {
-DBGLOG("main: start");
-NASTARTUJ_PROGRAM();
-DBGLOG("main: after NASTARTUJ_PROGRAM");
+pokyd_shell_rows = 0;
+pokyd_do_consplit = 0;
 if (argc > 1) {
   docasnenaladabody=0;				//docasne pouziti
   for (cislo=1; cislo < argc; cislo++) {
@@ -215,6 +253,7 @@ if (argc > 1) {
     else if (stricmp(dlouhe,"-nastaveni") == 0) introakcespusteni=6;
     else if (stricmp(dlouhe,"-pokyd") == 0) introakcespusteni=7;
     else if (stricmp(dlouhe,"-zacatecnik") == 0) introakcespusteni=8;
+    else if (stricmp(dlouhe,"-consplit") == 0) pokyd_do_consplit=1;
     else if (stricmp(dlouhe,"-readonly") == 0) readonlymod=1;
     else if (stricmp(dlouhe,"-masterboot") == 0) masterboot=1;
     else if (stricmp(dlouhe,"-bezcheatu") == 0) vypnutecheaty=1;
@@ -223,8 +262,28 @@ if (argc > 1) {
    }
   if (docasnenaladabody == 0) argc=0;
  }
-INTRO: DBGLOG("main: before INTRO");
-INTRO(argc,pozicehlavicka);
+if (pokyd_do_consplit) {
+  int ry, rx;
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x03;
+  _BH = 0;
+  geninterrupt(0x10);
+  ry = _DH + 1;
+  rx = _DL + 1;
+  pokyd_shell_rows = (unsigned char)ry;
+  if (rx > 1) pokyd_shell_rows++;
+  if (pokyd_shell_rows > 12 || (25 - (int)pokyd_shell_rows) < 12) pokyd_shell_rows = 0;
+ }
+DBGLOG("main: start");
+NASTARTUJ_PROGRAM();
+DBGLOG("main: after NASTARTUJ_PROGRAM");
+/* Junk argv leaves argc>=2 but INTRO must still wait for a key; keep real argc for argv
+   handling below (e.g. initial sentence from command line). */
+{ int intro_argc = argc;
+  if (argc > 1 && docasnenaladabody != 0) intro_argc = 1;
+  DBGLOG("main: before INTRO");
+  INTRO(intro_argc, pozicehlavicka);
+ }
 DBGLOG("main: after INTRO");
 textbackground(0);
 DBGLOG("main: after textbackground");
