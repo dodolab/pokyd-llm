@@ -13,22 +13,44 @@ DWORD usekvelikost,pozice1,pozice2;
 int pomocznak;
 BYTE soucet1=0,soucet2=0,pocetextra,verze1,verze2;
 BYTE vyslsoucet1,vyslsoucet2,znak;
+BYTE dbg[180];
+DWORD filevelikost,startstream;
 
-  SOUBOR("SLOVNIK.DAT");
-  if ((intel=fopen(soubor,"rb")) == NULL) {
+  DBGLOG("NACTI_INTELIGENCI: begin");
+  strcpy(soubor,"SLOVNIK.DAT");
+  intel=fopen(soubor,"rb");
+  if (intel != NULL) DBGLOG("NACTI_INTELIGENCI: opened SLOVNIK.DAT directly");
+  if (intel == NULL) {
+    SOUBOR("SLOVNIK.DAT");
+    sprintf(dbg,"NACTI_INTELIGENCI: fallback path=%s",soubor); DBGLOG(dbg);
+    intel=fopen(soubor,"rb");
+   }
+  if (intel == NULL) {
+    strcpy(soubor,"assets\\SLOVNIK.DAT");
+    intel=fopen(soubor,"rb");
+    if (intel != NULL) DBGLOG("NACTI_INTELIGENCI: opened assets\\SLOVNIK.DAT");
+   }
+  if (intel == NULL) {
+    DBGLOG("NACTI_INTELIGENCI: fopen failed (all paths)");
     HLASKA("Hrome! Nejak nemuzu otevrit soubor s inteligenci SLOVNIK.DAT!",4);
     HLASKA("Ja ale bohuzel bez toho nemuzu odpovidat, to je totiz muj mozek!",1);
     HLASKA("Jestli tento program rozbalujes z archivu, tak rozbal vsechny soubory!",1);
     if (masterboot == 0) return(1);
    }
+  fseek(intel,0,SEEK_END); filevelikost=ftell(intel); fseek(intel,0,SEEK_SET);
+  sprintf(dbg,"NACTI_INTELIGENCI: file size=%lu",filevelikost); DBGLOG(dbg);
   znak=getc(intel); znak^='K'; verze1=znak;
   znak=getc(intel); znak^='K'; verze2=znak;
+  sprintf(dbg,"NACTI_INTELIGENCI: ver=%c%c",verze1,verze2); DBGLOG(dbg);
   if (verze1 != '7' || verze2 != '0') {				//7.0
+    DBGLOG("NACTI_INTELIGENCI: wrong base version");
     HLASKA("Soubor SLOVNIK.DAT neni z teto verze! Je mi lito, nezakydas si!",4);
     if (masterboot == 0) return(1);
    }
   verzeslovniku=getc(intel)^'K';
+  sprintf(dbg,"NACTI_INTELIGENCI: slovnik_ver=%u",verzeslovniku); DBGLOG(dbg);
   if (verzeslovniku != 5) {				//verze slovniku: 5
+    DBGLOG("NACTI_INTELIGENCI: unsupported dictionary version");
     HLASKA("Nepodporovana verze slovniku!",4);
     if (masterboot == 0) return(1);
    }
@@ -36,34 +58,47 @@ BYTE vyslsoucet1,vyslsoucet2,znak;
   fseek(intel,3,SEEK_SET); datapozice=getc(intel);
   slovnikzacatek=getc(intel); slovnikzacatek<<=8; slovnikzacatek+=getc(intel);
   datavelikost=slovnikzacatek-datapozice;
+  sprintf(dbg,"NACTI_INTELIGENCI: datapoz=%lu slovnikzac=%lu datavel=%lu",
+          datapozice,slovnikzacatek,datavelikost); DBGLOG(dbg);
+  sprintf(dbg,"NACTI_INTELIGENCI: expected checksum=%u,%u",vyslsoucet1,vyslsoucet2); DBGLOG(dbg);
 
   if ((datasoubor=malloc(datavelikost)) == NULL) {
+    DBGLOG("NACTI_INTELIGENCI: malloc datasoubor failed");
     HLASKA("Malo konvencni pameti pro data! Uvolni pamet zkus to znova.",4); return(1);
    }
-  INTRO_NAPISPAMET();
+  DBGLOG("NACTI_INTELIGENCI: malloc datasoubor ok");
+  DBGLOG("NACTI_INTELIGENCI: before first mempaint");
+  /* Compatibility mode: avoid intro repaint during dictionary load. */
+  /* INTRO_NAPISPAMET(); */
+  DBGLOG("NACTI_INTELIGENCI: after first mempaint");
   fseek(intel,0,SEEK_SET);
   for (delka=0; delka < datapozice; delka++) {
     pomocznak=getc(intel);
     if (pomocznak == EOF) {
+      sprintf(dbg,"NACTI_INTELIGENCI: EOF in header at %lu/%lu",delka,datapozice); DBGLOG(dbg);
       /* Compatibility fallback: do not abort startup on short header. */
       pomocznak=0;
      }
     znak=(BYTE)pomocznak;
     soucet1^=znak; soucet1+=znak; soucet2+=znak;
    }
+  DBGLOG("NACTI_INTELIGENCI: header checksum pass done");
   for (delka=0; delka < datavelikost; delka++) {
     pomocznak=getc(intel);
     if (pomocznak == EOF) {
+      sprintf(dbg,"NACTI_INTELIGENCI: EOF in data at %lu/%lu",delka,datavelikost); DBGLOG(dbg);
       /* Compatibility fallback: pad missing bytes and continue. */
       pomocznak=0;
      }
     datasoubor[delka]=(BYTE)pomocznak;
    }
+  DBGLOG("NACTI_INTELIGENCI: header+data loaded");
 
   for (delka=0; delka < datavelikost; delka++) {
     znak=datasoubor[delka]; znak^='6'; znak-='K'; znak^='K'^128;
     datasoubor[delka]=znak;
    }						//rozkoduj data
+  DBGLOG("NACTI_INTELIGENCI: data decoded");
   for (delka=0; delka < datavelikost; delka++) {
     znak=datasoubor[delka];
     soucet1^=znak; soucet1+=znak; soucet2+=znak;
@@ -71,17 +106,25 @@ BYTE vyslsoucet1,vyslsoucet2,znak;
 
   pocetextravet=datasoubor[0];
   pocetiq=datasoubor[1]; pocetiq<<=8; pocetiq+=datasoubor[2];
+  sprintf(dbg,"NACTI_INTELIGENCI: pocetextravet=%u pocetiq=%u",pocetextravet,pocetiq); DBGLOG(dbg);
 
   if (pocetiq > POCET_IQ) {
+    DBGLOG("NACTI_INTELIGENCI: pocetiq too high");
     HLASKA("Prilis novy slovnik!",4); if (masterboot == 0) return(1);
    }
 
+  startstream=ftell(intel);
+  sprintf(dbg,"NACTI_INTELIGENCI: iq stream start=%lu",startstream); DBGLOG(dbg);
   for (pozice1=0; pozice1 < pocetiq; pozice1++) {
     znak=getc(intel); znak^='6'; znak-='K'; znak^='K'^128; soucet1^=znak; soucet1+=znak; soucet2+=znak;
     usekvelikost=znak; usekvelikost<<=8;
     znak=getc(intel); znak^='6'; znak-='K'; znak^='K'^128; soucet1^=znak; soucet1+=znak; soucet2+=znak;
     usekvelikost+=znak;
+    if (pozice1 < 3 || (pozice1%50) == 0 || pozice1+1 == pocetiq) {
+      sprintf(dbg,"NACTI_INTELIGENCI: iq[%lu] usek=%lu",pozice1,usekvelikost); DBGLOG(dbg);
+    }
     if ((inteligence[pozice1]=malloc(usekvelikost)) == NULL) {
+      sprintf(dbg,"NACTI_INTELIGENCI: malloc iq[%lu] failed",pozice1); DBGLOG(dbg);
       free(datasoubor); datasoubor=NULL;
       HLASKA("Malo konvencni pameti pro slovnik! Uvolni pamet a zkus to znova.",4); return(1);
      }
@@ -89,14 +132,18 @@ BYTE vyslsoucet1,vyslsoucet2,znak;
       znak=getc(intel); znak^='6'; znak-='K'; znak^='K'^128; soucet1^=znak; soucet1+=znak; soucet2+=znak;
       inteligence[pozice1][pozice2]=znak;
      }
-    INTRO_NAPISPAMET(); KONTROLA_UTNUTI();
+    /* INTRO_NAPISPAMET(); */ KONTROLA_UTNUTI();
    }
+  sprintf(dbg,"NACTI_INTELIGENCI: iq stream end=%lu",ftell(intel)); DBGLOG(dbg);
   fclose(intel); intel=NULL;
 
+  sprintf(dbg,"NACTI_INTELIGENCI: computed checksum=%u,%u",soucet1,soucet2); DBGLOG(dbg);
   if (soucet1 != vyslsoucet1 || soucet2 != vyslsoucet2) {
+    DBGLOG("NACTI_INTELIGENCI: checksum mismatch");
     HLASKA("V souboru SLOVNIK.DAT je asi nejaka chyba, nebo co. Nahraj ho znovu!",1);
     if (masterboot == 0) return(1);
    }
+  DBGLOG("NACTI_INTELIGENCI: end ok");
   return(0);
  }
 

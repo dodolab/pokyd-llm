@@ -227,6 +227,7 @@ INTRO: DBGLOG("main: before INTRO");
 INTRO(argc,pozicehlavicka);
 DBGLOG("main: after INTRO");
 textbackground(0);
+DBGLOG("main: after textbackground");
 
 if (mod == 25 && delkastrany == 49) { SMAZOBRAZOVKU(1); pozicehlavicka=1; pozicedatumcas=2; delkastrany=24; }
 else if (mod == 50 && delkastrany == 24) {
@@ -240,6 +241,7 @@ else if (mod == 50 && delkastrany == 24) {
    }
  }
 NAPISHLAVICKOVYRADEK();
+DBGLOG("main: after NAPISHLAVICKOVYRADEK");
 
 SMAZKURZOR();
 jeli_nastaveni=1;		//0 - nepsat cas, 1 - normal, 2 - nastaveni
@@ -250,6 +252,7 @@ ZAPISCAS();
 stranaradek=0; gotoxy(1,wherey()-1); zapisovani=1;
 
 puvodnicas=time(NULL);
+DBGLOG("main: entering ZACATEK");
 
 ZACATEK:
 barvapocitac0=barvapocitac1;
@@ -260,9 +263,11 @@ ZACATECNIK("Pocitac te nejdrive uvita a zacne hovor.",01);
 
 CAS(1);	ZAPIS_NALADU();		//kvuli prepsani zacatecnickym textem
 textcolor(11);
+DBGLOG("main: before optional startup messages");
 if (svtipy == 1 || (svtipy == 2 && rand()%2 == 0)) { pozodp=1; VTIPY(); }
 if (spocasi == 1 || (spocasi == 2 && rand()%2 == 0)) { pozodp=1; POCASI(); ODPOVED(1); }
 VYNULUJ_ODPOVEDI();
+DBGLOG("main: after optional startup messages");
 
 if (argc > 1) {
   cislo=0; retezec1[0]=0;
@@ -294,9 +299,12 @@ if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
   ODPOVED(1); VYNULUJ_ODPOVEDI(); odpovedi[0][0]=0;
  }
 
+DBGLOG("main: before EXTRA_VETA 7/8");
 EXTRA_VETA(7); EXTRA_VETA(8);
+DBGLOG("main: after EXTRA_VETA 7/8");
 
 docasnenaladabody=0;
+DBGLOG("main: before initial goto OD");
 
 goto OD;
 
@@ -434,9 +442,11 @@ ZACATECNIK("Pocitac ti nyni na tvoji vetu odpovi.",05);
 #endif
 
 OD:
+DBGLOG("main: at OD before ODPOVED");
 if (cisloaktualnihopocitace == 1) barvapocitac0=barvapocitac1;
 else barvapocitac0=barvapocitac2;
 ODPOVED(1);
+DBGLOG("main: at OD after ODPOVED");
 CAS(0);
 if (konec != 1) {
   ZKONTROLUJ_EXTRA_SANCI(0);
