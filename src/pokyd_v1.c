@@ -154,6 +154,7 @@ BYTE y=wherey(),puvctrlbreak=ctrlbreak;
     textattr(7); cprintf(" \n\r");
     NASTAVKURZOR();
    }
+  DBGLOGF("KONEC: exit(0) cb=%u", (unsigned)ctrlbreak);
   exit(0);
  }
 

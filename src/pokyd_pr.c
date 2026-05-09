@@ -83,6 +83,16 @@ BYTE readonlymod=0,vypnutecheaty=0,psanivetyskryto=0;
    argc slot so KONEC sees garbage (e.g. 200), then "argc>=2" runs gotoxy(1,badY) and hangs. */
 int pokyd_intro_argc_snapshot = 0;
 
+/* --- Remote LLM mode (pokyd_llm.c / Watt-32) --- */
+/* 1 = -llm=host:port was parsed and sock_init() succeeded. */
+BYTE llm_enabled   = 0;
+/* 1 = TCP connection to the Node bridge is currently open. */
+BYTE llm_connected = 0;
+/* Bridge host string (hostname or dotted-decimal IP). */
+BYTE llm_host[64]  = "";
+/* Bridge TCP port. Default 8765. */
+WORD llm_port      = 8765;
+
 #if test == 1
 DWORD testcyklus;
 #endif

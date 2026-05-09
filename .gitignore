@@ -20,3 +20,11 @@ KYDY/
 .tools/
 dosbox/
 watcom/
+.env
+bridge/pokyd-bridge.log
+bridge/.bridge.pid
+
+# Full Watt-32 source tree when rebuilding libs (see scripts/bootstrap-watt32-docker.sh)
+vendor/watt32-dos/
+vendor/watt-32/
+node_modules

@@ -730,6 +730,7 @@ KONEC:
   DBGLOG("INTRO: video handoff complete");
   DBGLOG("INTRO: handing off to pokyd_run_after_intro (avoid RET from INTRO stack)");
   pokyd_run_after_intro();
+  DBGLOG("INTRO: ret?");
   return;
 UPLNYKONEC:
   /* Return from plugin picker: restore saved screen without video mode reset. */
@@ -739,6 +740,7 @@ UPLNYKONEC:
   gotoxy(1,puvpozy);
   DBGLOG("INTRO: UPLNYKONEC -> pokyd_run_after_intro");
   pokyd_run_after_intro();
+  DBGLOG("INTRO: ret? U");
   return;
  }
 

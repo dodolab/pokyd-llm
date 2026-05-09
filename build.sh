@@ -59,14 +59,56 @@ export INCLUDE="$WATCOM/h:$WATCOM/h/dos"
 export LIB="$WATCOM/lib286:$WATCOM/lib286/dos"
 export PATH="$WATCOM_HOST_BIN:$WATCOM/binw:$PATH"
 
+# ---------------------------------------------------------------------------
+# Optional: Watt-32 TCP/IP stack for the remote LLM mode (-llm=host:port).
+# Set WATT_ROOT to the Watt-32 installation directory.  Expected layout:
+#   $WATT_ROOT/inc/tcp.h          Watt-32 header
+#   $WATT_ROOT/lib/wattcplf.lib   16-bit Open Watcom large-model library
+# See bridge/README.md for build instructions and DOSBox-X NE2000 setup.
+# ---------------------------------------------------------------------------
+LLM_CFLAGS=""
+LLM_LIBS=""
+LLM_STACK="-k16384"
+WATT_ROOT="${WATT_ROOT:-}"
+
+# Bundled Watt-32 headers + libs (macOS-friendly; see scripts/bootstrap-watt32-docker.sh).
+if [[ -z "$WATT_ROOT" && -f "$ROOT_DIR/vendor/watt32-dos/inc/tcp.h" ]]; then
+  WATT_ROOT="$ROOT_DIR/vendor/watt32-dos"
+fi
+
+if [[ -n "$WATT_ROOT" ]]; then
+  WATT_INC="$WATT_ROOT/inc"
+  WATT_LIB=""
+  if [[ -f "$WATT_ROOT/lib/wattcplf.lib" ]]; then
+    WATT_LIB="$WATT_ROOT/lib/wattcplf.lib"
+  elif [[ -f "$WATT_ROOT/lib/wattcpwl.lib" ]]; then
+    WATT_LIB="$WATT_ROOT/lib/wattcpwl.lib"
+  fi
+  if [[ -f "$WATT_INC/tcp.h" && -n "$WATT_LIB" ]]; then
+    LLM_CFLAGS="-DPOKYD_LLM_WATT=1 -I$WATT_INC"
+    LLM_LIBS="$WATT_LIB"
+    # Watt-32 static library pushes DGROUP near the 64KiB limit; shrink stack to leave room.
+    # INTRO still fits if kept shallow; raise back toward -k16384 if you hit stack faults.
+    # Watt + DBGLOG strings sit near 64KiB DGROUP; stack shares that budget (-k is stack bytes).
+    LLM_STACK="-k3584"
+    echo "Watt-32 found at $WATT_ROOT -- LLM mode (-llm=host:port) will be compiled in."
+  else
+    echo "WARNING: WATT_ROOT=$WATT_ROOT set but tcp.h or wattcplf.lib not found -- skipping LLM."
+    echo "  Expected: $WATT_INC/tcp.h and $WATT_LIB"
+  fi
+else
+  echo "WATT_ROOT not set -- building without LLM networking (set WATT_ROOT to enable)."
+fi
+
 echo "Building with Open Watcom (host tools: $WATCOM_HOST_BIN)..."
 
 rm -f "$ROOT_DIR/pokyd.exe" "$ROOT_DIR/slova.exe"
 rm -f "$ROOT_DIR"/src/*.obj
 
 pushd "$ROOT_DIR/src" >/dev/null
-# -k: stack size (bytes). INTRO needs > default 2KiB, but DGROUP must stay ?64KiB (near/far data + bss).
-wcl -bt=dos -ml -zm -zq -ox -k16384 -fo=. -fe=../pokyd.exe pokyd.c
+# -k: stack size (bytes). INTRO needs > default 2KiB, but DGROUP must stay <=64KiB (near/far data + bss).
+# shellcheck disable=SC2086
+wcl -bt=dos -ml -zm -zq -ox $LLM_STACK $LLM_CFLAGS -fo=. -fe=../pokyd.exe pokyd.c $LLM_LIBS
 wcl -bt=dos -ml -zm -zq -ox -fo=. -fe=../slova.exe slova.c
 popd >/dev/null
 

@@ -294,6 +294,7 @@ static char **pokyd_main_argv;
 #include "pokyd_fn.c"
 #include "pokyd_na.c"
 #include "pokyd_sl.c"
+#include "pokyd_llm.c"
 
 /* Po INTRO: synchronizace video rezimu s delkastrany, ROM font pokud font==1 (detailni glyfy az v pokyd_run_after_intro). */
 static void pokyd_finish_intro_handoff(void) {
@@ -341,6 +342,17 @@ else if (mod == 50 && delkastrany == 24) {
 NASTAVSPRAVNYFONT();
 NAPISHLAVICKOVYRADEK();
 DBGLOG("main: after NAPISHLAVICKOVYRADEK");
+/* Attempt TCP connection to the LLM bridge now that the screen is ready. */
+if (llm_enabled) {
+  DBGLOGF("main: LLM_CONNECT to %s:%u", (char *)llm_host, (unsigned)llm_port);
+  if (LLM_CONNECT()) {
+    BARVA(barvapocitac1);
+    NAPISRETEZEC("LLM: pripojeno ke bridge serveru.", barvapocitac1);
+    STRANA(1);
+   } else {
+    DBGLOG("main: LLM_CONNECT failed - continuing without LLM");
+   }
+ }
 DBGLOGF("main: video state after header wherex=%d wherey=%d delkastrany=%u",
         wherex(), wherey(), (unsigned)delkastrany);
 
@@ -481,6 +493,12 @@ for (testcyklus=0; testcyklus < 10000; testcyklus++) {
 #endif
 
 SETRID();
+/* LLM hook: if connected, forward the user's sentence to the bridge instead of
+   running the rule engine. On success, dlouhe[] is filled and pozodp==100;
+   goto OD triggers ODPOVED() via the long-message path (same as VTIPY/POCASI).
+   On failure (network error, bridge down) execution falls through to the legacy
+   rule engine transparently - LLM mode is non-destructive. */
+if (llm_enabled && LLM_SEND_RECV()) goto OD;
 POSTARTU:
 
 #if krokovani == 0
@@ -589,15 +607,17 @@ if (konec != 1) {
   ZKONTROLUJ_EXTRA_SANCI(0);
   goto START;
  }
+DBGLOGF("main: quit k=%d llm=%u/%u", (int)konec, (unsigned)llm_enabled, (unsigned)llm_connected);
 ZAVRISOUBORSKYDAMA("\nProgram Pokyd byl ukoncen.",1);
 ZAPIS_INFORMACE_O_VETACH(3,1);
 STRANA(1);
+LLM_CLOSE();
 PREDKONEC();
 KONEC();
 }
 
 /* Vstup programu: prepinace pred INTRO, pak INTRO ? pokyd_run_after_intro (normalne se sem nevraci). */
-void main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 pokyd_main_argc = argc;
 pokyd_main_argv = argv;
 pokyd_shell_rows = 0;
@@ -620,6 +640,12 @@ if (argc > 1) {
     else if (stricmp(dlouhe,"-masterboot") == 0) masterboot=1;
     else if (stricmp(dlouhe,"-bezcheatu") == 0) vypnutecheaty=1;
     else if (stricmp(dlouhe,"-bezvsechcheatu") == 0) vypnutecheaty=2;
+    else if (strnicmp(dlouhe,"-llm",4) == 0) {
+      /* Accept: -llm=host:port  or  -llm:host:port  or  -llmhost:port */
+      BYTE *sep = (BYTE *)dlouhe + 4;
+      if (*sep == '=' || *sep == ':') sep++;
+      if (*sep) LLM_INIT(sep);
+     }
     else docasnenaladabody=1;
    }
   if (docasnenaladabody == 0) argc=0;
@@ -636,6 +662,7 @@ if (pokyd_do_consplit) {
   if (rx > 1) pokyd_shell_rows++;
   if (pokyd_shell_rows > 12 || (25 - (int)pokyd_shell_rows) < 12) pokyd_shell_rows = 0;
  }
+DBGLOGF("main: argc=%d llm=%u p=%u", argc, (unsigned)llm_enabled, (unsigned)llm_port);
 DBGLOG("main: start");
 NASTARTUJ_PROGRAM();
 DBGLOG("main: after NASTARTUJ_PROGRAM");
@@ -644,8 +671,10 @@ DBGLOG("main: after NASTARTUJ_PROGRAM");
 { int intro_argc = argc;
   if (argc > 1 && docasnenaladabody != 0) intro_argc = 1;
   pokyd_intro_argc_snapshot = intro_argc;
-  DBGLOG("main: before INTRO");
+  DBGLOGF("main: INTRO arg=%d", intro_argc);
   INTRO(intro_argc, pozicehlavicka);
+  DBGLOG("main: INTRO ret?");
  }
- /* Normal path: INTRO calls pokyd_run_after_intro() - never reaches here. */
+ /* Normal path: INTRO calls pokyd_run_after_intro() then KONEC/exit(0); never reaches here. */
+ return 0;
 }

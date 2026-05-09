@@ -91,3 +91,63 @@ Requirements:
 - DOSBox starts and runs `pokyd.exe`.
 - Config and conversation write paths remain writable in root.
 - Czech text/font rendering appears correct in DOS text mode.
+
+---
+
+## 11. Optional Feature: Remote LLM Mode (scope extension)
+
+This feature is **opt-in** and does not affect any existing behaviour when the
+`-llm` flag is absent.  It is implemented via the `pokyd_llm.c` fragment and a
+companion Node.js service (`bridge/`).
+
+### Scope
+
+- A new CLI flag `-llm=<host>:<port>` routes every user sentence to a remote
+  Node.js TCP bridge instead of the legacy rule engine.
+- The bridge runs an OpenAI agentic loop (tool execution included) and returns
+  a plain-ASCII reply that is displayed through the existing `ODPOVED()` long-
+  message path (`pozodp=100`, `dlouhe[]`).
+- If the bridge is unreachable the program prints a message and falls back to
+  the legacy rule engine for that turn.
+
+### New files
+
+| File | Role |
+|------|------|
+| `src/pokyd_llm.c` | DOS TCP client fragment (Watt-32, conditionally compiled) |
+| `bridge/server.js` | Node.js TCP server + OpenAI agentic loop |
+| `bridge/package.json` | Node dependencies |
+| `bridge/.env.example` | Config template (API key, port, model) |
+| `bridge/README.md` | Wire protocol spec + Watt-32 build guide |
+| `assets/WATTCP.CFG` | Watt-32 network config template (DOSBox-X slirp + real HW) |
+| `vendor/watt32-dos/` | Bundled Watt-32 `inc/` + Open Watcom large-model `wattcpwl.lib` |
+| `assets/NE2000.COM` | NE2000 packet driver (Crynwr collection; see `assets/NE2000.LICENSE.txt`) |
+| `scripts/bootstrap-watt32-docker.sh` | Rebuild `vendor/watt32-dos` via Docker on macOS/Linux |
+| `scripts/download-ne2000.sh` | Refetch `assets/NE2000.COM` from Internet Archive |
+
+### Build requirements (LLM mode only)
+
+- By default, `build.sh` sets `WATT_ROOT` to **`vendor/watt32-dos`** when `inc/tcp.h`
+  is present (bundled tree — no separate Watt install needed).
+- Override with `WATT_ROOT=/path/to/watt-32` if you maintain your own build.
+- Without headers + library, `build.sh` builds Pokyd without LLM TCP code (same as before).
+
+### DOS runtime requirements (LLM mode only)
+
+- A packet driver for the DOS NIC loaded before `pokyd.exe`.
+- `WATTCP.CFG` present (see `assets/WATTCP.CFG`).
+- Node.js bridge running on a reachable host (`node bridge/server.js`).
+
+### Encoding
+
+- User input: Czech diacritics are already stripped to ASCII base letters by
+  the existing `NAPIS()` routine; no encoding change on the DOS side.
+- Bridge response: UTF-8 from OpenAI is transliterated to 7-bit ASCII by the
+  bridge before being sent to DOS (`toAscii()` in `bridge/server.js`).
+
+### Validation checklist (LLM mode)
+
+- `pokyd.exe -pokyd -llm=10.0.2.2:8765` connects to the bridge in DOSBox-X.
+- User input is forwarded and the OpenAI response is displayed correctly.
+- Killing the bridge mid-session shows an error and the legacy engine resumes.
+- Build without `WATT_ROOT` produces an identical `pokyd.exe` with no LLM code.

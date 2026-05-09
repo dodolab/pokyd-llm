@@ -1,0 +1,18 @@
+{
+  "name": "pokyd-bridge",
+  "version": "1.0.0",
+  "description": "TCP bridge connecting the Pokyd DOS chatbot to the OpenAI API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "iconv-lite": "^0.6.3",
+    "openai": "^4.0.0"
+  }
+}
