@@ -65,7 +65,8 @@ rm -f "$ROOT_DIR/pokyd.exe" "$ROOT_DIR/slova.exe"
 rm -f "$ROOT_DIR"/src/*.obj
 
 pushd "$ROOT_DIR/src" >/dev/null
-wcl -bt=dos -ml -zm -zq -ox -fo=. -fe=../pokyd.exe pokyd.c
+# -k: stack size (bytes). INTRO needs > default 2KiB, but DGROUP must stay ?64KiB (near/far data + bss).
+wcl -bt=dos -ml -zm -zq -ox -k16384 -fo=. -fe=../pokyd.exe pokyd.c
 wcl -bt=dos -ml -zm -zq -ox -fo=. -fe=../slova.exe slova.c
 popd >/dev/null
 

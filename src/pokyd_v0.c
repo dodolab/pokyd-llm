@@ -19,9 +19,16 @@ void VYNULUJ_ODPOVEDI(void) {
 
 void EXTRA_VETA(BYTE ktera) {
   intpozice=ktera-1;
+  DBGLOGF("EXTRA_VETA(%u): intpozice=%u iq0='%c' pozodp=%u",
+          (unsigned)ktera, (unsigned)intpozice,
+          inteligence[intpozice] != NULL ? inteligence[intpozice][0] : '?',
+          (unsigned)pozodp);
   switch(inteligence[intpozice][0]) {
     case '5': RODX(1); break;
     case '6': NAHODAX(1); break;
+    default:
+      DBGLOGF("EXTRA_VETA: unexpected iq[0] (not 5/6), skipping RODX/NAHODAX");
+      break;
    }
  }
 
@@ -299,6 +306,7 @@ signed char nejlepsipoz;
 BYTE VYBER_ODPOVED(void) {
 BYTE mista[50],nejlepsi[50],pozice,pozice2;
 WORD cislo;
+  DBGLOGF("VYBER_ODPOVED: pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
   for (pozice=0; pozice < 50; pozice++) mista[pozice]=0;	//vynulovani
   for (pozice=0; pozice < pozodp; pozice++) {
     cislo=cislaodp[pozice];
@@ -315,8 +323,13 @@ WORD cislo;
   for (pozice=0; pozice < pozodp; pozice++)
    if (mista[pozice] == cislo)
     nejlepsi[pozice2++]=pozice;
-  if (pozice2 == 0) return(0);
-  return(nejlepsi[rand()%pozice2]);
+  if (pozice2 == 0) {
+    DBGLOG("VYBER_ODPOVED: no candidate (pozice2==0) returning 0");
+    return(0);
+   }
+  cislo=nejlepsi[rand()%pozice2];
+  DBGLOGF("VYBER_ODPOVED: picked slot=%u", (unsigned)cislo);
+  return((BYTE)cislo);
  }
 
 WORD ODRIZNIENTERY(void) {
@@ -672,7 +685,7 @@ void STRANA(BYTE kolik) {
   while (stranaradek < delkastrany-1 && kolik > 0) {
     if (wherey() == delkastrany+1) { pozicedatumcas--; pozicehlavicka--; }
     //_DH=delkastrany;_AL=1;_BH=0;_CX=0;_DL=79;_AH=6;geninterrupt(0x10);
-    cprintf("\n");
+    pokyd_emit_nl();
     if (stranaradek < delkastrany-1) stranaradek++;
     kolik--;
    }
@@ -885,7 +898,12 @@ BYTE velkepismeno=1,pozice1=0,pozice2=0,celkem=strlen(co)+1;
   if (pozodp < 20) {
     strcpy(odpovedi[pozodp],odpoved);
     cislaodp[pozodp]=cislo;
+    DBGLOGF("ODP: queued slot=%u cislo=%u len=%u preview=\"%.72s\"",
+            (unsigned)pozodp, (unsigned)cislo, (unsigned)strlen((char *)odpoved), odpoved);
     pozodp++; skutecnychodp++;
+   }
+  else {
+    DBGLOG("ODP: queue full (pozodp>=20), answer dropped");
    }
  }
 

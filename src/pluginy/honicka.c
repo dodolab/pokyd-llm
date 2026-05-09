@@ -11,10 +11,10 @@ signed long body=0,maxbody;
 
 //FILE *tab;
 
-#include "honicka.vo"
+#include "honicka_support.c"
 
 void main() {
-#include "honicka.in"
+#include "honicka_play.c"
 
 HRA:
 

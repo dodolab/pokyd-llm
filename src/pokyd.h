@@ -7,6 +7,7 @@
 
 /* DOS console split: keep COMMAND.COM / autoexec lines visible above Pokyd (see -consplit). */
 extern unsigned char pokyd_shell_rows;
+extern int pokyd_intro_argc_snapshot;
 
 void INTRO_CARY(void);
 DWORD VOLNAPAMET(void);

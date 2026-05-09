@@ -16,7 +16,7 @@ FILE *f;
 
 struct REGPACK reg;
 
-#include "silnice.fn"
+#include "silnice_font.c"
 #include "silnice.h"
 #include "silnice.tab"
 

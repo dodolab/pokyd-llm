@@ -19,9 +19,11 @@
 #include <process.h>
 #include <stdlib.h>
 #include <direct.h>
-#include <graph.h>
 #include <malloc.h>
 #include <bios.h>
+#include <stdarg.h>
+/* Do not include <graph.h>: Watcom GraphPak (_setvideomode/_settextcolor/_setbkcolor) fights BIOS INT10h
+   text output on DOSBox — black screen + flickering cursor while Pokyd writes via AH=09 elsewhere. */
 
 /* Borland-style interrupt register compatibility for Open Watcom. */
 static union REGPACK pokyd_regs;
@@ -52,7 +54,7 @@ unsigned char pokyd_shell_rows = 0;
 static unsigned char pokyd_do_consplit = 0;
 
 /* Borland compatibility names used across included legacy units. */
-#define C80 _TEXTC80
+#define C80 3 /* Watcom _TEXTC80: 80x25 color text — avoid pulling graph.h */
 #define C4350 4350
 #define ffblk find_t
 #define ff_name name
@@ -112,13 +114,33 @@ static int wherey(void) {
 }
 
 static void gotoxy(int x,int y) {
-  int phys_y = y;
+  int phys_y;
+  if (x < 1) x = 1;
+  else if (x > 80) x = 80;
+  if (y < 1) y = 1;
+  else if (y > 50) y = 50;
+  phys_y = y;
   memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x02;
   _BH = 0;
   if (pokyd_shell_rows != 0 && y >= 1) phys_y = y + (int)pokyd_shell_rows;
   _DH = (unsigned char)(phys_y - 1);
   _DL = (unsigned char)(x - 1);
+  geninterrupt(0x10);
+}
+
+/* Watcom cprintf("\n") does not advance the BIOS cursor used by wherex/wherey/gotoxy.
+   STRANA() mixed the two — stale wherey() gave pozicedatumcas=0 and gotoxy(...,0) broke DH. */
+static void pokyd_emit_nl(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x0E;
+  _BH = 0;
+  _AL = '\r';
+  geninterrupt(0x10);
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x0E;
+  _BH = 0;
+  _AL = '\n';
   geninterrupt(0x10);
 }
 
@@ -142,17 +164,23 @@ static void clrscr(void) {
   gotoxy(1,1);
 }
 
+static void pokyd_select_display_page0(void) {
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x05;
+  _AL = 0x00;
+  geninterrupt(0x10);
+}
+
 static void textcolor(int color) {
-  _settextcolor((grcolor)color);
+  (void)color;
 }
 
 static void textbackground(int color) {
-  _setbkcolor((long)color);
+  (void)color;
 }
 
 static void textattr(int attr) {
-  textbackground((attr >> 4) & 0x0F);
-  textcolor(attr & 0x0F);
+  (void)attr;
 }
 
 static void textmode(int mode) {
@@ -218,75 +246,74 @@ static FILE *pokyd_dbglog;
 
 static void DBGLOG(const char *msg) {
   if (pokyd_dbglog == NULL) {
-    pokyd_dbglog = fopen("debug.log","a");
+    /* FAT often shows DEBUG.LOG; line-buffering can lose lines if the app stops cold */
+    pokyd_dbglog = fopen("DEBUG.LOG", "a");
+    if (pokyd_dbglog == NULL)
+      pokyd_dbglog = fopen("debug.log", "a");
+    if (pokyd_dbglog != NULL)
+      setvbuf(pokyd_dbglog, NULL, _IONBF, 0);
   }
   if (pokyd_dbglog != NULL) {
-    fprintf(pokyd_dbglog,"%s\n",msg);
+    fprintf(pokyd_dbglog, "%s\n", msg);
     fflush(pokyd_dbglog);
   }
 }
 
-#include "pokyd.pr"
-#include "pokyd.h"
-#include "pokyd.za"
-#include "pokyd.v0"
-#include "pokyd.v1"
-#include "pokyd.v2"
-#include "pokyd.v3"
-#include "pokyd.fn"
-#include "pokyd.na"
-#include "pokyd.sl"
+static void DBGLOGF(const char *fmt, ...) {
+  char buf[512];
+  va_list ap;
+  va_start(ap, fmt);
+  vsprintf(buf, fmt, ap);
+  va_end(ap);
+  DBGLOG(buf);
+}
 
-void main(int argc, char *argv[]) {
-pokyd_shell_rows = 0;
-pokyd_do_consplit = 0;
-if (argc > 1) {
-  docasnenaladabody=0;				//docasne pouziti
-  for (cislo=1; cislo < argc; cislo++) {
-    strcpy(dlouhe,argv[cislo]); if (dlouhe[0] == '/') dlouhe[0]='-';
-    if (stricmp(dlouhe,"-test") == 0) introakcespusteni=1;
-    else if (stricmp(dlouhe,"-setric") == 0) introakcespusteni=2;
-    else if (stricmp(dlouhe,"-uloz") == 0) introakcespusteni=3;
-    else if (stricmp(dlouhe,"-napoveda") == 0) introakcespusteni=4;
-    else if (stricmp(dlouhe,"-?") == 0) introakcespusteni=4;
-    else if (stricmp(dlouhe,"-pluginy") == 0) introakcespusteni=5;
-    else if (stricmp(dlouhe,"-nastaveni") == 0) introakcespusteni=6;
-    else if (stricmp(dlouhe,"-pokyd") == 0) introakcespusteni=7;
-    else if (stricmp(dlouhe,"-zacatecnik") == 0) introakcespusteni=8;
-    else if (stricmp(dlouhe,"-consplit") == 0) pokyd_do_consplit=1;
-    else if (stricmp(dlouhe,"-readonly") == 0) readonlymod=1;
-    else if (stricmp(dlouhe,"-masterboot") == 0) masterboot=1;
-    else if (stricmp(dlouhe,"-bezcheatu") == 0) vypnutecheaty=1;
-    else if (stricmp(dlouhe,"-bezvsechcheatu") == 0) vypnutecheaty=2;
-    else docasnenaladabody=1;
+/* Forward decl for INTRO KONEC (included below); definition after all includes. */
+static void pokyd_finish_intro_handoff(void);
+/* INTRO() has a huge stack frame; RET to main can corrupt return addr — hand off via this instead. */
+static void pokyd_run_after_intro(void);
+
+static int pokyd_main_argc;
+static char **pokyd_main_argv;
+
+#include "pokyd_pr.c"
+#include "pokyd.h"
+#include "pokyd_za.c"
+#include "pokyd_v0.c"
+#include "pokyd_v1.c"
+#include "pokyd_v2.c"
+#include "pokyd_v3.c"
+#include "pokyd_fn.c"
+#include "pokyd_na.c"
+#include "pokyd_sl.c"
+
+static void pokyd_finish_intro_handoff(void) {
+  grafika25 = 0;
+  if (pokyd_shell_rows == 0) {
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+    pokyd_regs.w.ax = 0x0003;
+    intr(0x10, &pokyd_regs);
+    if (delkastrany > 24) {
+      delkastrany = 24;
+      pozicehlavicka = 1;
+      pozicedatumcas = 2;
+     }
+    SMAZKURZOR();
+    if (font == 1) NASTAVNORMALNIFONT();
+   } else {
+    NASTAVSPRAVNYMOD();
    }
-  if (docasnenaladabody == 0) argc=0;
  }
-if (pokyd_do_consplit) {
-  int ry, rx;
-  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
-  _AH = 0x03;
-  _BH = 0;
-  geninterrupt(0x10);
-  ry = _DH + 1;
-  rx = _DL + 1;
-  pokyd_shell_rows = (unsigned char)ry;
-  if (rx > 1) pokyd_shell_rows++;
-  if (pokyd_shell_rows > 12 || (25 - (int)pokyd_shell_rows) < 12) pokyd_shell_rows = 0;
- }
-DBGLOG("main: start");
-NASTARTUJ_PROGRAM();
-DBGLOG("main: after NASTARTUJ_PROGRAM");
-/* Junk argv leaves argc>=2 but INTRO must still wait for a key; keep real argc for argv
-   handling below (e.g. initial sentence from command line). */
-{ int intro_argc = argc;
-  if (argc > 1 && docasnenaladabody != 0) intro_argc = 1;
-  DBGLOG("main: before INTRO");
-  INTRO(intro_argc, pozicehlavicka);
- }
-DBGLOG("main: after INTRO");
-textbackground(0);
-DBGLOG("main: after textbackground");
+
+static void pokyd_run_after_intro(void) {
+  int argc = pokyd_main_argc;
+  char **argv = pokyd_main_argv;
+
+DBGLOG("main: INTRO returned");
+textmode(C80);
+clrscr();
+pokyd_select_display_page0();
+DBGLOG("main: after textmode+clrscr");
 
 if (mod == 25 && delkastrany == 49) { SMAZOBRAZOVKU(1); pozicehlavicka=1; pozicedatumcas=2; delkastrany=24; }
 else if (mod == 50 && delkastrany == 24) {
@@ -301,14 +328,25 @@ else if (mod == 50 && delkastrany == 24) {
  }
 NAPISHLAVICKOVYRADEK();
 DBGLOG("main: after NAPISHLAVICKOVYRADEK");
+DBGLOGF("main: video state after header wherex=%d wherey=%d delkastrany=%u",
+        wherex(), wherey(), (unsigned)delkastrany);
 
 SMAZKURZOR();
 jeli_nastaveni=1;		//0 - nepsat cas, 1 - normal, 2 - nastaveni
 STRANA(1);
 BARVA(13); STRANA(1);
-pozicedatumcas=wherey()-1;
+{ int py = wherey();
+  pozicedatumcas = (BYTE)((py > 1) ? py - 1 : 2);
+}
 ZAPISCAS();
-stranaradek=0; gotoxy(1,wherey()-1); zapisovani=1;
+stranaradek=0;
+{ int ty = wherey();
+  if (ty < 2) ty = 2;
+  gotoxy(1, ty - 1);
+ }
+zapisovani=1;
+DBGLOGF("main: input line cursor wherex=%d wherey=%d pozicedatumcas=%u barvapocitac1=%u (PC green default 10)",
+        wherex(), wherey(), (unsigned)pozicedatumcas, (unsigned)barvapocitac1);
 
 puvodnicas=time(NULL);
 DBGLOG("main: entering ZACATEK");
@@ -323,10 +361,23 @@ ZACATECNIK("Pocitac te nejdrive uvita a zacne hovor.",01);
 CAS(1);	ZAPIS_NALADU();		//kvuli prepsani zacatecnickym textem
 textcolor(11);
 DBGLOG("main: before optional startup messages");
-if (svtipy == 1 || (svtipy == 2 && rand()%2 == 0)) { pozodp=1; VTIPY(); }
-if (spocasi == 1 || (spocasi == 2 && rand()%2 == 0)) { pozodp=1; POCASI(); ODPOVED(1); }
+DBGLOGF("main: svtipy=%d spocasi=%d celkemvtipu=%lu delayprocenta=%lu textefekty=%u",
+        (int)svtipy, (int)spocasi, (unsigned long)celkemvtipu, (unsigned long)delayprocenta, (unsigned)textefekty);
+if (svtipy == 1 || (svtipy == 2 && rand()%2 == 0)) {
+  DBGLOG("main: calling VTIPY() (startup joke path)");
+  pozodp=1;
+  VTIPY();
+  DBGLOGF("main: after VTIPY pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+ }
+if (spocasi == 1 || (spocasi == 2 && rand()%2 == 0)) {
+  DBGLOG("main: calling POCASI()+ODPOVED (startup weather path)");
+  pozodp=1;
+  POCASI();
+  ODPOVED(1);
+  DBGLOGF("main: after POCASI ODPOVED pozodp=%u", (unsigned)pozodp);
+ }
 VYNULUJ_ODPOVEDI();
-DBGLOG("main: after optional startup messages");
+DBGLOGF("main: after optional startup messages pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
 
 if (argc > 1) {
   cislo=0; retezec1[0]=0;
@@ -341,15 +392,20 @@ if (argc > 1) {
       strcat(retezec1," ");
      }
    }
-  retezec1[strlen(retezec1)-1]=0;
+  { size_t rl = strlen(retezec1);
+    if (rl > 0) retezec1[rl-1]=0;
+   }
 ZAARGC:
-  STRANA(pocetradku); pocetuzivvet++;
-  retezec1[79]=0; pocetvet=1;
-  NAPISRETEZEC(retezec1,barvaclovek);
-  if (kydy != NULL) fprintf(kydy,"C: %s\n",retezec1);
-  SETRID();
-  strcpy(puvretezec,retezec1);
-  goto POSTARTU;
+  /* Switches only: do not skip EXTRA_VETA / initial OD (otherwise no opening reply). */
+  if (retezec1[0] != 0) {
+    STRANA(pocetradku); pocetuzivvet++;
+    retezec1[79]=0; pocetvet=1;
+    NAPISRETEZEC(retezec1,barvaclovek);
+    if (kydy != NULL) fprintf(kydy,"C: %s\n",retezec1);
+    SETRID();
+    strcpy(puvretezec,retezec1);
+    goto POSTARTU;
+   }
  }
 
 if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
@@ -359,8 +415,15 @@ if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
  }
 
 DBGLOG("main: before EXTRA_VETA 7/8");
-EXTRA_VETA(7); EXTRA_VETA(8);
-DBGLOG("main: after EXTRA_VETA 7/8");
+EXTRA_VETA(7);
+DBGLOGF("main: after EXTRA_VETA(7) pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+EXTRA_VETA(8);
+DBGLOGF("main: after EXTRA_VETA(8) pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+{ unsigned ip;
+  DBGLOGF("main: welcome queue pozodp=%u barvapocitac0 will be=%u", (unsigned)pozodp, (unsigned)barvapocitac1);
+  for (ip = 0; ip < (unsigned)pozodp && ip < 8u; ip++)
+    DBGLOGF("main: odpovedi[%u]=\"%.200s\"", ip, (char *)odpovedi[ip]);
+ }
 
 docasnenaladabody=0;
 DBGLOG("main: before initial goto OD");
@@ -501,9 +564,11 @@ ZACATECNIK("Pocitac ti nyni na tvoji vetu odpovi.",05);
 #endif
 
 OD:
-DBGLOG("main: at OD before ODPOVED");
+DBGLOGF("main: at OD before ODPOVED pozodp=%u barvapocitac1=%u barvapocitac2=%u wherey=%d",
+        (unsigned)pozodp, (unsigned)barvapocitac1, (unsigned)barvapocitac2, wherey());
 if (cisloaktualnihopocitace == 1) barvapocitac0=barvapocitac1;
 else barvapocitac0=barvapocitac2;
+DBGLOGF("main: ODPOVED(1) barvapocitac0=%u", (unsigned)barvapocitac0);
 ODPOVED(1);
 DBGLOG("main: at OD after ODPOVED");
 CAS(0);
@@ -516,4 +581,57 @@ ZAPIS_INFORMACE_O_VETACH(3,1);
 STRANA(1);
 PREDKONEC();
 KONEC();
+}
+
+void main(int argc, char *argv[]) {
+pokyd_main_argc = argc;
+pokyd_main_argv = argv;
+pokyd_shell_rows = 0;
+pokyd_do_consplit = 0;
+if (argc > 1) {
+  docasnenaladabody=0;				//docasne pouziti
+  for (cislo=1; cislo < argc; cislo++) {
+    strcpy(dlouhe,argv[cislo]); if (dlouhe[0] == '/') dlouhe[0]='-';
+    if (stricmp(dlouhe,"-test") == 0) introakcespusteni=1;
+    else if (stricmp(dlouhe,"-setric") == 0) introakcespusteni=2;
+    else if (stricmp(dlouhe,"-uloz") == 0) introakcespusteni=3;
+    else if (stricmp(dlouhe,"-napoveda") == 0) introakcespusteni=4;
+    else if (stricmp(dlouhe,"-?") == 0) introakcespusteni=4;
+    else if (stricmp(dlouhe,"-pluginy") == 0) introakcespusteni=5;
+    else if (stricmp(dlouhe,"-nastaveni") == 0) introakcespusteni=6;
+    else if (stricmp(dlouhe,"-pokyd") == 0) introakcespusteni=7;
+    else if (stricmp(dlouhe,"-zacatecnik") == 0) introakcespusteni=8;
+    else if (stricmp(dlouhe,"-consplit") == 0) pokyd_do_consplit=1;
+    else if (stricmp(dlouhe,"-readonly") == 0) readonlymod=1;
+    else if (stricmp(dlouhe,"-masterboot") == 0) masterboot=1;
+    else if (stricmp(dlouhe,"-bezcheatu") == 0) vypnutecheaty=1;
+    else if (stricmp(dlouhe,"-bezvsechcheatu") == 0) vypnutecheaty=2;
+    else docasnenaladabody=1;
+   }
+  if (docasnenaladabody == 0) argc=0;
+ }
+if (pokyd_do_consplit) {
+  int ry, rx;
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x03;
+  _BH = 0;
+  geninterrupt(0x10);
+  ry = _DH + 1;
+  rx = _DL + 1;
+  pokyd_shell_rows = (unsigned char)ry;
+  if (rx > 1) pokyd_shell_rows++;
+  if (pokyd_shell_rows > 12 || (25 - (int)pokyd_shell_rows) < 12) pokyd_shell_rows = 0;
+ }
+DBGLOG("main: start");
+NASTARTUJ_PROGRAM();
+DBGLOG("main: after NASTARTUJ_PROGRAM");
+/* Junk argv leaves argc>=2 but INTRO must still wait for a key; keep real argc for argv
+   handling below (e.g. initial sentence from command line). */
+{ int intro_argc = argc;
+  if (argc > 1 && docasnenaladabody != 0) intro_argc = 1;
+  pokyd_intro_argc_snapshot = intro_argc;
+  DBGLOG("main: before INTRO");
+  INTRO(intro_argc, pozicehlavicka);
+ }
+ /* Normal path: INTRO calls pokyd_run_after_intro() — never reaches here. */
 }

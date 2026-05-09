@@ -1,8 +1,8 @@
-/* Tento zdrojov kd je pod licenc GNU/GPL. Mete ho pout k vlastn
-   poteb, ale nesmte jej ani programy zaloen na tomto kdu vyut komern!
+/* Tento zdrojovı kód je pod licencí GNU/GPL. Mùete ho pouít k vlastní
+   potøebì, ale nesmíte jej ani programy zaloené na tomto kódu vyuít komerènì!
 
-   Jedn se o zdrojov kd programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Alee Jandy, aktivn vyvjenho 1999 - 2002
+   Jedná se o zdrojovı kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
 */
 
 
@@ -406,14 +406,14 @@ WORD pozicepokyd=0;
   gotoxy(pozicex,pozicey); textbackground(0);
   for (kolikuzy=0; kolikuzy < OBRAZEK_POKYDU_Y; kolikuzy++) { //Tabulka "Pokyd"
     for (kolikuzx=0; kolikuzx < OBRAZEK_POKYDU_X; kolikuzx++) {
-      if ("                  "
-          "                "
-          "                 "
-          "                  "
-          "                "
-          "                     "
-          "              "
-          "                             "
+      if ("ÛÛÛÛÛÛ         ÛÛÛÛ ÛÛÛ      ÛÛÛÛÛÛ  "
+          " ÛÛ  ÛÛ  ÛÛÛÛ   ÛÛ  ÛÛ ÛÛ ÛÛÛ ÛÛ  ÛÛ "
+          " ÛÛ  ÛÛ ÛÛ  ÛÛ  ÛÛ ÛÛ  ÛÛ  ÛÛ ÛÛ   ÛÛ"
+          " ÛÛ  ÛÛ Û    ÛÛ ÛÛÛÛ   ÛÛ  ÛÛ ÛÛ   ÛÛ"
+          " ÛÛÛÛÛ ÛÛ    ÛÛ ÛÛ ÛÛ   ÛÛÛÛ  ÛÛ   ÛÛ"
+          " ÛÛ    ÛÛ    ÛÛ ÛÛ  ÛÛ   ÛÛ   ÛÛ  ÛÛ "
+          "ÛÛÛÛ    ÛÛ  ÛÛ ÛÛÛÛ ÛÛÛ  ÛÛ  ÛÛÛÛÛÛ  "
+          "         ÛÛÛÛ           ÛÛÛÛ         "
         [pozicepokyd+kolikuzx] != ' ') {
         if (pruhledne == 0) NAPISZNAK2(219,barva);
         else {
@@ -436,7 +436,6 @@ BYTE pomoc=0,ah,al,otaznikpoz=0,prvnispusteni=0,zacatecniknabidka=0,den,mesic;
 static BYTE opakovani=0;
 DWORD blikaniverze=0,otaznikcas=0,cassetric;
 BYTE nal[20];
-BYTE dbgintro[64];
 //DWORD far *int1,*int3;
 BYTE ukol[]=
 "+-------------------------+"
@@ -525,7 +524,7 @@ BYTE ukol[]=
      }
    }
   INTRO_NAPIS(3,NAST_Y,"Kontrola nastaveni:",15);
-  INTRO_NAPIS(2,NAST_Y+1,"         zmena:",15);
+  INTRO_NAPIS(2,NAST_Y+1,"ÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛ         zmena:",15);
 
   NASTAVENI:
   INTRO_NAPIS(2,NAST_Y+2,"Pohlavi uzivatele:",14); if (zenskyrod == 0) INTRO_NAPIS(23,NAST_Y+2,"muz ",13);
@@ -621,7 +620,7 @@ GETCH:
      }
 
     pomoc=getch();
-    sprintf(dbgintro,"INTRO: key=%u",pomoc); DBGLOG(dbgintro);
+    DBGLOGF("INTRO: key=%u", (unsigned)pomoc);
     switch(pomoc) {		//neni-li pritomen argument, cekej na klavesu
       case 0: switch(getch()) {
         case 16: case 37: case 45: goto SKONCI;		//Alt-Q, Alt-K, Alt-X
@@ -672,15 +671,23 @@ SKONCI:         pocetsouboru--;			//pocet spusteni
 #endif
 
 KONEC:
-  sprintf(dbgintro,"INTRO: exit KONEC argc=%d",(int)argc);
-  DBGLOG(dbgintro);
+  DBGLOGF("INTRO: exit KONEC intro_arg=%d", pokyd_intro_argc_snapshot);
   /* Always safe handoff to main: never NASTAVSPRAVNYMOD/SMAZOBRAZOVKU here (DOSBox-X crash). */
   ODROLUJ();
   DBGLOG("INTRO: after ODROLUJ");
-  if (argc >= 2) {
-    grafika25=0;
-    gotoxy(1,puvpozy);
+  /* Do not use INTRO's argc here — stack pressure can corrupt it (log showed intro_arg=200).
+     Use snapshot from main; clamp Y so gotoxy never asks BIOS for an invalid row. */
+  if (pokyd_intro_argc_snapshot >= 2) {
+    grafika25 = 0;
+    { int gy = (int)(unsigned char)puvpozy;
+      if (gy < 1 || gy > 25) gy = 1;
+      gotoxy(1, (BYTE)gy);
+     }
    }
+  pokyd_finish_intro_handoff();
+  DBGLOG("INTRO: video handoff complete");
+  DBGLOG("INTRO: handing off to pokyd_run_after_intro (avoid RET from INTRO stack)");
+  pokyd_run_after_intro();
   return;
 UPLNYKONEC:
   /* Return from plugin picker: restore saved screen without video mode reset. */
@@ -688,6 +695,8 @@ UPLNYKONEC:
   grafika25=0;
   ZAPISOBRAZOVKU();
   gotoxy(1,puvpozy);
+  DBGLOG("INTRO: UPLNYKONEC -> pokyd_run_after_intro");
+  pokyd_run_after_intro();
   return;
  }
 
@@ -1037,13 +1046,13 @@ UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A
     SMAZKURZOR(); cislo=strlen(retezec1);
     for (celkem=0; celkem < cislo; celkem++) {
       gotoxy(1,pozicey);
-      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("",barvaclovek);
-      NAPISRETEZEC("",barvaclovek);
+      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("Û",barvaclovek);
+      NAPISRETEZEC("Û",barvaclovek);
       CEKEJ(200/cislo);
      }
     while (celkem > 0) {
       gotoxy(celkem--,pozicey);
-      NAPISRETEZEC(" ",barvaclovek);
+      NAPISRETEZEC("Û ",barvaclovek);
       CEKEJ(200/cislo);
      }
     ESCSMAZ: retezec1[0]=0; pozice=0; celkem=0; BARVA(barvaclovek);

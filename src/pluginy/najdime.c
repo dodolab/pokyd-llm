@@ -13,7 +13,7 @@ DWORD pocetjmen,velikostsouboru;
 
 FILE *kalendar;
 
-#include "najdime.v"
+#include "najdime_body.c"
 
 void main(int argc, char *argv[]) {
 textcolor(11); textbackground(0);

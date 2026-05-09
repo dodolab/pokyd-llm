@@ -72,6 +72,9 @@ WORD puvodnipkdrok;
 BYTE puvodnipkdzapsani=0,introakcespusteni=0,xtrzapsani=0,xtrzapiskam=0;
 BYTE readonlymod=0,vypnutecheaty=0,psanivetyskryto=0;
 
+/* Set before INTRO(): INTRO uses a huge stack frame; Watcom can corrupt the incoming
+   argc slot so KONEC sees garbage (e.g. 200), then "argc>=2" runs gotoxy(1,badY) and hangs. */
+int pokyd_intro_argc_snapshot = 0;
 
 #if test == 1
 DWORD testcyklus;
@@ -81,6 +84,8 @@ struct ffblk ffblk;
 struct d { int nuly; long seriove; char rebeliny[20]; } data;
 
 FILE *kydy, *nastaveni, *vtipys, *intel, *vety;
+
+/* Stack size is set by wcl -k… in build.sh (DGROUP ?64KiB; _stklen alone does not override link). */
 
 #define OBRAZEK_POKYDU_X 37
 #define OBRAZEK_POKYDU_Y 8

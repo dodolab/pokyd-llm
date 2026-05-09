@@ -466,12 +466,16 @@ void ODPOVED(BYTE odradkovani) {
 DWORD pozice=0,pozice2,celkempozice;
 BYTE pozice3;
   KONTROLA_UTNUTI(); SMAZKURZOR();
+  DBGLOGF("ODPOVED: enter odradkovani=%u pozodp=%u barvapocitac0=%u cursor=(%d,%d)",
+          (unsigned)odradkovani, (unsigned)pozodp, (unsigned)barvapocitac0, wherex(), wherey());
   textcolor(barvapocitac0); textbackground(0);
   if (odradkovani == 1) STRANA(pocetradku);
   gotoxy(1,wherey());
   if (pozodp == 100) {					//Dlouhe zpravy
     if (kydy != NULL) fprintf(kydy,"P: ");
     pozice2=ODRIZNIENTERY();
+    DBGLOGF("ODPOVED: long message path (VTIPY/POCASI dlouhe) len=%u preview=\"%.80s\"",
+            (unsigned)pozice2, dlouhe);
     for (pozice=0; pozice < pozice2; pozice++) {
       if (dlouhe[pozice] == '\n' || wherex() == 80) STRANA(1);
       else NAPISZNAKODP(dlouhe[pozice]);
@@ -479,17 +483,41 @@ BYTE pozice3;
      }
     if (kydy != NULL) fprintf(kydy,"%s\n",dlouhe);
     PIPNI(140,30); pocetvet++;
+    DBGLOG("ODPOVED: long message path done");
    }
   else {
-    if (pozodp == 0) pozodp=1;		//Zabraneni pripadnemu Divide error
+    if (pozodp == 0) {
+      DBGLOG("ODPOVED: pozodp was 0, forcing to 1 (would skip drawing)");
+      pozodp=1;		//Zabraneni pripadnemu Divide error
+     }
     cislo=VYBER_ODPOVED();			//Vyber odpoved
     celkempozice=strlen(odpovedi[cislo]);
+    DBGLOGF("ODPOVED: short path cislo=%u celkempozice=%u cislaodp0=%u delay=%u fx=%u",
+            (unsigned)cislo, (unsigned)celkempozice, (unsigned)cislaodp[cislo],
+            (unsigned)delayprocenta, (unsigned)textefekty);
+    if (celkempozice == 0) {
+      DBGLOG("ODPOVED: WARNING empty string for selected cislo — nothing to draw");
+     }
+    else {
+      DBGLOGF("ODPOVED: text preview=\"%.72s\"", odpovedi[cislo]);
+     }
 
     if (delayprocenta == 0 || textefekty == 0) {	//odpoved napsana hned
+      DBGLOG("ODPOVED: immediate NAPISRETEZEC (no typewriter effect)");
+      DBGLOGF("ODPOVED: immediate text attr=%u=\"%.200s\"", (unsigned)barvapocitac0, (char *)odpovedi[cislo]);
       NAPISRETEZEC(odpovedi[cislo],barvapocitac0); goto DAL;
      }
 
-    switch(rand()%12) {			//Vyber efektu
+    pozice3=(BYTE)(rand()%12);
+    /* Open Watcom cprintf + BIOS gotoxy desync: effects 2–6,8,11 write via cprintf ? blank DOSBox */
+    if (pozice3 == 2 || pozice3 == 3 || pozice3 == 4 || pozice3 == 5 || pozice3 == 6 ||
+        pozice3 == 8 || pozice3 == 11) {
+      DBGLOGF("ODPOVED: remapping unsafe effect %u -> 0 (BIOS-only)", (unsigned)pozice3);
+      pozice3 = 0;
+     }
+    DBGLOGF("ODPOVED: typewriter effect case=%u len=%u attr=%u text=\"%.200s\"",
+            (unsigned)pozice3, (unsigned)celkempozice, (unsigned)barvapocitac0, (char *)odpovedi[cislo]);
+    switch(pozice3) {			//Vyber efektu
       case 0:					//Normalni efekt
 	pozice=0; while (pozice < celkempozice) {
 	  NAPISZNAKODP(odpovedi[cislo][pozice++]);
@@ -820,6 +848,7 @@ BYTE hlaska[80];
 
 void VTIPY(void) {
 DWORD misto,delka,pozdlouhe=0,znak;
+  DBGLOGF("VTIPY: enter celkemvtipu=%lu", (unsigned long)celkemvtipu);
   if (celkemvtipu != 0) {
     SOUBOR("VTIPY.TXT"); if ((vtipys=fopen(soubor,"rb")) == NULL) goto NIC;
     misto=VRAT_POZICI_VTIPU();
@@ -837,10 +866,14 @@ DWORD misto,delka,pozdlouhe=0,znak;
       strcpy(dlouhe,dlouhe+1);			//Smazani enteru na zacatku
     fclose(vtipys); vtipys=NULL;
     smyslpocvety=3;
+    DBGLOGF("VTIPY: loaded joke len=%u preview=\"%.80s\"", (unsigned)strlen(dlouhe), dlouhe);
    }
   else {
-    NIC: VRATDATA(2); smyslpocvety=3;	//Bohuzel, nenasel jsem zadne vtipy....
+    NIC: DBGLOG("VTIPY: no jokes file/count — VRATDATA fallback text");
+    VRATDATA(2); smyslpocvety=3;	//Bohuzel, nenasel jsem zadne vtipy....
+    DBGLOGF("VTIPY: fallback dlouhe len=%u preview=\"%.80s\"", (unsigned)strlen(dlouhe), dlouhe);
    }
+  DBGLOG("VTIPY: calling ODPOVED(1) with pozodp=100 (long message)");
   pozodp=100; ODPOVED(1);
  }
 

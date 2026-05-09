@@ -12,7 +12,7 @@ void interrupt (*stara_adresa24)(void);
 
 FILE *test,*hodnoty;
 
-#include "testpkd.v"
+#include "testpkd_body.c"
 
 void main(void) {
 textcolor(11); textbackground(0);
