@@ -59,7 +59,8 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
 
 5. **Documentation**
    - README must include setup/build/run and structure.
-   - PRD must describe requirements, constraints, and acceptance criteria.
+   - PRD (`docs/prd.md`) must describe requirements, constraints, and acceptance criteria.
+   - **CODEMAP** (`docs/CODEMAP.md`) documents unity-build fragment order and where to find major subsystems—maintain it when fragment responsibilities shift.
 
 ## 7. Non-Functional Requirements
 

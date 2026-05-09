@@ -1,8 +1,8 @@
-/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
-   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
 /*

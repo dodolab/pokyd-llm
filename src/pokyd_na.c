@@ -1,8 +1,8 @@
-/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
-   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
 /*
@@ -125,7 +125,7 @@ PSANI:
   ZHLTNI_MYS();
 
 CEKEJKLAVESU:
-  INTRO_NAPIS(1,sipkapozice,"dz?dz?dz? ",11); cassipka=CAS18(); typsipky=0;
+  INTRO_NAPIS(1,sipkapozice,"\xcd\xcd\xcd\x10 ",11); cassipka=CAS18(); typsipky=0;
   pozicetextefekt=0; castext=cassipka;
 CEKEJKLAVESU2:
   cassetric=time(NULL);
@@ -159,8 +159,8 @@ POZICE:
 
       if (cassipka+5 < CAS18()) {
         cassipka=CAS18(); switch(typsipky) {
-          case 0: typsipky++; INTRO_NAPIS(1,sipkapozice,"dz?dz?dz?dz?",11); break;
-          case 1: typsipky--; INTRO_NAPIS(1,sipkapozice,"dz?dz?dz? ",11); break;
+          case 0: typsipky++; INTRO_NAPIS(1,sipkapozice,"\xcd\xcd\xcd\xcd\x10",11); break;
+          case 1: typsipky--; INTRO_NAPIS(1,sipkapozice,"\xcd\xcd\xcd\x10 ",11); break;
          }
        }
       if (castext != CAS18() && textefekty == 1) {

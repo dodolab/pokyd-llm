@@ -1,8 +1,8 @@
-/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
-   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
 /*
@@ -423,14 +423,14 @@ WORD pozicepokyd=0;
   gotoxy(pozicex,pozicey); textbackground(0);
   for (kolikuzy=0; kolikuzy < OBRAZEK_POKYDU_Y; kolikuzy++) { //Tabulka "Pokyd"
     for (kolikuzx=0; kolikuzx < OBRAZEK_POKYDU_X; kolikuzx++) {
-      if ("dz?dz?dz?dz?dz?dz?         dz?dz?dz?dz? dz?dz?dz?      dz?dz?dz?dz?dz?dz?  "
-          " dz?dz?  dz?dz?  dz?dz?dz?dz?   dz?dz?  dz?dz? dz?dz? dz?dz?dz? dz?dz?  dz?dz? "
-          " dz?dz?  dz?dz? dz?dz?  dz?dz?  dz?dz? dz?dz?  dz?dz?  dz?dz? dz?dz?   dz?dz?"
-          " dz?dz?  dz?dz? dz?    dz?dz? dz?dz?dz?dz?   dz?dz?  dz?dz? dz?dz?   dz?dz?"
-          " dz?dz?dz?dz?dz? dz?dz?    dz?dz? dz?dz? dz?dz?   dz?dz?dz?dz?  dz?dz?   dz?dz?"
-          " dz?dz?    dz?dz?    dz?dz? dz?dz?  dz?dz?   dz?dz?   dz?dz?  dz?dz? "
-          "dz?dz?dz?dz?    dz?dz?  dz?dz? dz?dz?dz?dz? dz?dz?dz?  dz?dz?  dz?dz?dz?dz?dz?dz?  "
-          "         dz?dz?dz?dz?           dz?dz?dz?dz?         "
+      if ("######         #### ###      ######  "
+          " ##  ##  ####   ##  ## ## ### ##  ## "
+          " ##  ## ##  ##  ## ##  ##  ## ##   ##"
+          " ##  ## #    ## ####   ##  ## ##   ##"
+          " ##### ##    ## ## ##   ####  ##   ##"
+          " ##    ##    ## ##  ##   ##   ##  ## "
+          "####    ##  ## #### ###  ##  ######  "
+          "         ####           ####         "
         [pozicepokyd+kolikuzx] != ' ') {
         if (pruhledne == 0) NAPISZNAK2(219,barva);
         else {
@@ -445,23 +445,32 @@ WORD pozicepokyd=0;
    }
  }
 
+/* Ramecek pri START / radky 21-23 u sloupce 52 (nahore pod "Ctu inteligenci"). */
+static void INTRO_UKOL_BOX(void) {
+  static const char ukol[]=
+    "+-------------------------+"
+    "|                         |"
+    "+-------------------------+";
+  WORD pozice=0,celkem=(WORD)strlen(ukol),zatimpozice=0;
+  gotoxy(52,21);
+  while (zatimpozice < celkem) {
+    zatimpozice+=27;
+    while (pozice < zatimpozice) NAPISZNAK2((BYTE)ukol[pozice++],8+(7<<4));
+    gotoxy(52,wherey()+1);
+   }
+ }
+
 /* Rutina INTRO - viz implementace a nazvy promennych (konvence Pokyd). */
 void INTRO(int argc,BYTE puvpozy) {
 #define NAST_Y 15
 
-WORD pozice=0,celkem,zatimpozice=0,rok;
+WORD rok;
 BYTE pomoc=0,ah,al,otaznikpoz=0,prvnispusteni=0,zacatecniknabidka=0,den,mesic;
+BYTE intro_val_attr;
 static BYTE opakovani=0;
 DWORD blikaniverze=0,otaznikcas=0,cassetric;
-BYTE nal[20];
 //DWORD far *int1,*int3;
-BYTE ukol[]=
-"+-------------------------+"
-"|                         |"
-"+-------------------------+";
-//" Motto: My kydame, Vy kydate, Pokyd "
 
-  memset(nal,0,sizeof(nal));
   DBGLOG("INTRO: entry");
   CTI: SMAZOBRAZOVKU(0);
   CTI2: SMAZKURZOR();
@@ -499,12 +508,7 @@ BYTE ukol[]=
   INTRO_NAPIS(52,16,"jina klavesa -",14);
   INTRO_NAPIS(67,16,"START POKYDU!",10);
 
-  celkem=strlen(ukol); pozice=0; zatimpozice=0; gotoxy(52,21);
-  while (zatimpozice < celkem) {		//Tabulka "ukol"
-    zatimpozice+=27;
-    while (pozice < zatimpozice) NAPISZNAK2(ukol[pozice++],8+(7<<4));
-    gotoxy(52,wherey()+1);
-   }
+  INTRO_UKOL_BOX();
 
   KONTROLA_UTNUTI();
   if (rok == 2005) {			//Nova verze
@@ -542,7 +546,7 @@ BYTE ukol[]=
      }
    }
   INTRO_NAPIS(3,NAST_Y,"Kontrola nastaveni:",15);
-  INTRO_NAPIS(2,NAST_Y+1,"dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?         zmena:",15);
+  INTRO_NAPIS(2,NAST_Y+1,"--------------------------------         zmena:",15);
 
   NASTAVENI:
   INTRO_NAPIS(2,NAST_Y+2,"Pohlavi uzivatele:",14); if (zenskyrod == 0) INTRO_NAPIS(23,NAST_Y+2,"muz ",13);
@@ -551,12 +555,31 @@ BYTE ukol[]=
   INTRO_NAPIS(2,NAST_Y+3,"Pohlavi pocitace:",14); if (zenapocitac == 0) INTRO_NAPIS(23,NAST_Y+3,"muz ",13);
   else INTRO_NAPIS(23,NAST_Y+3,"zena",13); INTRO_NAPIS(34,NAST_Y+3,"F3",11);
 
-  INTRO_NAPIS(2,NAST_Y+4,"Nalada pocitace:",14); VRAT_NAZEV_NALADY(nal);
-  /* PIS/NAPISRETEZEC: stable attribute; INTRO_NAPIS+CTIBARVU() caused garbage glyphs here. */
-  PIS(23,NAST_Y+4,nal,13); INTRO_NAPIS(34,NAST_Y+4,"F7/F8",11);
+  /* Full VGA attribute byte (bg from intro + fg 13). PIS(...,13) used only nibble 13 -> wrong glyphs. */
+  gotoxy(23,NAST_Y+2);
+  intro_val_attr = (CTIBARVU() & (BYTE)240) | (BYTE)13;
 
-  INTRO_NAPIS(2,NAST_Y+5,"Charakter pocitace:",14); VRAT_NAZEV_CHARAKTERU(nal);
-  PIS(23,NAST_Y+5,nal,13); INTRO_NAPIS(34,NAST_Y+5,"F5",11);
+  INTRO_NAPIS(2,NAST_Y+4,"Nalada pocitace:",14);
+  VRAT_NAZEV_NALADY(dlouhe);
+  { BYTE pozice=0, celkem=(BYTE)strlen((char *)dlouhe);
+    while (pozice < celkem) {
+      gotoxy((BYTE)(23+pozice),NAST_Y+4);
+      NAPISZNAK(dlouhe[pozice], intro_val_attr);
+      pozice++;
+     }
+   }
+  INTRO_NAPIS(34,NAST_Y+4,"F7/F8",11);
+
+  INTRO_NAPIS(2,NAST_Y+5,"Charakter pocitace:",14);
+  VRAT_NAZEV_CHARAKTERU(dlouhe);
+  { BYTE pozice=0, celkem=(BYTE)strlen((char *)dlouhe);
+    while (pozice < celkem) {
+      gotoxy((BYTE)(23+pozice),NAST_Y+5);
+      NAPISZNAK(dlouhe[pozice], intro_val_attr);
+      pozice++;
+     }
+   }
+  INTRO_NAPIS(34,NAST_Y+5,"F5",11);
 
   INTRO_NAPIS(6,NAST_Y+6,"...vsechna nastaveni - F4, ulozit - 'U'",10);
 
@@ -570,6 +593,7 @@ BYTE ukol[]=
       exit(0);
      }*/
 
+    INTRO_UKOL_BOX();
     PIS(54,22,"    Ctu inteligenci    ",12+7*16);
     if (NACTI_INTELIGENCI() == 1) { ZAPISOBRAZOVKU(); KONEC(); }
     if (font == 1) NASTAVPOKYDFONT();
@@ -693,7 +717,7 @@ KONEC:
   /* Always safe handoff to main: never NASTAVSPRAVNYMOD/SMAZOBRAZOVKU here (DOSBox-X crash). */
   ODROLUJ();
   DBGLOG("INTRO: after ODROLUJ");
-  /* Do not use INTRO's argc here dz? stack pressure can corrupt it (log showed intro_arg=200).
+  /* Do not use INTRO's argc here - stack pressure can corrupt it (log showed intro_arg=200).
      Use snapshot from main; clamp Y so gotoxy never asks BIOS for an invalid row. */
   if (pokyd_intro_argc_snapshot >= 2) {
     grafika25 = 0;
@@ -1066,13 +1090,13 @@ UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A
     SMAZKURZOR(); cislo=strlen(retezec1);
     for (celkem=0; celkem < cislo; celkem++) {
       gotoxy(1,pozicey);
-      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("dz?",barvaclovek);
-      NAPISRETEZEC("dz?",barvaclovek);
+      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("\xdb",barvaclovek);
+      NAPISRETEZEC("\xdb",barvaclovek);
       CEKEJ(200/cislo);
      }
     while (celkem > 0) {
       gotoxy(celkem--,pozicey);
-      NAPISRETEZEC("dz? ",barvaclovek);
+      NAPISRETEZEC("\xdb ",barvaclovek);
       CEKEJ(200/cislo);
      }
     ESCSMAZ: retezec1[0]=0; pozice=0; celkem=0; BARVA(barvaclovek);

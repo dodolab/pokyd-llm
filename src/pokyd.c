@@ -1,13 +1,13 @@
-/* Tento zdrojovt ktd je pod licenct GNU/GPL. Mttete ho pouttt k vlastnt
-   pottebt, ale nesmtte jej ani programy zalotent na tomto ktdu vyuttt komertnt!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jednt se o zdrojovt ktd programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Alete Jandy, aktivnt vyvtjentho 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
 /*
  * pokyd.c - vstupni jednotka prekladace (Open Watcom); ostatni zdrojaky se vkladaji pres #include.
- * Rozsireni projektu: viz AGENTS.md a .cursor/rules/pokyd-*.mdc (jednotka prekladu, font INT 10h, Watcom).
+ * Rozsireni projektu: viz docs/prd.md, docs/CODEMAP.md, AGENTS.md a .cursor/rules/pokyd-*.mdc (jednotka prekladu, font INT 10h, Watcom).
  * Dulezite: po textmode()/INT 10h AX=0003 znovu NASTAVSPRAVNYFONT pred vypisem hlavicky (RAM font se smaze).
  */
 

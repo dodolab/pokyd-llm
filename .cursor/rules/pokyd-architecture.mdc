@@ -20,5 +20,5 @@ alwaysApply: false
 
 ## Rozsirovani funkcnosti
 
-- Nova vlastnost: typicky uprava prislusneho fragmentu (`pokyd_v2.c` intro/main tok, `pokyd_na.c` vstup/vypis, `pokyd_fn.c` font/video).
+- Nova vlastnost: typicky uprava prislusneho fragmentu (`pokyd_v2.c` intro/main tok, `pokyd_na.c` vstup/vypis, `pokyd_fn.c` font/video). Presny prehled: **`docs/CODEMAP.md`**.
 - Po zmene BIOS/DOS chovani aktualizuj komentar u rutiny a pripadne `.cursor/rules/pokyd-dos-int10-font.mdc`.

@@ -90,8 +90,10 @@ After any BIOS mode set that reloads the ROM font (`INT 10h` mode change / `text
 
 ## Developer documentation
 
+- **[docs/prd.md](docs/prd.md)** - product requirements (scope, constraints, acceptance criteria)—read this before larger changes.
+- **[docs/CODEMAP.md](docs/CODEMAP.md)** - unity-build include order and which source fragment owns which subsystem (saves time locating functions).
 - **[AGENTS.md](AGENTS.md)** - how the repo is structured for AI/tools: unity build, Czech naming, where to add features.
-- **[.cursor/rules/](.cursor/rules/)** - Cursor rules: architecture, DOS/font caveats, Watcom quirks.
+- **[.cursor/rules/](.cursor/rules/)** - Cursor rules: architecture, DOS/font caveats, Watcom quirks, and a workspace rule to read the PRD/code map.
 - **`scripts/pokyd_add_fn_comments.py`** - optional helper to prepend placeholder `/* ... */` lines before functions in large fragments (run from repo root; review/commit sensibly).
 
 ## Asset Resolution Behavior

@@ -171,7 +171,8 @@ void VYMAZZNAKNAOBR(BYTE x,BYTE y) {
  }
 
 /*
- * Vypis retezce znak po znaku - pouziva i kody z VRATDIAKRITIKU (ceske sloty ve fontu).
+ * Raw BIOS output znak po znaku (barva = cely atributovy bajt do BL).
+ * Pro ceske sloty ve fontu volat VRATDIAKRITIKU na znak (viz hlavicka, INTRO hodnoty).
  */
 void NAPISRETEZEC(BYTE *retezec,BYTE barva) {
 BYTE pozice=0,celkempozice=strlen(retezec);

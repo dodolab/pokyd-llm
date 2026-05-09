@@ -2,6 +2,13 @@
 
 Tento repozitar je **MS-DOS program v C**, preklada se **Open Watcom** jako jedna jednotka ze `src/pokyd.c` (ostatni `src/*.c` se **vkladaji pres `#include`**).
 
+## Co cist jako prvni
+
+| Priorita | Soubor | Ucel |
+|----------|--------|------|
+| 1 | [docs/prd.md](docs/prd.md) | Rozsah projektu, limity, cesky font / DOS, akceptacni kriteria |
+| 2 | [docs/CODEMAP.md](docs/CODEMAP.md) | Poradi `#include` fragmentu, kde hledat funkce (bez slepeho grepovani) |
+
 ## Kde hledat pravidla
 
 | Tema | Soubor |

@@ -1,0 +1,13 @@
+---
+description: Read PRD and code map before substantive Pokyd work
+alwaysApply: true
+---
+
+# Read project docs first
+
+For any non-trivial task (behavior, architecture, text/font, build, or repo layout):
+
+1. Read **`docs/prd.md`** (product requirements: scope, Czech/font constraints, acceptance criteria). Same document as **`PRD.md`** / **`prd.md`** on typical filesystems.
+2. Read **`docs/CODEMAP.md`** to see which `src/pokyd_*.c` fragment owns the feature and where symbols are declared (`src/pokyd.h`).
+
+Then follow **`AGENTS.md`** and the fragment-specific rules under `.cursor/rules/pokyd-*.mdc` as applicable.

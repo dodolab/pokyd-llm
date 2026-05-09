@@ -1,8 +1,8 @@
-/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
-   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
 /*
@@ -521,7 +521,7 @@ BYTE pozice3;
             (unsigned)cislo, (unsigned)celkempozice, (unsigned)cislaodp[cislo],
             (unsigned)delayprocenta, (unsigned)textefekty);
     if (celkempozice == 0) {
-      DBGLOG("ODPOVED: WARNING empty string for selected cislo dz? nothing to draw");
+      DBGLOG("ODPOVED: WARNING empty string for selected cislo - nothing to draw");
      }
     else {
       DBGLOGF("ODPOVED: text preview=\"%.72s\"", odpovedi[cislo]);
@@ -534,7 +534,7 @@ BYTE pozice3;
      }
 
     pozice3=(BYTE)(rand()%12);
-    /* Open Watcom cprintf + BIOS gotoxy desync: effects 2dz?6,8,11 write via cprintf ? blank DOSBox */
+    /* Open Watcom cprintf + BIOS gotoxy desync: effects 2,6,8,11 write via cprintf - blank DOSBox */
     if (pozice3 == 2 || pozice3 == 3 || pozice3 == 4 || pozice3 == 5 || pozice3 == 6 ||
         pozice3 == 8 || pozice3 == 11) {
       DBGLOGF("ODPOVED: remapping unsafe effect %u -> 0 (BIOS-only)", (unsigned)pozice3);
@@ -898,7 +898,7 @@ DWORD misto,delka,pozdlouhe=0,znak;
     DBGLOGF("VTIPY: loaded joke len=%u preview=\"%.80s\"", (unsigned)strlen(dlouhe), dlouhe);
    }
   else {
-    NIC: DBGLOG("VTIPY: no jokes file/count dz? VRATDATA fallback text");
+    NIC: DBGLOG("VTIPY: no jokes file/count - VRATDATA fallback text");
     VRATDATA(2); smyslpocvety=3;	//Bohuzel, nenasel jsem zadne vtipy....
     DBGLOGF("VTIPY: fallback dlouhe len=%u preview=\"%.80s\"", (unsigned)strlen(dlouhe), dlouhe);
    }
@@ -1125,7 +1125,7 @@ BYTE komentar[70],navrathodnota=0,cookinfo,znak;
 
   VYBER:
   for (pomoc=ZACATEK_PLUGINU; pomoc < ZACATEK_PLUGINU+POCET_PLUGINU; pomoc++) {
-    PIS(2,pomoc,pomoc == pozice ? "dz?dz?dz?" : "    ",15);
+    PIS(2,pomoc,pomoc == pozice ? "\xcd\xcd\xcd\x10" : "    ",15);
     PIS(7,pomoc,pluginy[pomoc-ZACATEK_PLUGINU],pomoc == pozice ? 15 : 3);
    }
 
@@ -1141,7 +1141,7 @@ SETRIC: SETRIC_OBRAZOVKY(); goto ZACATEK;
     if (CAS18() < pohybsipky) {				//pulnoc
       pohybsipky=CAS18(); blikaninazvu=pohybsipky; }
     if (CAS18() > pohybsipky+5) {			//pokyb sipky
-      PIS(2,pozice,sipkapozice == 1 ? "dz?dz?dz?" : " dz? ",15);
+      PIS(2,pozice,sipkapozice == 1 ? "\xcd\xcd\xcd\x10" : " \xcd\x10 ",15);
       pohybsipky=CAS18();
       if (sipkapozice == 1) sipkapozice=0; else sipkapozice=1;
      }
