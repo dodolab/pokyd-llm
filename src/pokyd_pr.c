@@ -1,17 +1,24 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
+/*
+ * pokyd_pr.c - globalni promenne a typy ("datova jednotka" bez funkci).
+ *
+ * Poradi: vklada se jako prvni z fragmentu - vsechny ostatni jednotky k nemu pristupuji.
+ * dlouhe[] je sdileny velky buffer (retezce z VRATDATA, docasne vypisy, fontove radky).
+ * datasoubor ukazuje na dekodovany obsah ze SLOVNIK.DAT po NACTI_INTELIGENCI().
+ */
 
 #define BYTE unsigned char
 #define WORD unsigned short
 #define DWORD unsigned long
 
 
-//             promenne pro generovani odpovedi:
+/* --- Generovani odpovedi (aktualni vstup, vyhodnoceni slov, fronta odpovedi) --- */
 
 BYTE veta[40][15],retezec1[81],retezec2[81],odpovedi[20][80];
 BYTE puvretezec[81],soubor[80],predtimretezec[81],kydaniny[15];
@@ -28,7 +35,7 @@ BYTE jmenocloveka[15],jmenocloveka5pad[16];
 BYTE pocetslpamet,pocetjsem,pocetjsi,cisloslpamet=255,cislojsem=255,cislojsi=255;
 
 
-//            promenne pro nastaveni
+/* --- Uzivatelske nastaveni (profil, casovace, jmena, graficke mody) --- */
 
 BYTE ulozeninakonci=1;
 BYTE pocetpocitacu=1;
@@ -53,7 +60,7 @@ WORD puvvtipy[200],pocetiq=POCET_IQ,realodp[20][2],celkemodp,skutecnychodp;
 BYTE pocetrealtimekecu,pocetrealtimekecu2,int0=0,zvysovani=1,cekaniklavesy=0;
 BYTE cisloaktualnihopocitace=1,realtsamoml=0,verzeslovniku;
 
-//                    ostatni promenne
+/* --- Ostatni runtime stav (vtipy, slovnik, cheaty, priznaky ukonceni) --- */
 
 BYTE nadavani=0;
 BYTE nactenyslovnik=0;
@@ -85,7 +92,7 @@ struct d { int nuly; long seriove; char rebeliny[20]; } data;
 
 FILE *kydy, *nastaveni, *vtipys, *intel, *vety;
 
-/* Stack size is set by wcl -k… in build.sh (DGROUP ?64KiB; _stklen alone does not override link). */
+/* Stack size is set by wcl -k... in build.sh (DGROUP ?64KiB; _stklen alone does not override link). */
 
 #define OBRAZEK_POKYDU_X 37
 #define OBRAZEK_POKYDU_Y 8

@@ -1,0 +1,20 @@
+---
+description: Open Watcom port quirks, stack, Borland compatibility macros
+globs: src/pokyd.c
+alwaysApply: false
+---
+
+# Open Watcom a legacy kompatibilita
+
+## Makra a preruseni
+
+- `geninterrupt` pouziva **`pokyd_regs`** (`pokyd.c`), ne primy Borland `_AX` bez inicializace.
+- **`pokyd_intro_argc_snapshot`**: kvuli velkemu stack ramu v `INTRO()` muze byt `argc` po navratu spatne - hlavni program pouziva snapshot z `main`.
+
+## Konzole / split obrazovky
+
+- **`pokyd_shell_rows`**: posun virtualnich souradnic pro `gettext`/`puttext` pri split konzoli - pri novych vypisech over posun radku.
+
+## Ladeni
+
+- **`DBGLOG` / `DEBUG.LOG`**: nepouzivaji line-buffering zamerne; pri padu muze chybet flush - kriticke hlasky pres `fflush` uz jsou v `DBGLOG`.

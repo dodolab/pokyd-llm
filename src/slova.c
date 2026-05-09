@@ -285,7 +285,7 @@ SCITANI:
 fseek(slv,konechlavicky+1,SEEK_SET); putc((nahodax+rodx)>>8,slv);
 putc((nahodax+rodx)%256,slv); fseek(slv,0,SEEK_END);
 
-//fwrite("",5,1,slv);				//konec souboru
+//fwrite("ttttt",5,1,slv);				//konec souboru
 printf("\r                                                    \r2/2");
 fclose(slv);
 #if zakodovani == 1
@@ -325,7 +325,7 @@ printf("\nPamet na inteligenci:  %6lu B",D+1-pozicepredextra);
 printf("\n\nPocet funkci:");
 printf("\n NAHODA:  %3lu (%2lu vet), skutecnych vet:  %lu",nahodax,nahodax*10,pocetvet-(rodx*10-koliknerodu));
 printf("\n ROD:     %3lu (%2lu vet), skutecnych vet:  %lu",rodx,rodx*10,rodx*10-koliknerodu);
-printf("\n");
+printf("\nttttttttttttttttttttttttttt");
 printf("\nCelkem:   %3lu (%2lu vet)\n",nahodax+rodx,pocetvet);
 KONEC:
 fclose(pkd); fclose(slv);

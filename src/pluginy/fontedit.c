@@ -43,17 +43,17 @@ main() {
   fclose(f);
 
   textmode(1);
-  gotoxy(1,18); puts("Pohyb mezi znaky 0 a‘ 255: PgUp a PgDn");
-  gotoxy(1,20); puts("Pohyb uvnit© znaku: ›ipky");
-  gotoxy(1,22); puts("Ulo‘en¡ + konec: ESC");
-  gotoxy(1,24); puts("Zmˆna hodnoty bitu: jin˜ znak");
+  gotoxy(1,18); puts("Pohyb mezi znaky 0 a? 255: PgUp a PgDn");
+  gotoxy(1,20); puts("Pohyb uvnitS znaku: ?ipky");
+  gotoxy(1,22); puts("Ulo?enA + konec: ESC");
+  gotoxy(1,24); puts("Zm?na hodnoty bitu: jin? znak");
   gotoxy(1,1);
 ZNAKY:
   x=wherex(),y=wherey();
   for (cast=0; cast < 16; cast++) {
     bit=pole[(znak<<4)+cast]; gotoxy(1,cast+1);
     for (pozice=0; pozice < 8; pozice++) {
-      if (bit > 127) printf("Û");
+      if (bit > 127) printf("U");
       else printf(" ");
       bit<<=1;
      }

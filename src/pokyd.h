@@ -1,9 +1,14 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
+
+/*
+ * pokyd.h - spolecne prototypy fragmentu vkladanych z pokyd.c (jednotka prekladu).
+ * Konvence rozsireni: AGENTS.md, .cursor/rules/pokyd-architecture.mdc
+ */
 
 /* DOS console split: keep COMMAND.COM / autoexec lines visible above Pokyd (see -consplit). */
 extern unsigned char pokyd_shell_rows;

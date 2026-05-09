@@ -1,0 +1,22 @@
+---
+description: DOS text mode, INT 10h font reload gotchas (Pokyd Czech glyphs)
+globs: src/pokyd*.c
+alwaysApply: false
+---
+
+# Video a font (DOS / DOSBox-X)
+
+## Proc hlavicka nekdy ukazovala spatne znaky
+
+- **`INT 10h AX=0003h`** (`textmode(C80)`) znovu nahraje **ROM font** do generatoru znaku ? **maze uzivatelske glyfy** nahrane pres `ZMENZNAKY` / `AX=1100h`.
+- Po kazdem takovem prepnuti rezimu je nutne znovu zavolat **`NASTAVSPRAVNYFONT()`** / **`NASTAVPOKYDFONT()`** pred kreslenim textu zavisleho na **`VRATDIAKRITIKU()`** (hlavicka "Ales", "KYBLSoft").
+
+## Mapovani ceskych znaku v hlavicce
+
+- **`VRATDIAKRITIKU`** vraci **kody pozic ve VGA RAM fontu** (`zmeneneznaky[]`: napr. s?231, Y?237, y?251), **ne** "Unicode" ani nahodne CP437 kody typu 0xDD.
+- Bez nahranych glyfu ROM na techto pozicich ukazuje **jiny** symbol (napr. u 237 phi ? snadno vyhlizi jako ?).
+
+## Dalsi uskali
+
+- **`REGPACK` / `pokyd_regs`**: pred `intr(0x10,...)` casto **vynulovat celou strukturu** - zbyle bity v BX/BH rozbijely DOSBox-X.
+- **`SMAZOBRAZOVKU`**: pri prechodu 50?25 radku vola **`NASTAVPOKYDFONT()`** jen v nekterych vetvich - pri novych vetvich rezimu kontroluj konzistenci fontu.

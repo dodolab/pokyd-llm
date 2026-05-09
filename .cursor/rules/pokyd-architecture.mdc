@@ -1,0 +1,24 @@
+---
+description: Pokyd unity build, Czech API naming, how sources tie together
+globs: src/**/*.c
+alwaysApply: false
+---
+
+# Architektura zdrojaku Pokyd
+
+## Kompilace (jedna jednotka prekladu)
+
+- `src/pokyd.c` je vstup pro **Open Watcom** (`wcl ... pokyd.c`); ostatni `.c` soubory jsou **vkladany pres `#include`** v pevnem poradi (`pokyd_pr.c` ? ... ? `pokyd_sl.c`).
+- Nemen poradi include bez kontroly zavislosti (globalni promenne v `pokyd_pr.c`, prototypy v `pokyd.h`).
+- Verejne funkce z fragmentu jsou deklarovany v `pokyd.h`; nove funkce pridej do hlavicky i na spravne misto include retezce.
+
+## Konvence pojmenovani
+
+- **Ceske nazvy funkci a maker** (VELKA_PISMENA, `void NASTAV_SPRAVNY_MOD(void)` stylu) jsou zamerne - drz se jich u novych rutin (`VRAT_*`, `NASTAV_*`, `ZAPIS_*`, `CTI_*`, ...).
+- Komentare v kodu a v Markdown bez diakritiky (ASCII); soubory ukladat jako UTF-8.
+- Globalni stav zije hlavne v `pokyd_pr.c`; pred rozsirenim zkontroluj kolize nazvu.
+
+## Rozsirovani funkcnosti
+
+- Nova vlastnost: typicky uprava prislusneho fragmentu (`pokyd_v2.c` intro/main tok, `pokyd_na.c` vstup/vypis, `pokyd_fn.c` font/video).
+- Po zmene BIOS/DOS chovani aktualizuj komentar u rutiny a pripadne `.cursor/rules/pokyd-dos-int10-font.mdc`.

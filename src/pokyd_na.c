@@ -1,10 +1,14 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
+   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
 */
 
+/*
+ * pokyd_na.c - fullscreen UI nastaveni (NASTAV): mys, klavesove sipky, barvy, radky textu.
+ * Makra S1/S2 oddeluji dve "stranky" formulare; funkce je dlouha - menit opatrne kvuli stacku.
+ */
 
 #define ZACATEK_OBR1 6
 #define ZACATEK_OBR2 6
@@ -12,6 +16,7 @@
 #define ZACATEK_TEXTU_X 7
 #define HODNOTY_X 64
 
+/* Rutina NASTAV - viz implementace a nazvy promennych (konvence Pokyd). */
 void far NASTAV(void) {
 
 #define S1 if (strana == 1) {
@@ -120,7 +125,7 @@ PSANI:
   ZHLTNI_MYS();
 
 CEKEJKLAVESU:
-  INTRO_NAPIS(1,sipkapozice,"ÍÍÍ ",11); cassipka=CAS18(); typsipky=0;
+  INTRO_NAPIS(1,sipkapozice,"dz?dz?dz? ",11); cassipka=CAS18(); typsipky=0;
   pozicetextefekt=0; castext=cassipka;
 CEKEJKLAVESU2:
   cassetric=time(NULL);
@@ -154,8 +159,8 @@ POZICE:
 
       if (cassipka+5 < CAS18()) {
         cassipka=CAS18(); switch(typsipky) {
-          case 0: typsipky++; INTRO_NAPIS(1,sipkapozice,"ÍÍÍÍ",11); break;
-          case 1: typsipky--; INTRO_NAPIS(1,sipkapozice,"ÍÍÍ ",11); break;
+          case 0: typsipky++; INTRO_NAPIS(1,sipkapozice,"dz?dz?dz?dz?",11); break;
+          case 1: typsipky--; INTRO_NAPIS(1,sipkapozice,"dz?dz?dz? ",11); break;
          }
        }
       if (castext != CAS18() && textefekty == 1) {
@@ -351,6 +356,7 @@ PTEJSENAPOZICI:
 #endif
 
  }
+/* Rutina ZVYRAZNOVAC - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZVYRAZNOVAC(BYTE x,BYTE y,BYTE *text,BYTE kolikate) {
 BYTE pozice=0;
   gotoxy(x,y);
@@ -361,10 +367,12 @@ BYTE pozice=0;
    }
  }
 
+/* Rutina ZVYRAZNOVAC4 - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZVYRAZNOVAC4(BYTE y,BYTE *text,BYTE kolikate) {
   ZVYRAZNOVAC(ZACATEK_TEXTU_X,y,text,kolikate);
  }
 
+/* Rutina MUZ_ZENA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE MUZ_ZENA(BYTE promenna,BYTE kam) {
   if (promenna > 0) promenna=0;
   else promenna=1;
@@ -372,6 +380,7 @@ BYTE MUZ_ZENA(BYTE promenna,BYTE kam) {
   return(promenna);
  }
 
+/* Rutina VRAT_NAZEV_NALADY - viz implementace a nazvy promennych (konvence Pokyd). */
 void VRAT_NAZEV_NALADY(BYTE *retezec) {
   switch(nalada) {
     case 0: strcpy(retezec,"vyborna "); break;
@@ -383,6 +392,7 @@ void VRAT_NAZEV_NALADY(BYTE *retezec) {
    }
  }
 
+/* Rutina NASTAV_NALADU - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE NASTAV_NALADU(BYTE promenna,BYTE kam,BYTE mali_se_menit) {
 BYTE nal[9],puvnalada=nalada;
   if (mali_se_menit == 1) {
@@ -397,6 +407,7 @@ BYTE nal[9],puvnalada=nalada;
   return(promenna);
  }
 
+/* Rutina VRAT_NAZEV_CHARAKTERU - viz implementace a nazvy promennych (konvence Pokyd). */
 void VRAT_NAZEV_CHARAKTERU(BYTE *retezec) {
   switch(charakter) {
     case 0: strcpy(retezec,"stroj     "); break;
@@ -410,12 +421,14 @@ void VRAT_NAZEV_CHARAKTERU(BYTE *retezec) {
    }
  }
 
+/* Rutina ZAPIS_CHARAKTER - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPIS_CHARAKTER(BYTE kam) {
 BYTE charak[11];
   VRAT_NAZEV_CHARAKTERU(charak);
   INTRO_NAPIS(HODNOTY_X,kam,charak,15);
  }
 
+/* Rutina ANO_NE - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE ANO_NE(BYTE promenna,BYTE kam) {
   if (promenna > 0) promenna=0;
   else promenna=1;
@@ -423,12 +436,14 @@ BYTE ANO_NE(BYTE promenna,BYTE kam) {
   return(promenna);
  }
 
+/* Rutina ANO_NE_RESET - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE ANO_NE_RESET(BYTE promenna,BYTE kam) {
   promenna++; if (promenna > 2) promenna=0;
   INTRO_NAPIS(HODNOTY_X,kam,promenna == 0 ? "ne   " : promenna == 1 ? "ano  " : "reset",15);
   return(promenna);
  }
 
+/* Rutina ANO_NE_NAHODNE - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE ANO_NE_NAHODNE(BYTE promenna,BYTE kam) {
   switch(promenna) {
     case 0: promenna=2; break;				//ne - nahodne
@@ -439,6 +454,7 @@ BYTE ANO_NE_NAHODNE(BYTE promenna,BYTE kam) {
   return(promenna);
  }
 
+/* Rutina CISLO_MODU - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE CISLO_MODU(BYTE promenna,BYTE kam) {
   if (promenna == 25) promenna=50;
    else if (promenna == 50) promenna=0;
@@ -447,6 +463,7 @@ BYTE CISLO_MODU(BYTE promenna,BYTE kam) {
   return(promenna);
  }
 
+/* Rutina ZVOL_BARVU - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE ZVOL_BARVU(BYTE barva,BYTE kam) {
 BYTE barv[15];
   if (barva < 15) barva++;
@@ -456,6 +473,7 @@ BYTE barv[15];
   return(barva);
  }
 
+/* Rutina NAPIS_CISLO - viz implementace a nazvy promennych (konvence Pokyd). */
 DWORD NAPIS_CISLO(DWORD hodnota,DWORD jakdlouhe,DWORD min,DWORD max,BYTE kam) {
 BYTE pozice=0,cislo[5];
 DWORD vyslednecislo=0;
@@ -490,6 +508,7 @@ KLAVESA:
   cprintf("%lu    ",vyslednecislo); return(vyslednecislo);
  }
 
+/* Rutina NAPIS_TEXT - viz implementace a nazvy promennych (konvence Pokyd). */
 void NAPIS_TEXT(BYTE *jaky,BYTE kam) {
 BYTE pozice=0,text[16];
   gotoxy(HODNOTY_X,kam); textcolor(15);
@@ -520,6 +539,7 @@ KLAVESA:
   gotoxy(HODNOTY_X,wherey()); textcolor(15); cprintf(jaky);
  }
 
+/* Rutina NASTAV_STANDARD - viz implementace a nazvy promennych (konvence Pokyd). */
 void NASTAV_STANDARD(void) {
   zenskyrod=0; zenapocitac=0; nalada=2; naladabody=37; charakter=3;
   strcpy(jmenomuzpocitac,"Klaban"); strcpy(jmenozenapocitac,"Daria");
@@ -531,6 +551,7 @@ void NASTAV_STANDARD(void) {
   barvaclovek=14; barvapocitac1=10; barvapocitac2=11;
  }
 
+/* Rutina SMAZ_EFEKT - viz implementace a nazvy promennych (konvence Pokyd). */
 void SMAZ_EFEKT(BYTE kde) {
 BYTE text[(HODNOTY_X-ZACATEK_TEXTU_X+1)*2],pozice;
   gettext(ZACATEK_TEXTU_X,kde,HODNOTY_X,kde,text);

@@ -44,7 +44,7 @@ BYTE pozice;
   for (pozice=0; pozice < POCET_STREL; pozice++) {		//clovek
     if (strelaclovek[pozice][0] == 0) goto CLOVEKKONEC;
     gotoxy(strelaclovek[pozice][0],strelaclovek[pozice][1]);
-    textattr(10); cprintf(" ÄÄ");
+    textattr(10); cprintf(" AA");
     strelaclovek[pozice][0]++;
     if (strelaclovek[pozice][0] == 77) {		//na konci
       cprintf("\b\b  ");				//vymazat strelu
@@ -59,7 +59,7 @@ BYTE pozice;
     if (strelapocitac[pozice][0] == 0) goto POCITACKONEC;
     strelapocitac[pozice][0]--;
     gotoxy(strelapocitac[pozice][0],strelapocitac[pozice][1]);
-    textattr(12); cprintf("ÄÄ ");
+    textattr(12); cprintf("AA ");
     if (strelapocitac[pozice][0] == 4) {		//na konci
       cprintf("\b\b\b   ");				//vymazat strelu
       strelapocitac[pozice][0]=0;

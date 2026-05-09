@@ -86,6 +86,14 @@ Important notes:
 - Run in DOSBox text modes compatible with BIOS font switching.
 - Avoid converting legacy text assets to UTF-8 without verifying in-DOS rendering.
 
+After any BIOS mode set that reloads the ROM font (`INT 10h` mode change / `textmode`), custom glyphs must be reapplied before drawing the header or other text that relies on `VRATDIAKRITIKU()` - see `AGENTS.md` and `.cursor/rules/pokyd-dos-int10-font.mdc`.
+
+## Developer documentation
+
+- **[AGENTS.md](AGENTS.md)** - how the repo is structured for AI/tools: unity build, Czech naming, where to add features.
+- **[.cursor/rules/](.cursor/rules/)** - Cursor rules: architecture, DOS/font caveats, Watcom quirks.
+- **`scripts/pokyd_add_fn_comments.py`** - optional helper to prepend placeholder `/* ... */` lines before functions in large fragments (run from repo root; review/commit sensibly).
+
 ## Asset Resolution Behavior
 
 The loader uses hybrid lookup:

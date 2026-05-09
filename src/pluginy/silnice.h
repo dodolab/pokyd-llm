@@ -59,11 +59,11 @@ BYTE pozice1,pozice2,autak=0;
   for (pozice1=0; pozice1 < 21; pozice1++) {
     for (pozice2=0; pozice2 < 80; pozice2++) {
       if (autak == 0) {
-        if (rand()%hustota == 0) { prekazky[pozice1][pozice2]='й'; autak=1; goto DAL; }
+        if (rand()%hustota == 0) { prekazky[pozice1][pozice2]='E'; autak=1; goto DAL; }
        }
       if (autak == 1) {				//zbytek auta
-        if (rand()%HUSTOTA != 0) { prekazky[pozice1][pozice2]='к'; goto DAL; }
-        else { prekazky[pozice1][pozice2]='л'; autak=2; goto DAL; }
+        if (rand()%HUSTOTA != 0) { prekazky[pozice1][pozice2]='E'; goto DAL; }
+        else { prekazky[pozice1][pozice2]='E'; autak=2; goto DAL; }
        }
       prekazky[pozice1][pozice2]=' '; autak=0;
       DAL:;
@@ -86,7 +86,7 @@ BYTE pozice1,pozice2,autak=0;
 
   gotoxy(2,25); textattr(12);
   for (cas=1; cas < 79; cas++) {
-    cprintf("ш");
+    cprintf("U");
    }
   pozicex=40; pozicey=24;
   if (level < 5) rychlostdema=4;
@@ -113,10 +113,10 @@ DWORD pomoc;
         prekazky[pozice1][pozice2]=prekazky[pozice1][pozice2+1];
        }
       switch (prekazky[pozice1][78]) {
-	case 202: case 203: if (rand()%HUSTOTA == 0) prekazky[pozice1][79]='л';
-		  else prekazky[pozice1][79]='к'; break;
+	case 202: case 203: if (rand()%HUSTOTA == 0) prekazky[pozice1][79]='E';
+		  else prekazky[pozice1][79]='E'; break;
 	case 204: prekazky[pozice1][79]=' '; break;
-	case ' ': if (rand()%hustota == 0) prekazky[pozice1][79]='й';
+	case ' ': if (rand()%hustota == 0) prekazky[pozice1][79]='E';
 		  else prekazky[pozice1][79]=' '; break;
 	default: break;
        }
@@ -126,10 +126,10 @@ DWORD pomoc;
         prekazky[pozice1][pozice2]=prekazky[pozice1][pozice2-1];
        }
       switch (prekazky[pozice1][1]) {
-	case 204: case 203: if (rand()%HUSTOTA == 0) prekazky[pozice1][0]='й';
-			    else prekazky[pozice1][0]='к'; break;
+	case 204: case 203: if (rand()%HUSTOTA == 0) prekazky[pozice1][0]='E';
+			    else prekazky[pozice1][0]='E'; break;
 	case 202: prekazky[pozice1][0]=' '; break;
-	case ' ': if (rand()%hustota == 0) prekazky[pozice1][0]='л';
+	case ' ': if (rand()%hustota == 0) prekazky[pozice1][0]='E';
 		  else prekazky[pozice1][0]=' '; break;
        }
      }
@@ -144,13 +144,13 @@ DWORD pomoc;
   ZAPIS_CAS();
   gotoxy(pozicex,pozicey);
   if (prekazky[pozicey-3][pozicex-1] > 200 || prekazky[pozicey-3][pozicex] > 200) {
-    textattr(12); cprintf("мн"); if (zvuk == 1) { sound(100); delay(500); sound(60); delay(700); } else delay(1200);
+    textattr(12); cprintf("II"); if (zvuk == 1) { sound(100); delay(500); sound(60); delay(700); } else delay(1200);
     zivoty--;
     while (kbhit() != 0) getch();
     return(1);
    }
   else {
-    textattr(14); cprintf("хи");
+    textattr(14); cprintf("CE");
    }
 
   gotoxy(51,1); textcolor(15); textbackground(4); cprintf("%4u",body);

@@ -1,11 +1,18 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
+   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
 */
 
+/*
+ * pokyd_v0.c - obrazovka, hlavicka, prikazy, VRATDATA, preruseni, vstupni radek, pamet slov.
+ * VRATDATA: pouze textove retezce ukoncene nulou; nelze jim nacist binarni tabulku glyfu.
+ * Ceska hlavicka: VRATDIAKRITIKU + NASTAVPOKYDFONT - po INT 10h modu znovu nastavit font (viz pokyd.c).
+ * Hromadne komentare funkci: scripts/pokyd_add_fn_comments.py (sablona; doplnte u verejnych rutin).
+ */
 
+/* Rutina VETA_PREDTIM - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE VETA_PREDTIM(WORD cislovety) {
 BYTE pozice;
   for (pozice=0; pozice < 50; pozice++)
@@ -13,10 +20,12 @@ BYTE pozice;
   return(50);
  }
 
+/* Rutina VYNULUJ_ODPOVEDI - viz implementace a nazvy promennych (konvence Pokyd). */
 void VYNULUJ_ODPOVEDI(void) {
   pozodp=0; skutecnychodp=0; pocetrealtimekecu=0;
  }
 
+/* Rutina EXTRA_VETA - viz implementace a nazvy promennych (konvence Pokyd). */
 void EXTRA_VETA(BYTE ktera) {
   intpozice=ktera-1;
   DBGLOGF("EXTRA_VETA(%u): intpozice=%u iq0='%c' pozodp=%u",
@@ -32,6 +41,7 @@ void EXTRA_VETA(BYTE ktera) {
    }
  }
 
+/* Rutina INTRO_POKYDPRUH - viz implementace a nazvy promennych (konvence Pokyd). */
 void INTRO_POKYDPRUH(void) {
 #define ZACATEKX 5
 #define ZACATEKY 2
@@ -54,6 +64,7 @@ BYTE obraz[20],pozice;
    } puttext(pozicepruhu,ZACATEKY,pozicepruhu,KONECY,obraz);
  }
 
+/* Rutina NASTARTUJ_PROGRAM - viz implementace a nazvy promennych (konvence Pokyd). */
 void NASTARTUJ_PROGRAM(void) {
   DBGLOG("NASTARTUJ: begin");
   nosound();
@@ -83,6 +94,7 @@ void NASTARTUJ_PROGRAM(void) {
   DBGLOG("NASTARTUJ: end");
  }
 
+/* Rutina VRAT_POZICI_VTIPU - viz implementace a nazvy promennych (konvence Pokyd). */
 WORD VRAT_POZICI_VTIPU(void) {
 WORD pozice;
 BYTE kolik,max;
@@ -99,6 +111,7 @@ BYTE kolik,max;
   return(pozice);
  }
 
+/* Rutina CTI_INFORMACE_O_VETACH - viz implementace a nazvy promennych (konvence Pokyd). */
 void CTI_INFORMACE_O_VETACH(void) {
 BYTE pozice,pozice2,verze;
 WORD hodnota;
@@ -175,6 +188,7 @@ VETY2:
   KONEC: fclose(vety); vety=NULL;
  }
 
+/* Rutina ZAPIS_INFORMACE_O_VETACH - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPIS_INFORMACE_O_VETACH(BYTE co,BYTE nastaveni) {
 BYTE pozice;
 WORD pracovni;
@@ -254,23 +268,27 @@ DAL:
   if (nastaveni == 1 && ulozeninakonci == 1) NASTAVSOUBOR(0);
  }
 
+/* Rutina ZAVRISOUBORSKYDAMA - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAVRISOUBORSKYDAMA(BYTE *text,BYTE naobrazovku) {
   if (kydy != NULL) fprintf(kydy,text);
   ZAPISDELKUHOVORU(naobrazovku);
  }
 
+/* Rutina ZJISTI_SVATEK - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE ZJISTI_SVATEK(void) {
   _AH = 0x2A; geninterrupt(0x21);
   if (_AL == 0 || strchr(svatek,'#') != NULL) return(1);	//je svatek
   else return(0);					//neni svatek
  }
 
+/* Rutina PREPNINACELOUOBRAZOVKU - viz implementace a nazvy promennych (konvence Pokyd). */
 void PREPNINACELOUOBRAZOVKU(void) {
   /* Keep startup safe under DOSBox + Watcom: avoid legacy screen probes
      and avoid CRT text functions that can block in this environment. */
   pozicehlavicka=1;
  }
 
+/* Rutina INT24 - viz implementace a nazvy promennych (konvence Pokyd). */
 void interrupt INT24(void) {
   chybaint24=1;
  }
@@ -303,6 +321,7 @@ signed char nejlepsipoz;
    }
  }
 
+/* Rutina VYBER_ODPOVED - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE VYBER_ODPOVED(void) {
 BYTE mista[50],nejlepsi[50],pozice,pozice2;
 WORD cislo;
@@ -332,6 +351,7 @@ WORD cislo;
   return((BYTE)cislo);
  }
 
+/* Rutina ODRIZNIENTERY - viz implementace a nazvy promennych (konvence Pokyd). */
 WORD ODRIZNIENTERY(void) {
 WORD pozice1=0,pozice2=0,celkem=strlen(dlouhe);
   while (pozice1 < celkem) {
@@ -344,6 +364,7 @@ WORD pozice1=0,pozice2=0,celkem=strlen(dlouhe);
   return(pozice2);
  }
 
+/* Rutina OREZ_MEZERY - viz implementace a nazvy promennych (konvence Pokyd). */
 void OREZ_MEZERY(BYTE *retezec) {
 WORD pozice=strlen(retezec)-1;
   while (retezec[pozice] == ' ') {
@@ -351,6 +372,7 @@ WORD pozice=strlen(retezec)-1;
    }
  }
 
+/* Rutina ZMENMOD - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZMENMOD(void) {
 BYTE kdejex=wherex(),kdejey=wherey(),pocatek;
   if (delkastrany == 24) {			//zjisteni graficke karty VGA
@@ -382,22 +404,24 @@ KONEC:
   gotoxy(kdejex,kdejey);
  }
 
+/* Maps ASCII header letters to VGA font slots; needs NASTAVPOKYDFONT after mode set. */
 BYTE VRATDIAKRITIKU(BYTE pismeno) {
   /* Pokyd font + 25-line: map ASCII to patched VGA codepoints (see zmeneneznaky[6..8]). */
   if (!((delkastrany == 24 || grafika25 == 1) && font == 1))
     return pismeno;
   switch (pismeno) {
     case 's':
-      return 231; /* š — same slot as 0xE7 */
+      return 231; /* zmeneneznaky[6] (s) */
     case 'Y':
-      return 237; /* Ý — not CP437 221 (Ú); RAM slot from Pokyd font table */
+      return 237; /* zmeneneznaky[7] (Y), ne CP437 221 */
     case 'y':
-      return 251; /* ý — not CP437 253 */
+      return 251; /* zmeneneznaky[8] (y) */
     default:
       return pismeno;
    }
  }
 
+/* Draws top title bar (author line + KYBLSoft + version). */
 void NAPISHLAVICKOVYRADEK(void) {
 BYTE kdejex=wherex(),kdejey=wherey(),nazev[15];
   gotoxy(1,pozicehlavicka);
@@ -409,6 +433,7 @@ BYTE kdejex=wherex(),kdejey=wherey(),nazev[15];
   gotoxy(kdejex,kdejey);
  }
 
+/* Rutina VRAT_SERIOVE_CISLO - viz implementace a nazvy promennych (konvence Pokyd). */
 DWORD VRAT_SERIOVE_CISLO(void) {
   _DS=FP_SEG(&data);
   _DX=FP_OFF(&data);
@@ -418,6 +443,7 @@ DWORD VRAT_SERIOVE_CISLO(void) {
   return(data.seriove);
  }
 
+/* Rutina ZAPISPUVODP - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPISPUVODP(DWORD pozice) {
 BYTE poz=49;
   while (poz-- > 0) {
@@ -426,6 +452,7 @@ BYTE poz=49;
   puvodp[0]=pozice;
  }
 
+/* Rutina ODROLUJ - viz implementace a nazvy promennych (konvence Pokyd). */
 void ODROLUJ(void) {
 BYTE pozice,pozice2,pocetradku=24,celkem,typ,strzeno[80];
 DWORD cas=0;
@@ -534,6 +561,7 @@ DAL7:    strzeno[typ]++;
   DBGLOG("ODROLUJ: end");
  }
 
+/* Rutina CTIKLAVESU - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE CTIKLAVESU(void) {
 BYTE klavesa;
   klavesa=getch();
@@ -545,6 +573,7 @@ BYTE klavesa;
   return(klavesa);
  }
 
+/* Rutina NASTAVKURZOR - viz implementace a nazvy promennych (konvence Pokyd). */
 void NASTAVKURZOR(void) {
   memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   if (grafika25 == 0 && delkastrany == 49) _CX = 0x0709;
@@ -554,6 +583,7 @@ void NASTAVKURZOR(void) {
   geninterrupt(0x10);		//nastav kurzor (BH=video page)
  }
 
+/* Rutina VRATDATA - viz implementace a nazvy promennych (konvence Pokyd). */
 void VRATDATA(BYTE poradidat) {
 WORD odkaz=(poradidat<<1)+1;
 WORD pozice=0;
@@ -570,6 +600,7 @@ BYTE VRATPOZICI(void) {	//zjisti, je-li v nastaveni a vrati souradnici y
   else return(pozicedatumcas);
  }
 
+/* Rutina ZAPISDELKUHOVORU - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPISDELKUHOVORU(BYTE naobrazovku) {
 BYTE text[60],nove[50];
 DWORD sekundy=cashovoru;
@@ -595,14 +626,17 @@ DWORD sekundy=cashovoru;
   if (kydy != NULL) fprintf(kydy,"\n%s\n",text);
  }
 
+/* Rutina CTISOURADNICE - viz implementace a nazvy promennych (konvence Pokyd). */
 void CTISOURADNICE(void) {
   x=wherex(); y=wherey();
  }
 
+/* Rutina VLOZSOURADNICE - viz implementace a nazvy promennych (konvence Pokyd). */
 void VLOZSOURADNICE(void) {
   gotoxy(x,y);
  }
 
+/* Rutina SMAZOBRAZOVKU - viz implementace a nazvy promennych (konvence Pokyd). */
 void SMAZOBRAZOVKU(BYTE jeli_font) {
   BYTE prepnuto_50na25 = 0;
 //  if (delkastrany > 24) { _AX = 4; geninterrupt(0x10); }//kvuli zblblymu fontu
@@ -621,6 +655,7 @@ void SMAZOBRAZOVKU(BYTE jeli_font) {
   if (jeli_font == 1 && font == 1 && prepnuto_50na25 == 0) NASTAVPOKYDFONT();
  }
 
+/* Rutina PRECTIOBRAZOVKU - viz implementace a nazvy promennych (konvence Pokyd). */
 void PRECTIOBRAZOVKU(BYTE efekt) {
 BYTE pozice,radek;
   SMAZKURZOR();
@@ -635,6 +670,7 @@ BYTE pozice,radek;
    }
  }
 
+/* Rutina ZAPISOBRAZOVKU - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPISOBRAZOVKU(void) {
 WORD odkud,dokud;
 BYTE radek,pozice;
@@ -652,6 +688,7 @@ BYTE radek,pozice;
   puttext(1,1,80,delkastrany+1,obrazovka);
  }
 
+/* Rutina SOUBOR - viz implementace a nazvy promennych (konvence Pokyd). */
 void SOUBOR(BYTE *souborcat) {
 char pozice,cislo;
 int *ukazatel;
@@ -690,6 +727,7 @@ FILE *assettest;
    }
  }
 
+/* Rutina STRANA - viz implementace a nazvy promennych (konvence Pokyd). */
 void STRANA(BYTE kolik) {
   while (stranaradek < delkastrany-1 && kolik > 0) {
     if (wherey() == delkastrany+1) { pozicedatumcas--; pozicehlavicka--; }
@@ -711,6 +749,7 @@ void STRANA(BYTE kolik) {
   gotoxy(1,wherey());
  }
 
+/* Rutina VYNULOVANI - viz implementace a nazvy promennych (konvence Pokyd). */
 void VYNULOVANI(BYTE jestli_veta) {
 BYTE cislo;
   for (cislo=0; cislo < 20; cislo++) {
@@ -722,6 +761,7 @@ BYTE cislo;
   celkemodp=skutecnychodp; pozodp=0; skutecnychodp=0;
  }
 
+/* Rutina BLBOSTI_OPAKOVANE_PISMENO - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE BLBOSTI_OPAKOVANE_PISMENO(void) {
 BYTE pozice,celkem=strlen(retezec1),znak=0,pocet=1;
   for (pozice=0; pozice < celkem; pozice++) {
@@ -742,6 +782,7 @@ BYTE pozice,celkem=strlen(retezec1),znak=0,pocet=1;
   return(0);
  }
 
+/* Rutina SLOVO - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE SLOVO(BYTE *slovo) {
 BYTE pozice;
   pozice=0;
@@ -752,6 +793,7 @@ BYTE pozice;
   return(255);
  }
 
+/* Rutina ZACATEK - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE ZACATEK(BYTE *slovo) {
 BYTE pomoc[80],celkem;
 BYTE pozice=0;
@@ -765,6 +807,7 @@ BYTE pozice=0;
   return(255);
  }
 
+/* Rutina KONECSLOVA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE KONECSLOVA(BYTE *slovo) {
 BYTE celkem=strlen(slovo),pozice=0,slovocelkem;
   while (pozice < pocetslov) {
@@ -778,6 +821,7 @@ BYTE celkem=strlen(slovo),pozice=0,slovocelkem;
   return(255);
  }
 
+/* Rutina VYSKYT - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE VYSKYT(BYTE *slovo) {
 BYTE retezecvety[80],pomoc,znak;
   strcpy(retezecvety,retezec1);
@@ -790,6 +834,7 @@ BYTE retezecvety[80],pomoc,znak;
   else return(255);
  }
 
+/* Rutina PRIBLIZNA_NALADA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE PRIBLIZNA_NALADA(void) {
 BYTE navrat=nalada;
   navrat+=(rand()%3)-1;
@@ -916,6 +961,7 @@ BYTE velkepismeno=1,pozice1=0,pozice2=0,celkem=strlen(co)+1;
    }
  }
 
+/* Rutina POCASI - viz implementace a nazvy promennych (konvence Pokyd). */
 void POCASI(void) {
 long pres=0,den,ozon=0;
 signed long stupen=0,pomoc;
@@ -1032,6 +1078,7 @@ PRES2:
   pozodp=100; smyslpocvety=4;
  }
 
+/* Rutina NAPISZNAKODP - viz implementace a nazvy promennych (konvence Pokyd). */
 void NAPISZNAKODP(BYTE znak) {
   BYTE b = barvapocitac0;
   /* barvapocitac* are usually conio fg indices 0-15; BIOS needs full attribute (bg|fg). */
@@ -1046,11 +1093,13 @@ void interrupt (*stara_adresa23)(void);
 
 void interrupt (*stara_adresa24)(void);
 
+/* Rutina VYPNI_REZIDENTY - viz implementace a nazvy promennych (konvence Pokyd). */
 void VYPNI_REZIDENTY(BYTE int24) {
   /* Compatibility mode: startup no longer installs custom vectors. */
   (void)int24;
  }
 
+/* Rutina PREKRESLI_RADEK - viz implementace a nazvy promennych (konvence Pokyd). */
 void PREKRESLI_RADEK(BYTE insert) {
 BYTE pozice=0,celkem=strlen(retezec1)+1,puvpozx=wherex(),znak,barva;
   if (psanivetyskryto == 1) return;
@@ -1067,6 +1116,7 @@ BYTE pozice=0,celkem=strlen(retezec1)+1,puvpozx=wherex(),znak,barva;
   else PLNYKURZOR();
  }
 
+/* Rutina SMAZZNAK - viz implementace a nazvy promennych (konvence Pokyd). */
 void SMAZZNAK(BYTE pozice,BYTE celkem) {
 BYTE pomoc;
   if (pozice == 0) return;
@@ -1075,6 +1125,7 @@ BYTE pomoc;
   retezec1[--celkem]=0; pozice--;
  }
 
+/* Rutina PREDKONEC - viz implementace a nazvy promennych (konvence Pokyd). */
 void PREDKONEC(void) {
   if (cekaniklavesy == 1) {
     textattr(12+128); gotoxy(21,wherey());
@@ -1084,11 +1135,13 @@ void PREDKONEC(void) {
    }
  }
 
+/* Rutina ZMEN_POCITAC - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZMEN_POCITAC(void) {
   if (cisloaktualnihopocitace == 1) { cisloaktualnihopocitace++; barvapocitac0=barvapocitac2; }
   else { cisloaktualnihopocitace--; barvapocitac0=barvapocitac1; }
  }
 
+/* Rutina SLOVO_PAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void SLOVO_PAMET(void) {
 BYTE pozice=pocetslpamet;
   if (pozice == 50) {				//zase od zacatku
@@ -1109,6 +1162,7 @@ BYTE pozice=pocetslpamet;
   PREVED_NA_MALA(slovapamet[pozice][2]);
  }
 
+/* Rutina ZJISTI_SLOVO_PAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZJISTI_SLOVO_PAMET(void) {
 BYTE pozice1,pozice2,vybrpozice,vybrane[50];
   vybrpozice=0;
@@ -1120,6 +1174,7 @@ BYTE pozice1,pozice2,vybrpozice,vybrane[50];
   else cisloslpamet=vybrane[rand()%vybrpozice];
  }
 
+/* Rutina SPATNE_SLOVO - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE SPATNE_SLOVO(BYTE *slovo,BYTE kratke) {
   if (kratke == 1 && strlen(slovo) < 4) return(1); //kratke spojky a predlozky
   if (slovo[strlen(slovo)-1] == 'e') return(1);		//prislovce
@@ -1140,6 +1195,7 @@ BYTE SPATNE_SLOVO(BYTE *slovo,BYTE kratke) {
   return(0);
  }
 
+/* Rutina JSEM_PAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void JSEM_PAMET(void) {
 BYTE pozice,slovo[15];
   strcpy(slovo,veta[SLOVO("jsem")+1]);
@@ -1162,6 +1218,7 @@ BYTE pozice,slovo[15];
   strcpy(slovajsem[pozice],slovo);
  }
 
+/* Rutina ZJISTI_JSEM_PAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZJISTI_JSEM_PAMET(void) {
 BYTE pozice1,pozice2,vybrpozice,vybrane[50];
   vybrpozice=0;
@@ -1175,6 +1232,7 @@ BYTE pozice1,pozice2,vybrpozice,vybrane[50];
   else cislojsem=vybrane[rand()%vybrpozice];
  }
 
+/* Rutina JSI_PAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void JSI_PAMET(void) {
 BYTE pozice,slovo[15];
   strcpy(slovo,veta[SLOVO("jsi")+1]);
@@ -1196,6 +1254,7 @@ BYTE pozice,slovo[15];
   strcpy(slovajsi[pozice],slovo);
  }
 
+/* Rutina ZJISTI_JSI_PAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZJISTI_JSI_PAMET(void) {
 BYTE pozice1,pozice2,vybrpozice,vybrane[50];
   vybrpozice=0;
@@ -1207,6 +1266,7 @@ BYTE pozice1,pozice2,vybrpozice,vybrane[50];
   else cislojsi=vybrane[rand()%vybrpozice];
  }
 
+/* Rutina JMENO_CLOVEKA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE JMENO_CLOVEKA(void) {
 BYTE pozice;
   pozice=SLOVO("jmenuji"); if (pozice == 255) pozice=SLOVO("jmenuju");
@@ -1222,6 +1282,7 @@ BYTE pozice;
   return(1);
  }
 
+/* Rutina SPOCITEJ_NALADU - viz implementace a nazvy promennych (konvence Pokyd). */
 int SPOCITEJ_NALADU(BYTE zceho) {
 int nalada=zceho-10;
   switch(charakter) {
@@ -1251,6 +1312,7 @@ int nalada=zceho-10;
   return(nalada);
  }
 
+/* Rutina ZKONTROLUJ_EXTRA_SANCI - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZKONTROLUJ_EXTRA_SANCI(BYTE cheat) {
 BYTE puvdelayprocenta=delayprocenta,klic,soucet,znakb;
 int znak;
@@ -1359,6 +1421,7 @@ NASTCT: znak=getc(nastaveni); if (znak != -1) {
   xtrzapsani=1;
  }
 
+/* Rutina EXTRA_SANCE_CHEAT - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE EXTRA_SANCE_CHEAT(void) {
 BYTE pozice,soucet,xor;
   if (strlen(retezec1) == 31 && pocetslov == 5 && VYSKYT("_bonu") != 255 && VYSKYT("ea") != 255 && VYSKYT("extra_s") != 255) {

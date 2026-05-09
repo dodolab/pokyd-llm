@@ -1,10 +1,14 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovy kod je pod licenci GNU/GPL. Muzete ho pouzit k vlastni
+   potrebe, ale nesmite jej ani programy zalozene na tomto kodu vyuzit komercne!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedna se o zdrojovy kod programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alese Jandy, aktivne vyvijeneho 1999 - 2002
 */
 
+/*
+ * pokyd_sl.c - vyhodnoceni "podminek" slovniku IQ (retezce v inteligence[][]).
+ * PRECTIPODMINKU je rekurzivni parser; pri rozsireni abecedy podminek aktualizovat CHYBAPODMINKY / testy.
+ */
 
 #define TESTSLOVNIKU 0
 
@@ -14,6 +18,7 @@ WORD pozicepodminka;
 
 #define VYPIS ;//if (pozicepodminka > 65535) { BYTE hlaska[80]; sprintf(hlaska,"Usp: %lu, Neusp: %lu, Slvpoz: %lu, pozpodm: %lu",uspech,neuspech,pozicepodminka,pozicepodminka); HLASKA(hlaska,2); sprintf(hlaska,"%s",inteligence+pozicepodminka-1); HLASKA(hlaska,3); }
 
+/* Fatal error - spatna struktura podminky v datech slovniku (iq retezec). */
 void CHYBAPODMINKY(BYTE cislo) {
 BYTE hlaska[80],hlaska2[40];
   sprintf(hlaska,"Nastala chyba %d v datovem souboru. Kontaktuj autora! Jde o zavaznou chybu!",cislo);
@@ -24,6 +29,7 @@ BYTE hlaska[80],hlaska2[40];
   HLASKA(hlaska,4);
  }
 
+/* Projde bloky inteligence od pocetextravet a vyhodnoti akcni prikazy pri uspechu podminky. */
 void CTIPODMINKY(void) {
 WORD uspech;
 BYTE skoncenipodminek=0,predchoziuspech;
@@ -72,6 +78,7 @@ NOVAPODMINKA:
   goto NOVAPODMINKA;
  }
 
+/* Vyhodnoti jednu podminku: cte kodovany vyraz z inteligence[intpozice], navrat 0/1/2 (chyba). */
 BYTE PRECTIPODMINKU(void) {
 BYTE hodnota1,podminka,hodnota2,zatimhodnota=1;
   ZACATEK:
@@ -171,6 +178,7 @@ ANDNEBOOR:
    }
  }
 
+/* Posune pozicepodminka za uzaviraci zavorku pri zkracenem vyhodnoceni (| a &). */
 void UKONCI_ZAVORKU(void) {
 BYTE zavorka=1;
   while (zavorka > 0) {

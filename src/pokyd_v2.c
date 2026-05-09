@@ -1,11 +1,16 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
+   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
 */
 
+/*
+ * pokyd_v2.c - nacteni slovniku (SLOVNIK.DAT), INTRO, externi programy, pomocne systemove akce.
+ * NACTI_INTELIGENCI: dekoduje datasoubor a IQ bloky; kontrolni soucty na konci souboru.
+ */
 
+/* Loads and decodes SLOVNIK.DAT into datasoubor and IQ blocks. */
 BYTE NACTI_INTELIGENCI(void) {
 
 DWORD delka,datapozice,datavelikost,slovnikzacatek,pomoc;
@@ -147,6 +152,7 @@ DWORD filevelikost,startstream;
   return(0);
  }
 
+/* Rutina SMAZ_SOUBORY - viz implementace a nazvy promennych (konvence Pokyd). */
 void SMAZ_SOUBORY(BYTE pise) {
 BYTE holysoubor[80],klavesa;
   VYNULUJ_ODPOVEDI(); SOUBOR("KYDY\\*.*");
@@ -174,6 +180,7 @@ ZAVER:
   if (pise == 1) EXTRA_VETA(4);
  }
 
+/* Rutina FORMATOVANI - viz implementace a nazvy promennych (konvence Pokyd). */
 void FORMATOVANI(void) {
 BYTE pozice;
 DWORD cas,cislo;
@@ -191,20 +198,24 @@ DWORD cas,cislo;
   VYNULOVANI(1); EXTRA_VETA(3);
  }
 
+/* Rutina NOUZE_CTRLBREAK - viz implementace a nazvy promennych (konvence Pokyd). */
 void NOUZE_CTRLBREAK(void) {
   ctrlbreak++;
   if (ctrlbreak == 3) { textattr(12); cprintf("\r\nPokyd:  Je mi lito, ale jiz jsem zcela zkolaboval. Prosim kontaktujte\r\nmeho autora o teto chybe zaslanim e-mailu na iqpokyd@kyblsoft.cz ci jinak,\r\njak je uvedeno v souboru POKYD.TXT. Dekuji."); ctrlbreak++; setvect(0x1B,stara_adresa1B); setvect(0x23,stara_adresa23); abort(); }
  }
 
+/* Rutina CTRLBREAK1 - viz implementace a nazvy promennych (konvence Pokyd). */
 void interrupt CTRLBREAK1(void) {
   NOUZE_CTRLBREAK();
  }
 
+/* Rutina CTRLBREAK2 - viz implementace a nazvy promennych (konvence Pokyd). */
 void interrupt CTRLBREAK2(void) {
   ctrlbreakc=1;
   NOUZE_CTRLBREAK();
  }
 
+/* Rutina ZAPNI_REZIDENTY - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPNI_REZIDENTY(void) {
   /* Compatibility mode for DOSBox-X + Open Watcom:
      disable custom interrupt vector hooks from the Borland-era codepath. */
@@ -212,6 +223,7 @@ void ZAPNI_REZIDENTY(void) {
   _AH = 0x33; _AL = 1; _DL = 1; geninterrupt(0x21);
  }
 
+/* Rutina SPUST - viz implementace a nazvy promennych (konvence Pokyd). */
 void SPUST(BYTE *co,BYTE mali_se_zapsat_obrazovka,BYTE plugin) {
 signed char chyba;
 //  free(vtipymisto); free(inteligence);
@@ -234,6 +246,7 @@ signed char chyba;
 //  VTIPYSOUBOR();
  }
 
+/* Rutina SPUSTPROGRAM - viz implementace a nazvy promennych (konvence Pokyd). */
 void SPUSTPROGRAM(void) {
 BYTE puvpozx=wherex(),puvpozy=wherey(),cesta[80],soubor[80],argumenty[80];
 BYTE puvdisk=getdisk(),puvadresar[80],pomoc1,*pointer;
@@ -326,6 +339,7 @@ KONEC:
    }*/
  }
 
+/* Rutina SMYSL_VETY_POCITACE - viz implementace a nazvy promennych (konvence Pokyd). */
 void SMYSL_VETY_POCITACE(void) {
 
 // 0 - normalni veta
@@ -344,6 +358,7 @@ void SMYSL_VETY_POCITACE(void) {
    }
  }
 
+/* Rutina NASTAVENI - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE NASTAVENI(void) {
 char pozice,odpoved[80],jinesercislo=0;
 DWORD seriove;
@@ -394,26 +409,28 @@ DWORD seriove;
   return(jinesercislo);
  }
 
+/* Rutina INTRO_NAPISPAMET - viz implementace a nazvy promennych (konvence Pokyd). */
 void INTRO_NAPISPAMET(void) {
 DWORD velikost=coreleft();
 BYTE text[20];
   sprintf(text,"     Pamet:  %lu B",velikost); INTRO_NAPIS(80-strlen(text),25,text,velikost < 50000 ? 12 : velikost < 100000 ? 4 : 8);
  }
 
+/* Rutina OBRAZEK_POKYDU - viz implementace a nazvy promennych (konvence Pokyd). */
 void OBRAZEK_POKYDU(BYTE pozicex,BYTE pozicey,BYTE barva,BYTE pruhledne) {
 BYTE znak[2],kolikuzx,kolikuzy;
 WORD pozicepokyd=0;
   gotoxy(pozicex,pozicey); textbackground(0);
   for (kolikuzy=0; kolikuzy < OBRAZEK_POKYDU_Y; kolikuzy++) { //Tabulka "Pokyd"
     for (kolikuzx=0; kolikuzx < OBRAZEK_POKYDU_X; kolikuzx++) {
-      if ("ÛÛÛÛÛÛ         ÛÛÛÛ ÛÛÛ      ÛÛÛÛÛÛ  "
-          " ÛÛ  ÛÛ  ÛÛÛÛ   ÛÛ  ÛÛ ÛÛ ÛÛÛ ÛÛ  ÛÛ "
-          " ÛÛ  ÛÛ ÛÛ  ÛÛ  ÛÛ ÛÛ  ÛÛ  ÛÛ ÛÛ   ÛÛ"
-          " ÛÛ  ÛÛ Û    ÛÛ ÛÛÛÛ   ÛÛ  ÛÛ ÛÛ   ÛÛ"
-          " ÛÛÛÛÛ ÛÛ    ÛÛ ÛÛ ÛÛ   ÛÛÛÛ  ÛÛ   ÛÛ"
-          " ÛÛ    ÛÛ    ÛÛ ÛÛ  ÛÛ   ÛÛ   ÛÛ  ÛÛ "
-          "ÛÛÛÛ    ÛÛ  ÛÛ ÛÛÛÛ ÛÛÛ  ÛÛ  ÛÛÛÛÛÛ  "
-          "         ÛÛÛÛ           ÛÛÛÛ         "
+      if ("dz?dz?dz?dz?dz?dz?         dz?dz?dz?dz? dz?dz?dz?      dz?dz?dz?dz?dz?dz?  "
+          " dz?dz?  dz?dz?  dz?dz?dz?dz?   dz?dz?  dz?dz? dz?dz? dz?dz?dz? dz?dz?  dz?dz? "
+          " dz?dz?  dz?dz? dz?dz?  dz?dz?  dz?dz? dz?dz?  dz?dz?  dz?dz? dz?dz?   dz?dz?"
+          " dz?dz?  dz?dz? dz?    dz?dz? dz?dz?dz?dz?   dz?dz?  dz?dz? dz?dz?   dz?dz?"
+          " dz?dz?dz?dz?dz? dz?dz?    dz?dz? dz?dz? dz?dz?   dz?dz?dz?dz?  dz?dz?   dz?dz?"
+          " dz?dz?    dz?dz?    dz?dz? dz?dz?  dz?dz?   dz?dz?   dz?dz?  dz?dz? "
+          "dz?dz?dz?dz?    dz?dz?  dz?dz? dz?dz?dz?dz? dz?dz?dz?  dz?dz?  dz?dz?dz?dz?dz?dz?  "
+          "         dz?dz?dz?dz?           dz?dz?dz?dz?         "
         [pozicepokyd+kolikuzx] != ' ') {
         if (pruhledne == 0) NAPISZNAK2(219,barva);
         else {
@@ -428,6 +445,7 @@ WORD pozicepokyd=0;
    }
  }
 
+/* Rutina INTRO - viz implementace a nazvy promennych (konvence Pokyd). */
 void INTRO(int argc,BYTE puvpozy) {
 #define NAST_Y 15
 
@@ -524,7 +542,7 @@ BYTE ukol[]=
      }
    }
   INTRO_NAPIS(3,NAST_Y,"Kontrola nastaveni:",15);
-  INTRO_NAPIS(2,NAST_Y+1,"ÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛÛ         zmena:",15);
+  INTRO_NAPIS(2,NAST_Y+1,"dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?dz?         zmena:",15);
 
   NASTAVENI:
   INTRO_NAPIS(2,NAST_Y+2,"Pohlavi uzivatele:",14); if (zenskyrod == 0) INTRO_NAPIS(23,NAST_Y+2,"muz ",13);
@@ -675,7 +693,7 @@ KONEC:
   /* Always safe handoff to main: never NASTAVSPRAVNYMOD/SMAZOBRAZOVKU here (DOSBox-X crash). */
   ODROLUJ();
   DBGLOG("INTRO: after ODROLUJ");
-  /* Do not use INTRO's argc here — stack pressure can corrupt it (log showed intro_arg=200).
+  /* Do not use INTRO's argc here dz? stack pressure can corrupt it (log showed intro_arg=200).
      Use snapshot from main; clamp Y so gotoxy never asks BIOS for an invalid row. */
   if (pokyd_intro_argc_snapshot >= 2) {
     grafika25 = 0;
@@ -700,10 +718,12 @@ UPLNYKONEC:
   return;
  }
 
+/* Rutina NAPIS_GOTOXY - viz implementace a nazvy promennych (konvence Pokyd). */
 void NAPIS_GOTOXY(BYTE x,BYTE y) {
   if (psanivetyskryto == 0) gotoxy(x,y);
  }
 
+/* Rutina NAPIS - viz implementace a nazvy promennych (konvence Pokyd). */
 void NAPIS(void) {
 signed char pozice,celkem,epozice,esmer,efekt;
 DWORD cas18,dalsikec,cassetric;
@@ -1046,13 +1066,13 @@ UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A
     SMAZKURZOR(); cislo=strlen(retezec1);
     for (celkem=0; celkem < cislo; celkem++) {
       gotoxy(1,pozicey);
-      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("Û",barvaclovek);
-      NAPISRETEZEC("Û",barvaclovek);
+      for (pozice=0; pozice < celkem; pozice++) NAPISRETEZEC("dz?",barvaclovek);
+      NAPISRETEZEC("dz?",barvaclovek);
       CEKEJ(200/cislo);
      }
     while (celkem > 0) {
       gotoxy(celkem--,pozicey);
-      NAPISRETEZEC("Û ",barvaclovek);
+      NAPISRETEZEC("dz? ",barvaclovek);
       CEKEJ(200/cislo);
      }
     ESCSMAZ: retezec1[0]=0; pozice=0; celkem=0; BARVA(barvaclovek);
@@ -1108,12 +1128,14 @@ UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A
 //  _AX = 0x8301; geninterrupt(0x15);		//vypnuti casovace
  }
 
+/* Rutina INT0 - viz implementace a nazvy promennych (konvence Pokyd). */
 void interrupt INT0(void) {
 unsigned *p=(unsigned *)MK_FP(_SS,_BP+0x12);
   *p+= 2;			                //posun za instrukci DIV
   int0=1;
  }
 
+/* Rutina SAMOHLASKA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE SAMOHLASKA(BYTE znak) {
   switch(znak&0x5F) {
     case 'A': case 'E': case 'I': case 'O': case 'U': case 'Y': return(1);
@@ -1141,6 +1163,7 @@ BYTE prposledni=strlen(jmeno)-2,pozice;
   return(0);
  }
 
+/* Rutina VRAT_5_PAD - viz implementace a nazvy promennych (konvence Pokyd). */
 void VRAT_5_PAD(void) {
 BYTE pomoc[17],posledni,poslznak,prposlznak;
   strcpy(jmenocloveka5pad,jmenocloveka);

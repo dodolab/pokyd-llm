@@ -68,19 +68,19 @@ do {
     gotoxy(pozicex,pozicey); textattr(stiny == 0 ? 0 : 8);
     pozicex--; pozicey-=3;
     if (pozicey == 0) {
-      cprintf("хи");
+      cprintf("CE");
       pozicey=2; pozicex++; goto DALSILEVEL;		//dalsi level
      }
     if (prekazky[pozicey-1][pozicex] == ' ' && prekazky[pozicey-1][pozicex+1] == ' ') {
       if (prekazky[pozicey-1][pozicex-1] != ' ' && smery[pozicey-1] == 'R') goto ZANAHORU;
       if (prekazky[pozicey-1][pozicex+2] != ' ' && smery[pozicey-1] == 'L') goto ZANAHORU;
-      cprintf("хи");
+      cprintf("CE");
       ZVYS_BODY(); pozicey--;				//nahoru
       goto KONECDEMO;
      }
 ZANAHORU:
     if (prekazky[pozicey][pozicex-1] != ' ' || pozicex == 0) {
-      cprintf("хи");
+      cprintf("CE");
       if (prekazky[pozicey+1][pozicex-1] != ' ' || prekazky[pozicey+1][pozicex] != ' ' || prekazky[pozicey+1][pozicex+1] != ' ' || prekazky[pozicey+1][pozicex+2] != ' ' || smery[pozicey] != smery[pozicey-1] || rychlejsi[pozicey] != rychlejsi[pozicey-1]) {
         if ((pozicex < 15 || pozicex > 63) && VRAT_NEBEZPECI() == 0) {
           pozicey++; goto KONECDEMO;			//dolu
@@ -90,7 +90,7 @@ ZANAHORU:
       else pozicey++;					//dolu
      }
     else if (prekazky[pozicey][pozicex+2] != ' ' || pozicex == 78) {
-      cprintf("хи");
+      cprintf("CE");
       if (prekazky[pozicey+1][pozicex-1] != ' ' || prekazky[pozicey+1][pozicex] != ' ' || prekazky[pozicey+1][pozicex+1] != ' ' || prekazky[pozicey+1][pozicex+2] != ' ' || smery[pozicey] != smery[pozicey-1] || rychlejsi[pozicey] != rychlejsi[pozicey-1]) {
 	if ((pozicex < 15 || pozicex > 63) && VRAT_NEBEZPECI() == 0) {
 	  pozicey++; goto KONECDEMO;			//dolu
@@ -100,20 +100,20 @@ ZANAHORU:
       else pozicey++;					//dolu
      }
     else if (smery[pozicey-1] == 'L' && (smery[pozicey] == 'R' || prekazky[pozicey][pozicex+3] == ' ') && pozicex <= 63) {
-      cprintf("хи");
+      cprintf("CE");
       pozicex++;					//vpravo
      }
     else if (smery[pozicey-1] == 'R' && (smery[pozicey] == 'L' || prekazky[pozicey][pozicex-2] == ' ') && pozicex >= 15) {
-      cprintf("хи");
+      cprintf("CE");
       pozicex--;					//vlevo
      }
 
     else if (prekazky[pozicey][pozicex-1] != ' ' && prekazky[pozicey][pozicex+2] == ' ' && smery[pozicey] == 'R') {
-      cprintf("хи");
+      cprintf("CE");
       pozicex++;					//vpravo
      }
     else if (prekazky[pozicey][pozicex+2] != ' ' && prekazky[pozicey][pozicex-1] == ' ' && smery[pozicey] == 'L') {
-      cprintf("хи");
+      cprintf("CE");
       pozicex--;					//vlevo
      }
     if (pozicex == 255) pozicex=0;
@@ -125,7 +125,7 @@ ZANAHORU:
    }
   if (kbhit() != 0)
    switch(getch()) {
-     case 0: gotoxy(pozicex,pozicey); textattr(stiny == 0 ? 0 : 8); cprintf("хи");
+     case 0: gotoxy(pozicex,pozicey); textattr(stiny == 0 ? 0 : 8); cprintf("CE");
 							//neviditelny stin
      switch(getch()) {
        case 72: if (--pozicey == 2) goto DALSILEVEL;		//Nahoru
@@ -157,7 +157,7 @@ GETCH: switch(getch()) {
 goto START;
 
 DALSILEVEL:
-gotoxy(pozicex,pozicey); textattr(15+128); cprintf("хи");
+gotoxy(pozicex,pozicey); textattr(15+128); cprintf("CE");
 if (zvuk == 1) { sound(300); delay(400); sound(500); delay(400); sound(700); delay(400); sound(1000); delay(600); }
 while (kbhit() != 0) getch();
 

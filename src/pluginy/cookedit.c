@@ -35,14 +35,14 @@ gotoxy(1,4); textattr(7*16); cprintf(""
 " Nyni si vyber jednu z techto casti k prohlizeni a editaci:");
 
 textattr(14+6*16);
-gotoxy(24,14); cprintf("ษอออออออออออออออออออออออออออออออออป");
-gotoxy(24,15); cprintf("บ            Kategorie            บ");
-gotoxy(24,16); cprintf("บ                                 บ");
-gotoxy(24,17); cprintf("บ 1. [podmet] [sloveso] [predmet] บ");
-gotoxy(24,18); cprintf("บ 2. jsem [slovo]                 บ");
-gotoxy(24,19); cprintf("บ 3. jsi [slovo]                  บ");
-gotoxy(24,20); cprintf("บ 4. jmeno cloveka                บ");
-gotoxy(24,21); cprintf("ศอออออออออออออออออออออออออออออออออผ");
+gotoxy(24,14); cprintf("EIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII>");
+gotoxy(24,15); cprintf("s            Kategorie            s");
+gotoxy(24,16); cprintf("s                                 s");
+gotoxy(24,17); cprintf("s 1. [podmet] [sloveso] [predmet] s");
+gotoxy(24,18); cprintf("s 2. jsem [slovo]                 s");
+gotoxy(24,19); cprintf("s 3. jsi [slovo]                  s");
+gotoxy(24,20); cprintf("s 4. jmeno cloveka                s");
+gotoxy(24,21); cprintf("CIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIL");
 
 if (poprve == 0) goto MENU;
 RADEK("Nacitam data...");

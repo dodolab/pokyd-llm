@@ -1,9 +1,9 @@
 
-             шшшшш  шш    шш    шш  шшшш   шш шш    шш шш  шш  
-             шш  шш шш    шш    шш шш      шш шшш   шш шш  шш  
-             шшшшш  шш     шш   шш шш шшш шш  шшшш шш   шшшш
-              шш    шш     шш  шш  шш  шш шш шш  шшшш    шш
-              шш     шшшш   шшшш    шшшш  шш шш   шшш   шш 
+             UUUUU  UU    UU    UU  UUUU   UU UU    UU UU  UU  
+             UU  UU UU    UU    UU UU      UU UUU   UU UU  UU  
+             UUUUU  UU     UU   UU UU UUU UU  UUUU UU   UUUU
+              UU    UU     UU  UU  UU  UU UU UU  UUUU    UU
+              UU     UUUU   UUUU    UUUU  UU UU   UUU   UU 
 
             P L U G I N Y   k   p r o g r a m u  * P O K Y D *
 
@@ -19,15 +19,15 @@
                                     Pismena v1.3
                                         Silnice v1.1
 
-  збддддббддддббддддббддддббддддббддддббддддббддддббддддббддддббддддббддддб©
-  юаддддааддддааддддааддддааддддааддддааддддааддддааддддааддддааддддааддддаы
+  UAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAz
+  RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU
 
 
-             иммммммммммммммммммммммммммммммммммммммммммммм╩
-             ╨     CookEdit - Cookies Editor pro Pokyd     ╨
-             ╨               - verze 1.1 -                 ╨
-             ╨        Ales Janda (C) KYBLSoft 2001         ╨
-             хммммммммммммммммммммммммммммммммммммммммммммм╪
+             EIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII>
+             s     CookEdit - Cookies Editor pro Pokyd     s
+             s               - verze 1.1 -                 s
+             s        Ales Janda (C) KYBLSoft 2001         s
+             CIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIL
 
   Timto programem muzete editovat fakta, ktere si program Pokyd behem hovoru
   zapamatoval. Cely program je rozdelen do 3 kategorii:
@@ -103,17 +103,17 @@
                                                             Ales Janda, autor
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
-     зддддддддд©
-   зды^   ╨   ^юд©       N A S T A V E N I
-  зы.     ╨     .ю©
-  Ё       ╨       Ё           D A T A
-  Ё^      ^      ^Ё                         verze 1.2
-  ю©.     х╩    .зы              A
-   юд©.   .   .зды
-     юддддддддды              C A S U
+     UAAAAAAAAAz
+   UAU^   s   ^RAz       N A S T A V E N I
+  UU.     s     .Rz
+  ?       s       ?           D A T A
+  ?^      ^      ^?                         verze 1.2
+  Rz.     C>    .UU              A
+   RAz.   .   .UAU
+     RAAAAAAAAAU              C A S U
 
 
    Autor Ales Janda - KYBLSoft 2002 - soucast programu Pokyd
@@ -131,7 +131,7 @@
    Verze 1.2: pridan text, cim se ma datum a cas zmenit
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
        HH  HH   AAAA   DDDDD
@@ -201,24 +201,24 @@
                                                       Ales Janda, autor
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
-зддддддддддддддддд©                        и╩ и╩
-Ё                 Ё                        хймй╪              
-Ё                 Ё и╩  и╩ икмк╩ и╩  и╩ и╩ икмк╩ и╩  и╩ икммк╩
-Ё  шш             Ё ╨╨  ╨╨ ╨╨ ╨╨ ╨л╩ ╨╨ ╨╨ ╨╨ х╪ ╨╨ ин╪ ╨╨  ╨╨
-Ё                 Ё ╨лмм╧╨ ╨╨ ╨╨ ╨╨х╩╨╨ ╨╨ ╨╨    ╨лкн╪  ╨лмм╧╨
-Ё            шш   Ё ╨╨  ╨╨ ╨╨ ╨╨ ╨╨ х╧╨ ╨╨ ╨╨    ╨╨хн╩  ╨╨  ╨╨
-Ё        шш       Ё ╨╨  ╨╨ ╨╨ ╨╨ ╨╨  ╨╨ ╨╨ ╨╨ и╩ ╨╨ хн╩ ╨╨  ╨╨
-Ё                 Ё х╪  х╪ хймй╪ х╪  х╪ х╪ хймй╪ х╪  х╪ х╪  х╪
-Ё                 Ё
-юддддддддддддддддды  шшшшшшшшш        шшшшшшшшш
-                     шшшшшшшшш        шшшшшшшшш
-                          шшшш             шшшш
-                          шшшш             шшшш
-                          шшшш  шшшш       шшшш
-                          шшшш  шшшш       шшшш
+UAAAAAAAAAAAAAAAAAz                        E> E>
+?                 ?                        CEIEL              
+?                 ? E>  E> EEIE> E>  E> E> EEIE> E>  E> EEIIE>
+?  UU             ? ss  ss ss ss sE> ss ss ss CL ss EIL ss  ss
+?                 ? sEIIas ss ss ssC>ss ss ss    sEEIL  sEIIas
+?            UU   ? ss  ss ss ss ss Cas ss ss    ssCI>  ss  ss
+?        UU       ? ss  ss ss ss ss  ss ss ss E> ss CI> ss  ss
+?                 ? CL  CL CEIEL CL  CL CL CEIEL CL  CL CL  CL
+?                 ?
+RAAAAAAAAAAAAAAAAAU  UUUUUUUUU        UUUUUUUUU
+                     UUUUUUUUU        UUUUUUUUU
+                          UUUU             UUUU
+                          UUUU             UUUU
+                          UUUU  UUUU       UUUU
+                          UUUU  UUUU       UUUU
 
 
                        Vyrobil KYBLSoft (11/1999)
@@ -246,15 +246,15 @@
    Autor:     Ales Janda
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
-            здддддддддддддддд Kalkulacka v1.3 ддддддддддддддддд©
-            Ё 12  56    123    89      67  01  45   90  34     Ё
- Ales Janda Ё 23 56    12 45   90      78 01   56   01  45     Ё KYBLSoft 2000
-            Ё 3456    12   67  01      8901    67   12  56     Ё
-            Ё 45 78   2345678  12      90 23   78   23  67     Ё
-            Ё 56  90  34   89  234567  01  45   90123   789012 Ё
-            юдддддддддддддддддддддддддддддддддддддддддддддддддды
+            UAAAAAAAAAAAAAAAA Kalkulacka v1.3 AAAAAAAAAAAAAAAAAz
+            ? 12  56    123    89      67  01  45   90  34     ?
+ Ales Janda ? 23 56    12 45   90      78 01   56   01  45     ? KYBLSoft 2000
+            ? 3456    12   67  01      8901    67   12  56     ?
+            ? 45 78   2345678  12      90 23   78   23  67     ?
+            ? 56  90  34   89  234567  01  45   90123   789012 ?
+            RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU
 
    Tato kalkulacka funguje na principu NAPIS CELY PRIKLAD - SPOCITEJ.
    To znamena, ze zadate cely priklad a program ho sam cely spocita.
@@ -299,13 +299,13 @@
                                                           Ales Janda, autor
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
-       здддддддддддддддддддддд©                 зддддддддддддддддддддд©
-       Ё  Autor Ales Janda зддадддддддддддддддддадд© KYBLSoft 8/2002  Ё
-       юддддддддддддддддддд╢  NAJDI ME! verze 1.5  цдддддддддддддддддды
-                           юддддддддддддддддддддддды
+       UAAAAAAAAAAAAAAAAAAAAAAz                 UAAAAAAAAAAAAAAAAAAAAAz
+       ?  Autor Ales Janda UAAAAAAAAAAAAAAAAAAAAAAAz KYBLSoft 8/2002  ?
+       RAAAAAAAAAAAAAAAAAAA?  NAJDI ME! verze 1.5  AAAAAAAAAAAAAAAAAAAU
+                           RAAAAAAAAAAAAAAAAAAAAAAAU
 
    Pomoci tohoto programu muzete najit, kdy ma kdo svatek (podle jmena), nebo
    kdo ma kdy svatek (podle data).  Program vypise vsechna jmena, ktera obsa-
@@ -349,7 +349,7 @@
                jednodussi znaky * a % (puvodni znaky lze pouzivat take)
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
    NoKomar verze 1.01
@@ -369,7 +369,7 @@
   nametu i nazvu. Toto je tedy pouze obmena puvodniho programu.
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
     ************************
@@ -396,7 +396,7 @@
                                                              Ales Janda
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
  a  U          x           Ales Janda predstavuje program
@@ -425,16 +425,16 @@
   Autor Ales Janda
 
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
      
 
-     шшшш   шшшш  шшшш     шшш   шшшш  шшшш   шшшш   шшшшшшш
-    шш  шш   шш    шш       шшш   шш    шш   шш  шш   шш  шш    v e r z e
-    шш       шш    шш       шшшш  шш    шш   шш       шш   
-     шшшш    шш    шш       шш шш шш    шш   шш       шшшш 
-        шш   шш    шш       шш  шшшш    шш   шш       шш          1 . 1
-    шш  шш   шш    шш  шш   шш   шшш    шш   шш  шш   шш  шш
-     шшшш   шшшш  шшшшшшш  шшшш   шшш  шшшш   шшшш   шшшшшшш
+     UUUU   UUUU  UUUU     UUU   UUUU  UUUU   UUUU   UUUUUUU
+    UU  UU   UU    UU       UUU   UU    UU   UU  UU   UU  UU    v e r z e
+    UU       UU    UU       UUUU  UU    UU   UU       UU   
+     UUUU    UU    UU       UU UU UU    UU   UU       UUUU 
+        UU   UU    UU       UU  UUUU    UU   UU       UU          1 . 1
+    UU  UU   UU    UU  UU   UU   UUU    UU   UU  UU   UU  UU
+     UUUU   UUUU  UUUUUUU  UUUU   UUU  UUUU   UUUU   UUUUUUU
 
 
   V teto hre jste bily panacek dole. Pohybujete se sipkama vsemi ctyrmi
@@ -459,8 +459,8 @@
   Prijemnou zabavu Vam preje
                                                             Ales Janda, autor
 
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
-ддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 
   Adresa na autora (KYBLSoft):
@@ -480,4 +480,4 @@
                       -------------------------------------**
                          ************************************
 
-Ъ
+?

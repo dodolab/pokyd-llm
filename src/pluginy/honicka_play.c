@@ -19,7 +19,7 @@ _AX = 0x1001; _BH = 1; geninterrupt(0x10);	//zmena barvy okraje
 _AX = 4; _CX = 1; _DX = 1; geninterrupt(0x33);	//nastaveni kurzoru mysi
 
 gotoxy(1,25); textcolor(15); textbackground(3); cprintf(" Honicka v1.1 - Ales Janda  KYBLSoft 4/2000 ");
-textbackground(4); cprintf(" Body:    0/   0  Obt¡znost:  0/ 0");
+textbackground(4); cprintf(" Body:    0/   0  Obt?znost:  0/ 0");
 
 gotoxy(80,25); _AH=9; _BH=0; _AL=' '; _CX=1; _BL=64; geninterrupt(0x10);
 						//posledni cerveny znak
@@ -40,7 +40,7 @@ gotoxy(40,12);
 _AH = 9; _BH = 0; _AL = '>'; _CX = 1; _BL = 14*16; geninterrupt(0x10);
 						//nakresleni premie
 
-gotoxy(24,1); textcolor(11); textbackground(6); cprintf(" Stiskni cokoliv na zac tek hry ");
+gotoxy(24,1); textcolor(11); textbackground(6); cprintf(" Stiskni cokoliv na zac tek hry ");
 
 /*if ((tab=fopen("HONICKA.TAB","rb")) != NULL) {		//nacteni tabulky
   for (pozicex=0; pozicex < 20; pozicex++) fread(tabulka[pozicex],45,1,tab);

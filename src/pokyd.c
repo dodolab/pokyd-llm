@@ -1,10 +1,15 @@
-/* Tento zdrojovù kùd je pod licencù GNU/GPL. Mùùete ho pouùùt k vlastnù
-   potùebù, ale nesmùte jej ani programy zaloùenù na tomto kùdu vyuùùt komerùnù!
+/* Tento zdrojovt ktd je pod licenct GNU/GPL. Mttete ho pouttt k vlastnt
+   pottebt, ale nesmtte jej ani programy zalotent na tomto ktdu vyuttt komertnt!
 
-   Jednù se o zdrojovù kùd programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleùe Jandy, aktivnù vyvùjenùho 1999 - 2002
+   Jednt se o zdrojovt ktd programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Alete Jandy, aktivnt vyvtjentho 1999 - 2002
 */
 
+/*
+ * pokyd.c - vstupni jednotka prekladace (Open Watcom); ostatni zdrojaky se vkladaji pres #include.
+ * Rozsireni projektu: viz AGENTS.md a .cursor/rules/pokyd-*.mdc (jednotka prekladu, font INT 10h, Watcom).
+ * Dulezite: po textmode()/INT 10h AX=0003 znovu NASTAVSPRAVNYFONT pred vypisem hlavicky (RAM font se smaze).
+ */
 
 #define krokovani 0
 #define test 0
@@ -23,7 +28,7 @@
 #include <bios.h>
 #include <stdarg.h>
 /* Do not include <graph.h>: Watcom GraphPak (_setvideomode/_settextcolor/_setbkcolor) fights BIOS INT10h
-   text output on DOSBox ó black screen + flickering cursor while Pokyd writes via AH=09 elsewhere. */
+   text output on DOSBox - black screen + flickering cursor while Pokyd writes via AH=09 elsewhere. */
 
 /* Borland-style interrupt register compatibility for Open Watcom. */
 static union REGPACK pokyd_regs;
@@ -54,7 +59,7 @@ unsigned char pokyd_shell_rows = 0;
 static unsigned char pokyd_do_consplit = 0;
 
 /* Borland compatibility names used across included legacy units. */
-#define C80 3 /* Watcom _TEXTC80: 80x25 color text ó avoid pulling graph.h */
+#define C80 3 /* Watcom _TEXTC80: 80x25 color text - avoid pulling graph.h */
 #define C4350 4350
 #define ffblk find_t
 #define ff_name name
@@ -64,6 +69,8 @@ static unsigned char pokyd_do_consplit = 0;
 #define setvect _dos_setvect
 #define getvect _dos_getvect
 #define __emit__(x) ((void)0)
+
+/* --- Nahrazuje Borlandovske DOS rozhrani: disk, kurzor, videoram B800h, scroll (scroll pres INT 10h). --- */
 
 static unsigned char getdisk(void) {
   unsigned drive;
@@ -130,7 +137,7 @@ static void gotoxy(int x,int y) {
 }
 
 /* Watcom cprintf("\n") does not advance the BIOS cursor used by wherex/wherey/gotoxy.
-   STRANA() mixed the two ó stale wherey() gave pozicedatumcas=0 and gotoxy(...,0) broke DH. */
+   STRANA() mixed the two - stale wherey() gave pozicedatumcas=0 and gotoxy(...,0) broke DH. */
 static void pokyd_emit_nl(void) {
   memset(&pokyd_regs, 0, sizeof(pokyd_regs));
   _AH = 0x0E;
@@ -269,8 +276,9 @@ static void DBGLOGF(const char *fmt, ...) {
 }
 
 /* Forward decl for INTRO KONEC (included below); definition after all includes. */
+/* Ukonceni INTRO: bezpecny prechod na stejny stack jako main (kvuli velkemu lokalnimu ramu INTRO). */
 static void pokyd_finish_intro_handoff(void);
-/* INTRO() has a huge stack frame; RET to main can corrupt return addr ó hand off via this instead. */
+/* Pokracovani main po INTRO: textmode vymaze uzivatelske fonty - nutne NASTAVSPRAVNYFONT pred hlavickou. */
 static void pokyd_run_after_intro(void);
 
 static int pokyd_main_argc;
@@ -287,6 +295,7 @@ static char **pokyd_main_argv;
 #include "pokyd_na.c"
 #include "pokyd_sl.c"
 
+/* Po INTRO: synchronizace video rezimu s delkastrany, ROM font pokud font==1 (detailni glyfy az v pokyd_run_after_intro). */
 static void pokyd_finish_intro_handoff(void) {
   grafika25 = 0;
   if (pokyd_shell_rows == 0) {
@@ -309,6 +318,7 @@ static void pokyd_run_after_intro(void) {
   int argc = pokyd_main_argc;
   char **argv = pokyd_main_argv;
 
+/* Hlavni smycka konverzace zacina zde po uvodni obrazovce. */
 DBGLOG("main: INTRO returned");
 textmode(C80);
 clrscr();
@@ -327,7 +337,7 @@ else if (mod == 50 && delkastrany == 24) {
    }
  }
 /* textmode(C80) reloads the ROM font and clears RAM glyph patches from INTRO;
-   republish Pokyd slots (ö/›/˝) before the header uses VRATDIAKRITIKU(). */
+   republish Pokyd slots (s/Y/y) before the header uses VRATDIAKRITIKU(). */
 NASTAVSPRAVNYFONT();
 NAPISHLAVICKOVYRADEK();
 DBGLOG("main: after NAPISHLAVICKOVYRADEK");
@@ -586,6 +596,7 @@ PREDKONEC();
 KONEC();
 }
 
+/* Vstup programu: prepinace pred INTRO, pak INTRO ? pokyd_run_after_intro (normalne se sem nevraci). */
 void main(int argc, char *argv[]) {
 pokyd_main_argc = argc;
 pokyd_main_argv = argv;
@@ -636,5 +647,5 @@ DBGLOG("main: after NASTARTUJ_PROGRAM");
   DBGLOG("main: before INTRO");
   INTRO(intro_argc, pozicehlavicka);
  }
- /* Normal path: INTRO calls pokyd_run_after_intro() ó never reaches here. */
+ /* Normal path: INTRO calls pokyd_run_after_intro() - never reaches here. */
 }

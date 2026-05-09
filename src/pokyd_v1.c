@@ -1,11 +1,16 @@
-/* Tento zdrojový kód je pod licencí GNU/GPL. Mùžete ho použít k vlastní
-   potøebì, ale nesmíte jej ani programy založené na tomto kódu využít komerènì!
+/* Tento zdrojovdz? kdz?d je pod licencdz? GNU/GPL. Mdz?dz?ete ho poudz?dz?t k vlastndz?
+   potdz?ebdz?, ale nesmdz?te jej ani programy zalodz?endz? na tomto kdz?du vyudz?dz?t komerdz?ndz?!
 
-   Jedná se o zdrojový kód programu Pokyd (http://iqpokyd.kyblsoft.cz)
-   od Aleše Jandy, aktivnì vyvíjeného 1999 - 2002
+   Jedndz? se o zdrojovdz? kdz?d programu Pokyd (http://iqpokyd.kyblsoft.cz)
+   od Aledz?e Jandy, aktivndz? vyvdz?jendz?ho 1999 - 2002
 */
 
+/*
+ * pokyd_v1.c - vypisy odstavcu, napoveda HELPF1, uvodni/obrazkove rutiny, hlavni cast konverzace (ODPOVED).
+ * Textove efekty pouzivaji stejne fontove API jako zbytek programu (NAPISRETEZEC / BIOS).
+ */
 
+/* Rutina NAPIS_ODSTAVEC - viz implementace a nazvy promennych (konvence Pokyd). */
 void NAPIS_ODSTAVEC(BYTE *text) {
 WORD pozice,celkem;
   for (pozice=0,celkem=strlen(text); pozice < celkem; pozice++) {
@@ -17,6 +22,7 @@ WORD pozice,celkem;
    }
  }
 
+/* Rutina HELPF1 - viz implementace a nazvy promennych (konvence Pokyd). */
 void HELPF1(BYTE typ) {
 BYTE puvgrafika=grafika25,barva;
 WORD pozice,celkem;
@@ -91,6 +97,7 @@ SETRIC: SETRIC_OBRAZOVKY(); goto START;
   jeli_nastaveni=1; grafika25=puvgrafika; NASTAVKURZOR();
  }
 
+/* Rutina INTRO_CARA - viz implementace a nazvy promennych (konvence Pokyd). */
 void INTRO_CARA(BYTE pozy,BYTE odkud,BYTE kam) {
   if (kam > 80) kam=80;
   while (odkud <= kam) {
@@ -99,6 +106,7 @@ void INTRO_CARA(BYTE pozy,BYTE odkud,BYTE kam) {
    }
  }
 
+/* Rutina INTRO_NAPIS - viz implementace a nazvy promennych (konvence Pokyd). */
 void INTRO_NAPIS(BYTE pozx,BYTE pozy,BYTE *text,BYTE barva) {
 BYTE pozice=0,celkem=strlen(text),pozadi;
   while (pozice < celkem) {
@@ -108,6 +116,7 @@ BYTE pozice=0,celkem=strlen(text),pozadi;
    }
  }
 
+/* Rutina ZAPIS_NALADU - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZAPIS_NALADU(void) {
 BYTE nal[6]="     ",puvx=wherex(),puvy=wherey();
   gotoxy(63,VRATPOZICI());
@@ -118,6 +127,7 @@ BYTE nal[6]="     ",puvx=wherex(),puvy=wherey();
   gotoxy(puvx,puvy);
  }
 
+/* Rutina KONEC - viz implementace a nazvy promennych (konvence Pokyd). */
 void KONEC(void) {
 BYTE y=wherey(),puvctrlbreak=ctrlbreak;
   if (xtrzapsani == 1) {
@@ -147,6 +157,7 @@ BYTE y=wherey(),puvctrlbreak=ctrlbreak;
   exit(0);
  }
 
+/* Rutina KONTROLA_UTNUTI - viz implementace a nazvy promennych (konvence Pokyd). */
 void KONTROLA_UTNUTI(void) {
   if (ctrlbreak > 0) {
     if (akcectrlbreak != 0) SMAZOBRAZOVKU(0);
@@ -165,6 +176,7 @@ void KONTROLA_UTNUTI(void) {
    }
  }
 
+/* Rutina KALENDAR - viz implementace a nazvy promennych (konvence Pokyd). */
 void KALENDAR(BYTE cteni) {
 BYTE delkajm,den,mesic,barva=13,puvx=wherex(),puvy=wherey();
 WORD pozice=0,pozicesvatek;
@@ -232,6 +244,7 @@ PSANI:
   KONEC: gotoxy(puvx,puvy);
  }
 
+/* Rutina DATUM - viz implementace a nazvy promennych (konvence Pokyd). */
 void DATUM(BYTE ano_nebo_ne) {
 DWORD rok;
 BYTE puvx=wherex(),puvy=wherey(),r[20],mesic,den,novyden=0;
@@ -251,6 +264,7 @@ BYTE puvx=wherex(),puvy=wherey(),r[20],mesic,den,novyden=0;
   KONEC:;
  }
 
+/* Rutina CAS - viz implementace a nazvy promennych (konvence Pokyd). */
 void CAS(BYTE ano_nebo_ne) {
 BYTE hodina,minuta,sekunda,puvx=wherex(),puvy=wherey();
 BYTE r[20];
@@ -266,6 +280,7 @@ BYTE r[20];
    }
  }
 
+/* Rutina HLASKA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE HLASKA(BYTE *text,BYTE barvapozadi) {
 WORD barva,kdejey=24;
 BYTE znak,puvpozx=wherex(),puvpozy=wherey(),predtim[161],odkud;
@@ -307,6 +322,7 @@ char klavesa;
   return(klavesa);
  }
 
+/* Rutina ZHLTNI_MYS - viz implementace a nazvy promennych (konvence Pokyd). */
 void ZHLTNI_MYS(void) {
   do {
     CAS(0); KONTROLA_UTNUTI();
@@ -314,6 +330,7 @@ void ZHLTNI_MYS(void) {
    } while ((_BX&3) != 0);
  }
 
+/* Rutina CEKEJ - viz implementace a nazvy promennych (konvence Pokyd). */
 void CEKEJ(DWORD jakdlouho) {
 DWORD cyklus;
   if (spustenipodprogramu > 0) jakdlouho=3;
@@ -332,12 +349,14 @@ DWORD cyklus;
    } while (cyklus < jakdlouho);
  }
 
+/* Rutina PIPNI - viz implementace a nazvy promennych (konvence Pokyd). */
 void PIPNI(DWORD frekvence, WORD delka) {
   if (zvuk == 1) sound(frekvence);
   CEKEJ(delka);
   nosound();
  }
 
+/* Rutina NASTAV50RADKU - viz implementace a nazvy promennych (konvence Pokyd). */
 void NASTAV50RADKU(void) {
 //  _AX = 2; geninterrupt(0x10); _AX = 3; geninterrupt(0x10);
 /*  _AX = 0x1102; _BL = 0; geninterrupt(0x10);		//Font
@@ -346,12 +365,14 @@ void NASTAV50RADKU(void) {
   textmode(C4350);
  }
 
+/* Rutina NASTAVSPRAVNYMOD - viz implementace a nazvy promennych (konvence Pokyd). */
 void NASTAVSPRAVNYMOD(void) {
   if (delkastrany > 24 && grafika25 == 0) NASTAV50RADKU();
   else SMAZOBRAZOVKU(1);
   SMAZKURZOR();
  }
 
+/* Rutina HLEDEJSOUBOR - viz implementace a nazvy promennych (konvence Pokyd). */
 void HLEDEJSOUBOR(void) {
 BYTE den,mesic,nazevdne[10];
 WORD cislosouboru=0;
@@ -425,18 +446,21 @@ DWORD rok;
   KONEC:;
  }
 
+/* Rutina RUZNASLOVA - viz implementace a nazvy promennych (konvence Pokyd). */
 void RUZNASLOVA(BYTE *co,BYTE *naco) {
 char pozice;
   pozice=SLOVO(co);
   if (pozice != -1) strcpy(veta[pozice],naco);
  }
 
+/* Rutina RUZNASLOVAZAC - viz implementace a nazvy promennych (konvence Pokyd). */
 void RUZNASLOVAZAC(BYTE *co,BYTE *naco) {
 char pozice;
   pozice=ZACATEK(co);
   if (pozice != -1) strcpy(veta[pozice],naco);
  }
 
+/* Rutina ROD1 - viz implementace a nazvy promennych (konvence Pokyd). */
 void ROD1(BYTE *text0,BYTE zmena,DWORD cislo) {
 BYTE celkem,pomoc;
 BYTE text[160];
@@ -462,6 +486,7 @@ BYTE text[160];
   ODP(text,cislo);
  }
 
+/* Rutina ODPOVED - viz implementace a nazvy promennych (konvence Pokyd). */
 void ODPOVED(BYTE odradkovani) {
 DWORD pozice=0,pozice2,celkempozice;
 BYTE pozice3;
@@ -496,7 +521,7 @@ BYTE pozice3;
             (unsigned)cislo, (unsigned)celkempozice, (unsigned)cislaodp[cislo],
             (unsigned)delayprocenta, (unsigned)textefekty);
     if (celkempozice == 0) {
-      DBGLOG("ODPOVED: WARNING empty string for selected cislo — nothing to draw");
+      DBGLOG("ODPOVED: WARNING empty string for selected cislo dz? nothing to draw");
      }
     else {
       DBGLOGF("ODPOVED: text preview=\"%.72s\"", odpovedi[cislo]);
@@ -509,7 +534,7 @@ BYTE pozice3;
      }
 
     pozice3=(BYTE)(rand()%12);
-    /* Open Watcom cprintf + BIOS gotoxy desync: effects 2–6,8,11 write via cprintf ? blank DOSBox */
+    /* Open Watcom cprintf + BIOS gotoxy desync: effects 2dz?6,8,11 write via cprintf ? blank DOSBox */
     if (pozice3 == 2 || pozice3 == 3 || pozice3 == 4 || pozice3 == 5 || pozice3 == 6 ||
         pozice3 == 8 || pozice3 == 11) {
       DBGLOGF("ODPOVED: remapping unsafe effect %u -> 0 (BIOS-only)", (unsigned)pozice3);
@@ -683,6 +708,7 @@ BYTE pozice3;
   NASTAVKURZOR();
  }
 
+/* Rutina SETRID - viz implementace a nazvy promennych (konvence Pokyd). */
 void SETRID(void) {
 BYTE poziceveta1=0,poziceveta2=0,pozice=0,pozice2=0,celkem=strlen(retezec1);
 
@@ -797,6 +823,7 @@ BYTE poziceveta1=0,poziceveta2=0,pozice=0,pozice2=0,celkem=strlen(retezec1);
  }
 
 
+/* Rutina NASTAVSOUBOR - viz implementace a nazvy promennych (konvence Pokyd). */
 void NASTAVSOUBOR(BYTE hlaska) {
   if (readonlymod == 1) {
     if (hlaska == 1) HLASKA("Pokyd je v modu \"jen ke cteni\". Nastaveni nemuze byt ulozeno.",4);
@@ -816,6 +843,7 @@ void NASTAVSOUBOR(BYTE hlaska) {
    }
  }
 
+/* Rutina VTIPYSOUBOR - viz implementace a nazvy promennych (konvence Pokyd). */
 void VTIPYSOUBOR(void) {
 DWORD maxvtipu;
 BYTE hlaska[80];
@@ -846,6 +874,7 @@ BYTE hlaska[80];
 //  HLASKA(hlaska,1);
  }
 
+/* Rutina VTIPY - viz implementace a nazvy promennych (konvence Pokyd). */
 void VTIPY(void) {
 DWORD misto,delka,pozdlouhe=0,znak;
   DBGLOGF("VTIPY: enter celkemvtipu=%lu", (unsigned long)celkemvtipu);
@@ -869,7 +898,7 @@ DWORD misto,delka,pozdlouhe=0,znak;
     DBGLOGF("VTIPY: loaded joke len=%u preview=\"%.80s\"", (unsigned)strlen(dlouhe), dlouhe);
    }
   else {
-    NIC: DBGLOG("VTIPY: no jokes file/count — VRATDATA fallback text");
+    NIC: DBGLOG("VTIPY: no jokes file/count dz? VRATDATA fallback text");
     VRATDATA(2); smyslpocvety=3;	//Bohuzel, nenasel jsem zadne vtipy....
     DBGLOGF("VTIPY: fallback dlouhe len=%u preview=\"%.80s\"", (unsigned)strlen(dlouhe), dlouhe);
    }
@@ -877,6 +906,7 @@ DWORD misto,delka,pozdlouhe=0,znak;
   pozodp=100; ODPOVED(1);
  }
 
+/* Rutina NAJDIDALSI - viz implementace a nazvy promennych (konvence Pokyd). */
 WORD NAJDIDALSI(WORD odkud,BYTE okolik) {
   while (okolik-- > 0) {
     odkud+=strlen(inteligence[intpozice]+odkud+1);
@@ -885,6 +915,7 @@ WORD NAJDIDALSI(WORD odkud,BYTE okolik) {
   return(odkud);
  }
 
+/* Rutina REALTIMEKEC - viz implementace a nazvy promennych (konvence Pokyd). */
 void REALTIMEKEC(void) {
 BYTE pozice,celkem=celkemodp,ktera,pozice1,pozice2,pozice3,puvnalada,zmenapozice;
 WORD najit,poziceodp;
@@ -961,6 +992,7 @@ ODPOVED:
 KONEC: pocetrealtimekecu=0; pocetrealtimekecu2++;
  }
 
+/* Rutina NAHODAX - viz implementace a nazvy promennych (konvence Pokyd). */
 void NAHODAX(WORD misto) {
 BYTE poradivety;
   if (charakter != 0) docasnenaladabody+=SPOCITEJ_NALADU(inteligence[intpozice][misto]);
@@ -971,6 +1003,7 @@ BYTE poradivety;
   ODP(inteligence[intpozice]+mistovint,intpozice*10+poradivety);
  }
 
+/* Rutina RODX - viz implementace a nazvy promennych (konvence Pokyd). */
 void RODX(WORD misto) {
 BYTE poradivety,zmenapozice=0;
   if (charakter != 0) docasnenaladabody+=SPOCITEJ_NALADU(inteligence[intpozice][misto]);
@@ -986,6 +1019,7 @@ BYTE poradivety,zmenapozice=0;
   ROD1(inteligence[intpozice]+mistovint+zmenapozice+1,inteligence[intpozice][mistovint+zmenapozice],intpozice*10+poradivety);
  }
 
+/* Rutina HLASENI_SPATNEHO_CFG - viz implementace a nazvy promennych (konvence Pokyd). */
 void HLASENI_SPATNEHO_CFG(void) {
   if (hlasenispatnehocfg == 0) {
     HLASKA("V souboru POKYD.CFG jsou nejaky blbosti. Stiskni cokoliv.",4);
@@ -995,6 +1029,7 @@ void HLASENI_SPATNEHO_CFG(void) {
    }
  }
 
+/* Rutina CTINASTAVENI - viz implementace a nazvy promennych (konvence Pokyd). */
 DWORD CTINASTAVENI(BYTE jeli_zacatek,int minimal,DWORD maximal,int normal) {
 BYTE celkem;
 signed int znak;
@@ -1016,6 +1051,7 @@ DWORD vysledek=0;
   return(vysledek);
  }
 
+/* Rutina CTINASTAVENITEXT - viz implementace a nazvy promennych (konvence Pokyd). */
 void CTINASTAVENITEXT(BYTE *kam,BYTE *standard) {
 signed int znak;
 BYTE pozice,chyba=0;
@@ -1053,6 +1089,7 @@ BYTE stav;
 NIC:;
  }*/
 
+/* Rutina VYBER_PLUGINU - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE VYBER_PLUGINU(void) {
 
 #define POCET_PLUGINU 10
@@ -1088,7 +1125,7 @@ BYTE komentar[70],navrathodnota=0,cookinfo,znak;
 
   VYBER:
   for (pomoc=ZACATEK_PLUGINU; pomoc < ZACATEK_PLUGINU+POCET_PLUGINU; pomoc++) {
-    PIS(2,pomoc,pomoc == pozice ? "ÍÍÍ" : "    ",15);
+    PIS(2,pomoc,pomoc == pozice ? "dz?dz?dz?" : "    ",15);
     PIS(7,pomoc,pluginy[pomoc-ZACATEK_PLUGINU],pomoc == pozice ? 15 : 3);
    }
 
@@ -1104,7 +1141,7 @@ SETRIC: SETRIC_OBRAZOVKY(); goto ZACATEK;
     if (CAS18() < pohybsipky) {				//pulnoc
       pohybsipky=CAS18(); blikaninazvu=pohybsipky; }
     if (CAS18() > pohybsipky+5) {			//pokyb sipky
-      PIS(2,pozice,sipkapozice == 1 ? "ÍÍÍ" : " Í ",15);
+      PIS(2,pozice,sipkapozice == 1 ? "dz?dz?dz?" : " dz? ",15);
       pohybsipky=CAS18();
       if (sipkapozice == 1) sipkapozice=0; else sipkapozice=1;
      }
@@ -1163,6 +1200,7 @@ SPUST:  SOUBOR("PLUGINY\\"); strcat(soubor,pluginy[pozice-ZACATEK_PLUGINU]); str
   return(navrathodnota);
  }
 
+/* Rutina SETRIC_KLAVESA - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE SETRIC_KLAVESA(void) {
   if (kbhit() != 0) return(1);
   if ((bioskey(2)&15) != 0) return(1);
@@ -1173,6 +1211,7 @@ BYTE SETRIC_KLAVESA(void) {
   return(0);
  }
 
+/* Rutina SETRIC_POPOSUN_OBRAZOVKU - viz implementace a nazvy promennych (konvence Pokyd). */
 void SETRIC_POPOSUN_OBRAZOVKU(void) {
 BYTE pozice,pomocne;
 WORD cisloradku,poz1,poz2;
@@ -1199,6 +1238,7 @@ WORD cisloradku,poz1,poz2;
   puttext(1,1,80,25,dlouhe);
  }
 
+/* Rutina SETRIC_OBRAZOVKY - viz implementace a nazvy promennych (konvence Pokyd). */
 void SETRIC_OBRAZOVKY(void) {
 BYTE barva1,pozicey1,pozicex2,pozicey2,hvezda=0,pokyd=0,typhvezdy;
 signed char pozicex1;
