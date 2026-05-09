@@ -383,10 +383,19 @@ KONEC:
  }
 
 BYTE VRATDIAKRITIKU(BYTE pismeno) {
-  if ((delkastrany == 24 || grafika25 == 1) && font == 1);
-  else return(pismeno);					//bez diakritiky
-  if (pismeno == 's') return('ç');
-  else return('í');
+  /* Pokyd font + 25-line: map ASCII to patched VGA codepoints (see zmeneneznaky[6..8]). */
+  if (!((delkastrany == 24 || grafika25 == 1) && font == 1))
+    return pismeno;
+  switch (pismeno) {
+    case 's':
+      return 231; /* š — same slot as 0xE7 */
+    case 'Y':
+      return 237; /* Ý — not CP437 221 (Ú); RAM slot from Pokyd font table */
+    case 'y':
+      return 251; /* ý — not CP437 253 */
+    default:
+      return pismeno;
+   }
  }
 
 void NAPISHLAVICKOVYRADEK(void) {

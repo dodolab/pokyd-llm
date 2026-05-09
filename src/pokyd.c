@@ -326,6 +326,9 @@ else if (mod == 50 && delkastrany == 24) {
     NASTAV50RADKU(); delkastrany=49;
    }
  }
+/* textmode(C80) reloads the ROM font and clears RAM glyph patches from INTRO;
+   republish Pokyd slots (š/Ý/ý) before the header uses VRATDIAKRITIKU(). */
+NASTAVSPRAVNYFONT();
 NAPISHLAVICKOVYRADEK();
 DBGLOG("main: after NAPISHLAVICKOVYRADEK");
 DBGLOGF("main: video state after header wherex=%d wherey=%d delkastrany=%u",

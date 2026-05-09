@@ -33,10 +33,60 @@ BYTE kde=misto<<4;
   misto++; if (misto == POCET_ZMENENYCH_ZNAKU) misto=0;
  }
 
+/* ROM 8x16 via INT 10h AX=1130 BH=6; upload patched glyphs with INT 10h AX=1100 (ZMENZNAKY). */
+static void pokyd_zkopiruj_rom_znak(BYTE znak, BYTE *out16) {
+  union REGPACK regs;
+  BYTE far *font;
+  unsigned i;
+  memset(&regs, 0, sizeof(regs));
+  regs.w.ax = 0x1130;
+  regs.h.bh = 6;
+  intr(0x10, &regs);
+  font = MK_FP(regs.w.es, regs.w.bp);
+  for (i = 0; i < 16; i++)
+    out16[i] = font[(unsigned)znak * 16u + i];
+ }
+
+static void pokyd_pridat_hacek(BYTE *g) {
+  unsigned top, r;
+  for (top = 0; top < 16 && g[top] == 0; top++) {}
+  if (top < 2) return;
+  r = top - 2;
+  g[r] |= 0x3C;
+  g[r + 1] |= 0x66;
+ }
+
+static void pokyd_pridat_carku(BYTE *g) {
+  unsigned top;
+  for (top = 0; top < 16 && g[top] == 0; top++) {}
+  if (top == 0) {
+    g[0] |= 0x18;
+    return;
+  }
+  if (top >= 2) {
+    g[top - 2] |= 0x18;
+    g[top - 1] |= 0x30;
+  } else {
+    g[0] |= 0x18;
+  }
+ }
+
 void NASTAVPOKYDFONT(void) {
-  /* Temporary safety fallback for DOSBox-X + Watcom build:
-     keep ROM font instead of uploading custom glyph tables. */
+  BYTE g[16];
+
   NASTAVNORMALNIFONT();
+
+  pokyd_zkopiruj_rom_znak((BYTE)'s', g);
+  pokyd_pridat_hacek(g);
+  ZMENZNAKY(zmeneneznaky[6], 1, g);
+
+  pokyd_zkopiruj_rom_znak((BYTE)'Y', g);
+  pokyd_pridat_carku(g);
+  ZMENZNAKY(zmeneneznaky[7], 1, g);
+
+  pokyd_zkopiruj_rom_znak((BYTE)'y', g);
+  pokyd_pridat_carku(g);
+  ZMENZNAKY(zmeneneznaky[8], 1, g);
  }
 
 void NASTAVNORMALNIFONT(void) {
