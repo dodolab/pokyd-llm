@@ -664,7 +664,7 @@ GETCH:
     pomoc=getch();
     DBGLOGF("INTRO: key=%u", (unsigned)pomoc);
     switch(pomoc) {		//neni-li pritomen argument, cekej na klavesu
-      case 0: switch(getch()) {
+      case 0: case 224: switch(getch()) {
         case 16: case 37: case 45: goto SKONCI;		//Alt-Q, Alt-K, Alt-X
 	case 59: HELP: HELPF1(1); goto CTI;			//F1
         case 60: PLUGINY: spustenipodprogramu=VYBER_PLUGINU();	//F2

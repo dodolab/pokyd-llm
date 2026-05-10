@@ -27,12 +27,11 @@ FILE *assettest;
    }
   soub[pozice+1]=0;
   strcpy(rootsoubor,soub);
-  strcat(rootsoubor,souborcat);
-  strcpy(soub,rootsoubor);
-
   strcpy(assetssoubor,soub);
   strcat(assetssoubor,"assets\\");
   strcat(assetssoubor,souborcat);
+  strcat(rootsoubor,souborcat);
+  strcpy(soub,rootsoubor);
   assettest=fopen(assetssoubor,"rb");
   if (assettest != NULL) {
     fclose(assettest);

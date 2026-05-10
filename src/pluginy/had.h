@@ -444,12 +444,11 @@ FILE *assettest;
   pomocne[pozice+1]=0;
   KONEC:
   strcpy(rootsoubor,pomocne);
-  strcat(rootsoubor,souborcat);
-  strcpy(pomocne,rootsoubor);
-
   strcpy(assetssoubor,pomocne);
   strcat(assetssoubor,"assets\\");
   strcat(assetssoubor,souborcat);
+  strcat(rootsoubor,souborcat);
+  strcpy(pomocne,rootsoubor);
   assettest=fopen(assetssoubor,"rb");
   if (assettest != NULL) {
     fclose(assettest);

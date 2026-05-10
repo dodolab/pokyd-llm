@@ -17,7 +17,9 @@ WORD pozice,celkem;
     switch(text[pozice]) {
       case '~': pozice++; textattr(text[pozice]-100); break;
       case '`': pozice++; textbackground(text[pozice]-100); break;
-      default: cprintf("%c",text[pozice]);
+      case '\r': gotoxy(1,wherey()); break;
+      case '\n': gotoxy(1,wherey()+1); break;
+      default: NAPISZNAK2(text[pozice],pokyd_text_attr);
      }
    }
  }

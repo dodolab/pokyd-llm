@@ -57,6 +57,7 @@ static unsigned short pokyd_ss = 0;
 /* Logical 1..n maps to physical rows below COMMAND.COM output when non-zero. */
 unsigned char pokyd_shell_rows = 0;
 static unsigned char pokyd_do_consplit = 0;
+static unsigned char pokyd_text_attr = 7;
 
 /* Borland compatibility names used across included legacy units. */
 #define C80 3 /* Watcom _TEXTC80: 80x25 color text - avoid pulling graph.h */
@@ -179,15 +180,15 @@ static void pokyd_select_display_page0(void) {
 }
 
 static void textcolor(int color) {
-  (void)color;
+  pokyd_text_attr = (unsigned char)((pokyd_text_attr & 0xF0) | (color & 0x0F));
 }
 
 static void textbackground(int color) {
-  (void)color;
+  pokyd_text_attr = (unsigned char)(((color & 0x0F) << 4) | (pokyd_text_attr & 0x0F));
 }
 
 static void textattr(int attr) {
-  (void)attr;
+  pokyd_text_attr = (unsigned char)attr;
 }
 
 static void textmode(int mode) {

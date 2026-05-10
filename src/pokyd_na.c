@@ -80,42 +80,42 @@ PSANI:
   SMAZ_EFEKT(sipkapozice);
   textcolor(15);
   if (strana == 1) {
-    gotoxy(HODNOTY_X,6); cprintf("%s",zenskyrod == 0 ? "muz " : "zena");
-    gotoxy(HODNOTY_X,7); cprintf("%s",zenapocitac == 0 ? "muz " : "zena");
+    INTRO_NAPIS(HODNOTY_X,6,zenskyrod == 0 ? "muz " : "zena",15);
+    INTRO_NAPIS(HODNOTY_X,7,zenapocitac == 0 ? "muz " : "zena",15);
     NASTAV_NALADU(nalada,8,0);
     ZAPIS_NALADU();
     textcolor(15);
     ZAPIS_CHARAKTER(9);
-    gotoxy(HODNOTY_X,10); cprintf(jmenomuzpocitac);
-    gotoxy(HODNOTY_X,11); cprintf(jmenozenapocitac);
-    gotoxy(HODNOTY_X,12); cprintf("%s",(pocetpocitacu-1) == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,13); cprintf("%s",nastvani == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,14); cprintf("%s",zvuk == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,15); cprintf("%lu  ",pocetvterin);
-    gotoxy(HODNOTY_X,16); cprintf("%s",zvysovani == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,17); cprintf("%lu  ",delayprocenta);
-    gotoxy(HODNOTY_X,18); cprintf("%s",font == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,19); cprintf("%d ",pocetradku);
-    gotoxy(HODNOTY_X,20); cprintf("%s",textefekty == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,21); cprintf("%lu   ",pocetsetricvterin);
+    sprintf(dlouhe,"%-15s",jmenomuzpocitac); INTRO_NAPIS(HODNOTY_X,10,dlouhe,15);
+    sprintf(dlouhe,"%-15s",jmenozenapocitac); INTRO_NAPIS(HODNOTY_X,11,dlouhe,15);
+    INTRO_NAPIS(HODNOTY_X,12,(pocetpocitacu-1) == 1 ? "ano" : "ne ",15);
+    INTRO_NAPIS(HODNOTY_X,13,nastvani == 1 ? "ano" : "ne ",15);
+    INTRO_NAPIS(HODNOTY_X,14,zvuk == 1 ? "ano" : "ne ",15);
+    sprintf(dlouhe,"%lu  ",pocetvterin); INTRO_NAPIS(HODNOTY_X,15,dlouhe,15);
+    INTRO_NAPIS(HODNOTY_X,16,zvysovani == 1 ? "ano" : "ne ",15);
+    sprintf(dlouhe,"%lu  ",delayprocenta); INTRO_NAPIS(HODNOTY_X,17,dlouhe,15);
+    INTRO_NAPIS(HODNOTY_X,18,font == 1 ? "ano" : "ne ",15);
+    sprintf(dlouhe,"%d ",pocetradku); INTRO_NAPIS(HODNOTY_X,19,dlouhe,15);
+    INTRO_NAPIS(HODNOTY_X,20,textefekty == 1 ? "ano" : "ne ",15);
+    sprintf(dlouhe,"%lu   ",pocetsetricvterin); INTRO_NAPIS(HODNOTY_X,21,dlouhe,15);
    }
   if (strana == 2) {
-    gotoxy(HODNOTY_X,6); cprintf("%s",mod == 25 ? "25     " : mod == 50 ? "50     " : "puvodni");
-    gotoxy(HODNOTY_X,7); cprintf("%s",slovenstina == 0 ? "ne " : "ano");
-    gotoxy(HODNOTY_X,8); cprintf("%s",pravopis == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,9); cprintf("%s",psani == 0 ? "ne " : "ano");
-    gotoxy(HODNOTY_X,10); cprintf("%s",extrasouborpsani == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,11); cprintf("%lu  ",vyska);
-    gotoxy(HODNOTY_X,12); cprintf("%s",svtipy == 1 ? "ano    " : svtipy == 0 ? "ne     " : "nahodne");
-    gotoxy(HODNOTY_X,13); cprintf("%s",spocasi == 1 ? "ano    " : spocasi == 0 ? "ne     " : "nahodne");
-    gotoxy(HODNOTY_X,14); cprintf("%d ",vkolikhodin);
-    gotoxy(HODNOTY_X,15); cprintf("%s",yz == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,16); cprintf("%s",cekaniklavesy == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,17); cprintf("%s",ulozeninakonci == 1 ? "ano" : "ne ");
-    gotoxy(HODNOTY_X,18); cprintf("%s",akcectrlbreak == 0 ? "ne   " : akcectrlbreak == 1 ? "ano  " : "reset");
-    gotoxy(HODNOTY_X,19); textcolor(barvaclovek); cprintf("barva #%d ",barvaclovek);
-    gotoxy(HODNOTY_X,20); textcolor(barvapocitac1); cprintf("barva #%d ",barvapocitac1);
-    gotoxy(HODNOTY_X,21); textcolor(barvapocitac2); cprintf("barva #%d ",barvapocitac2);
+    INTRO_NAPIS(HODNOTY_X,6,mod == 25 ? "25     " : mod == 50 ? "50     " : "puvodni",15);
+    INTRO_NAPIS(HODNOTY_X,7,slovenstina == 0 ? "ne " : "ano",15);
+    INTRO_NAPIS(HODNOTY_X,8,pravopis == 1 ? "ano" : "ne ",15);
+    INTRO_NAPIS(HODNOTY_X,9,psani == 0 ? "ne " : "ano",15);
+    INTRO_NAPIS(HODNOTY_X,10,extrasouborpsani == 1 ? "ano" : "ne ",15);
+    sprintf(dlouhe,"%lu  ",vyska); INTRO_NAPIS(HODNOTY_X,11,dlouhe,15);
+    INTRO_NAPIS(HODNOTY_X,12,svtipy == 1 ? "ano    " : svtipy == 0 ? "ne     " : "nahodne",15);
+    INTRO_NAPIS(HODNOTY_X,13,spocasi == 1 ? "ano    " : spocasi == 0 ? "ne     " : "nahodne",15);
+    sprintf(dlouhe,"%d ",vkolikhodin); INTRO_NAPIS(HODNOTY_X,14,dlouhe,15);
+    INTRO_NAPIS(HODNOTY_X,15,yz == 1 ? "ano" : "ne ",15);
+    INTRO_NAPIS(HODNOTY_X,16,cekaniklavesy == 1 ? "ano" : "ne ",15);
+    INTRO_NAPIS(HODNOTY_X,17,ulozeninakonci == 1 ? "ano" : "ne ",15);
+    INTRO_NAPIS(HODNOTY_X,18,akcectrlbreak == 0 ? "ne   " : akcectrlbreak == 1 ? "ano  " : "reset",15);
+    sprintf(dlouhe,"barva #%d ",barvaclovek); INTRO_NAPIS(HODNOTY_X,19,dlouhe,barvaclovek);
+    sprintf(dlouhe,"barva #%d ",barvapocitac1); INTRO_NAPIS(HODNOTY_X,20,dlouhe,barvapocitac1);
+    sprintf(dlouhe,"barva #%d ",barvapocitac2); INTRO_NAPIS(HODNOTY_X,21,dlouhe,barvapocitac2);
    }
 
   ZACATECNIK("Zde muzes editovat nastaveni programu. Pohybujes se mysi nebo klavesnici.",21);
@@ -181,7 +181,7 @@ POZICE:
   if (kbhit() != 0) {				//stisknuta klavesa
     pomoc=getch(); if (zvuk == 1) { sound(300); delay(5); nosound(); }
     switch(pomoc) {
-      case 0: if (kbhit() == 0) break;
+      case 0: case 224: if (kbhit() == 0) break;
        switch(getch()) {
         case 59: HELPF1(15); opakovani=0; goto START0;		//F1
         case 62: goto TAB;				//F4
@@ -536,7 +536,7 @@ KLAVESA:
   if (pozice > 0) strcpy(jaky,text);
   KONEC2:
   gotoxy(HODNOTY_X,wherey()); pozice=0; while (pozice++ < 16) NAPISZNAK2(' ',15);
-  gotoxy(HODNOTY_X,wherey()); textcolor(15); cprintf(jaky);
+  gotoxy(HODNOTY_X,wherey()); NAPISRETEZEC(jaky,15);
  }
 
 /* Rutina NASTAV_STANDARD - viz implementace a nazvy promennych (konvence Pokyd). */

@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOSBOX_X_BIN="${NOTES_DOSBOX_X:-}"
 EXIT_AFTER_POKYD=0
 SKIP_BUILD=0
+SKIP_INTRO=0
 # Optional: set POKYD_LLM_HOST=host:port to enable LLM mode inside DOSBox-X.
 # The Node bridge must be running on the HOST before launching DOSBox-X.
 # Example: POKYD_LLM_HOST=10.0.2.2:8765 ./build-and-run.sh
@@ -18,18 +19,22 @@ for arg in "$@"; do
     --no-build)
       SKIP_BUILD=1
       ;;
+    --skip-intro)
+      SKIP_INTRO=1
+      ;;
     --llm=*)
       POKYD_LLM_HOST="${arg#--llm=}"
       ;;
     *)
       echo "Unknown argument: $arg"
-      echo "Usage: ./build-and-run.sh [--exit-after-pokyd] [--no-build] [--llm=host:port]"
+      echo "Usage: ./build-and-run.sh [--exit-after-pokyd] [--no-build] [--skip-intro] [--llm=host:port]"
       exit 1
       ;;
   esac
 done
 
 if [[ "$EXIT_AFTER_POKYD" -eq 1 ]]; then
+  SKIP_INTRO=1
   echo "Note: --exit-after-pokyd is set: DOSBox-X will quit as soon as pokyd.exe exits"
   echo "      (non-interactive). Omit this flag to stay at the C:\\ prompt."
 fi
@@ -64,10 +69,13 @@ fi
 CONF_PATH="$(mktemp -t pokyd-run)"
 trap 'rm -f "$CONF_PATH"' EXIT
 
-# Build the pokyd.exe command line: add -llm flag if LLM host is configured.
-POKYD_CMD="pokyd.exe -pokyd -consplit"
+# Build the pokyd.exe command line: keep the intro interactive unless explicitly skipped.
+POKYD_CMD="pokyd.exe -consplit"
+if [[ "$SKIP_INTRO" -eq 1 ]]; then
+  POKYD_CMD="pokyd.exe -pokyd -consplit"
+fi
 if [[ -n "$POKYD_LLM_HOST" ]]; then
-  POKYD_CMD="pokyd.exe -pokyd -consplit -llm=$POKYD_LLM_HOST"
+  POKYD_CMD="$POKYD_CMD -llm=$POKYD_LLM_HOST"
   echo "LLM mode: Pokyd will connect to bridge at $POKYD_LLM_HOST"
 fi
 
@@ -76,7 +84,7 @@ if not exist C:\SLOVNIK.DAT if exist C:\assets\slova.pkd copy C:\assets\slova.pk
 if not exist C:\SLOVNIK.DAT if exist C:\assets\pokydx.pkd copy C:\assets\pokydx.pkd C:\POKYDX.PKD >nul
 if not exist C:\SLOVNIK.DAT if exist C:\slova.exe slova.exe
 echo [pokyd] Starting pokyd.exe ...
-REM -pokyd skips full-screen intro; -consplit keeps COMMAND.COM/autoexec lines above Pokyd
+REM -consplit keeps COMMAND.COM/autoexec lines above Pokyd; --skip-intro adds -pokyd
 $POKYD_CMD
 echo.
 echo pokyd.exe ended with errorlevel %ERRORLEVEL%

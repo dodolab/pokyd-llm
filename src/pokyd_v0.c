@@ -714,12 +714,11 @@ FILE *assettest;
    }
   soubor[pozice+1]=0;
   strcpy(rootsoubor,soubor);
-  strcat(rootsoubor,souborcat);
-  strcpy(soubor,rootsoubor);
-
   strcpy(assetssoubor,soubor);
   strcat(assetssoubor,"assets\\");
   strcat(assetssoubor,souborcat);
+  strcat(rootsoubor,souborcat);
+  strcpy(soubor,rootsoubor);
   assettest=fopen(assetssoubor,"rb");
   if (assettest != NULL) {
     fclose(assettest);
