@@ -4,8 +4,26 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENDOR_SRC="$ROOT_DIR/vendor/watt-32"
 OUT_DIR="$ROOT_DIR/vendor/watt32-dos"
+INNER_SH="$SCRIPT_DIR/watt32-docker-build-inner.sh"
+if [[ ! -f "$INNER_SH" ]]; then
+  echo "Missing inner script: $INNER_SH"
+  exit 1
+fi
+
+# Windows checkouts often use CRLF; bash in the container then sees $'\r' and breaks set/apt-get.
+if [[ -n "${WINDIR:-}" ]] && command -v powershell.exe >/dev/null 2>&1; then
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$SCRIPT_DIR/ensure-sh-lf.ps1" -Path "$INNER_SH" || true
+fi
+
+echo "==> Checking Docker daemon..."
+if ! docker info >/dev/null 2>&1; then
+  echo "Cannot connect to the Docker daemon. Start Docker Desktop (or dockerd) and retry."
+  echo "Tip: run 'docker version' and confirm a Server section is shown."
+  exit 1
+fi
 
 echo "==> Cloning Watt-32 into vendor/watt-32 (shallow, reproducible)..."
 mkdir -p "$ROOT_DIR/vendor"
@@ -16,34 +34,8 @@ echo "==> Building wattcpwl.lib inside Docker (Ubuntu + Open Watcom snapshot + D
 docker run --rm --platform linux/amd64 \
   -e "SDL_VIDEODRIVER=dummy" \
   -v "$VENDOR_SRC:/watt" \
-  ubuntu:22.04 bash -c '
-set -ex
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -qq -y wget xz-utils dosbox ca-certificates coreutils git >/dev/null
-
-cd /tmp
-wget -q https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz
-mkdir -p /opt/watcom
-tar xf /tmp/ow-snapshot.tar.xz -C /opt/watcom
-export WATCOM=/opt/watcom
-export PATH=$WATCOM/binl:$PATH
-
-cd /watt/util
-wmake -h -f errnos.mak wc_err.exe
-
-mkdir -p /watt/src/build/watcom/large /watt/inc/sys /watt/src/build/watcom
-(timeout 90 dosbox -exit -c "mount c /watt" -c "c:" -c "cd util" -c "wc_err.exe -s > ..\\src\\build\\watcom\\syserr.c" -c "exit" || true)
-(timeout 90 dosbox -exit -c "mount c /watt" -c "c:" -c "cd util" -c "wc_err.exe -e > ..\\inc\\sys\\watcom.err" -c "exit" || true)
-
-cd /watt/src
-../util/linux/mkmake -w -o watcom_l.mak -d build/watcom/large makefile.all WATCOM LARGE
-../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/watcom/watt32.dep
-echo "neterr.c: build/watcom/syserr.c" >> build/watcom/watt32.dep
-wmake -h -f watcom_l.mak
-test -f /watt/lib/wattcpwl.lib
-echo "Watt-32 build OK."
-'
+  -v "$INNER_SH:/inner.sh:ro" \
+  ubuntu:22.04 bash /inner.sh
 
 echo "==> Installing headers + libs into vendor/watt32-dos ..."
 mkdir -p "$OUT_DIR/lib"

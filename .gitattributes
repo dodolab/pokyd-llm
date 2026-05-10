@@ -1,0 +1,2 @@
+# Linux/bash in Docker reads bind-mounted scripts; CRLF breaks set/apt-get/paths on Windows.
+*.sh text eol=lf
