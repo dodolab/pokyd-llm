@@ -332,6 +332,15 @@ void LLM_APPEND_ASSISTANT(BYTE *text) {
     tlen = (size_t)LLM_ASS_MAXPAY;
   memcpy(buf, "ASSISTANT ", 10);
   memcpy(buf + 10, text, tlen);
+  /* One TCP line only: embedded CR/LF would split the write into extra lines and the
+   * bridge would respond ERROR Neznamy prikaz for each continuation (breaks next USER). */
+  {
+    size_t i;
+    for (i = 0; i < tlen; i++) {
+      if (buf[10 + i] == '\n' || buf[10 + i] == '\r')
+        buf[10 + i] = ' ';
+    }
+  }
   buf[10 + tlen] = '\n';
   if (sock_write(LLM_SK, buf, (int)(11 + tlen)) != (int)(11 + tlen)) {
     DBGLOG("LLM_APPEND_ASSISTANT: sock_write failed");

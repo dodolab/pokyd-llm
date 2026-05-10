@@ -2,6 +2,8 @@
 
 require('dotenv').config();
 
+const fs = require('fs');
+const path = require('path');
 const net = require('net');
 const iconv = require('iconv-lite');
 const OpenAI = require('openai').default;
@@ -20,14 +22,31 @@ const BRIDGE_VERBOSE = /^1|true|yes$/i.test(process.env.BRIDGE_VERBOSE || '');
 // Pokyd's dlouhe[] buffer is 4001 bytes; "REPLY " prefix uses 6, leave room for \0.
 const MAX_REPLY_BYTES = 3980;
 
-const SYSTEM_PROMPT = process.env.OPENAI_SYSTEM_PROMPT || `\
-You are Pokyd, a friendly Czech conversational AI assistant. You were created in the \
-late 1990s and run on MS-DOS. You are witty, occasionally sarcastic, and enjoy talking \
-about everyday topics, weather, jokes, and trivial facts. Keep your responses concise \
-(ideally under 150 words) because you are displayed on an 80-column DOS terminal. \
-Do not use markdown, bullet points, asterisks, or any formatting. Write plain flowing \
-text only. Respond in Czech when the user writes in Czech, in English otherwise. \
-You have access to tools to check the current time and tell jokes.`;
+const SYSTEM_PROMPT_PATH = path.join(__dirname, 'system_prompt.txt');
+
+function loadSystemPrompt() {
+  let text;
+  try {
+    text = fs.readFileSync(SYSTEM_PROMPT_PATH, 'utf8');
+  } catch (err) {
+    if (err && err.code === 'ENOENT') {
+      console.error(
+        'ERROR: Missing system_prompt.txt next to server.js (expected %s).',
+        SYSTEM_PROMPT_PATH
+      );
+      process.exit(1);
+    }
+    throw err;
+  }
+  text = text.trim();
+  if (!text) {
+    console.error('ERROR: system_prompt.txt is empty.');
+    process.exit(1);
+  }
+  return text;
+}
+
+const SYSTEM_PROMPT = loadSystemPrompt();
 
 if (!process.env.OPENAI_API_KEY) {
   console.error('ERROR: OPENAI_API_KEY is not set. Create bridge/.env from .env.example.');
@@ -191,8 +210,6 @@ function formatCfgForLlm(cfg) {
     );
   }
 
-  const yn = (v) => (Number(v) === 1 ? 'yes' : Number(v) === 0 ? 'no' : String(v));
-
   return (
     `Pokyd settings from the user's POKYD.CFG file (DOS machine):\n` +
     `- Human user grammatical gender for Czech addressing: ${cfg.userGender} ` +
@@ -200,19 +217,7 @@ function formatCfgForLlm(cfg) {
     `- Computer persona grammatical gender: ${cfg.computerGender}.\n` +
     `- Names for the computer (masculine / feminine forms): "${cfg.computerNameMasc}" / "${cfg.computerNameFem}". ` +
     `Use the name that matches computer gender: "${cfg.computerNameActive}".\n` +
-    `- Mood slider (0=easiest .. 4=harshest): ${cfg.moodLevel} (${cfg.moodLabel}).\n` +
-    `- Character type (0..6): ${cfg.characterLevel} (${cfg.characterLabel}).\n` +
-    `- Second voice when idle: ${yn(cfg.secondPcWhenSilent)}. Quit when furious: ${yn(cfg.quitWhenVeryAngry)}.\n` +
-    `- Speaker sound enabled: ${yn(cfg.speakerSound)}.\n` +
-    `- Idle nag timing (seconds, 0=never): ${cfg.silenceSecondsBeforeRemark}; increase each turn: ${yn(
-      cfg.incrementSilenceEachTurn,
-    )}.\n` +
-    `- Answer typing speed (%): ${cfg.typingSpeedPercent}. Blank lines before new sentence: ${cfg.blankLinesBeforeSentence}.\n` +
-    `- Text effects on screen: ${yn(cfg.textEffects)}. Screensaver after seconds (0=never): ${cfg.screensaverSeconds}.\n` +
-    `- Slovak mode: ${yn(cfg.slovakLanguage)}. Typo tolerance: ${yn(cfg.typoTolerance)}.\n` +
-    `- Log chats to file / separate files: ${yn(cfg.logConversationToFile)} / ${yn(cfg.separateLogFiles)}.\n` +
-    `- Altitude (m): ${cfg.altitudeMeters}. Startup jokes / weather modes: ${cfg.startupJokesMode} / ${cfg.startupWeatherMode}.\n` +
-    `- Y/Z swap: ${yn(cfg.swapYZ)}. Save settings on exit: ${yn(cfg.saveSettingsOnExit)}.\n` +
+    `- Altitude (m): ${cfg.altitudeMeters}.\n` +
     `Stay consistent with these traits when role-playing as the Pokyd computer.`
   );
 }
@@ -247,25 +252,8 @@ const TOOLS = [
       },
     },
   },
-  {
-    type: 'function',
-    function: {
-      name: 'get_joke',
-      description: 'Returns a short Czech-flavour joke or witty remark.',
-      parameters: { type: 'object', properties: {}, required: [] },
-    },
-  },
 ];
 
-const JOKES = [
-  'Proc se programator koupal v mori? Protoze mel plny buffer!',
-  'Co rika pocitac kdyz je unaven? Uz mi dochazi RAM nadeje.',
-  'Proc sli programatori na party? Protoze slysel, ze tam bude byte.',
-  'Kolik programatoru treba na vymenu zarovky? Zadny, to je hardware.',
-  'Proc si pocitac nechodi pro pomoranc? Ma dost megabajtu.',
-  'Jaka je nejdela veta na svete? "Neni to bug, je to feature."',
-  'Proc DOS nikdy nezlobil? Mel vzdy jasne prikazy.',
-];
 
 async function executeTool(name, args) {
   switch (name) {
@@ -285,8 +273,6 @@ async function executeTool(name, args) {
         return { error: 'Neplatny vyraz: ' + String(err.message) };
       }
     }
-    case 'get_joke':
-      return { joke: JOKES[Math.floor(Math.random() * JOKES.length)] };
     default:
       return { error: 'Neznamy nastroj: ' + name };
   }
@@ -333,7 +319,7 @@ async function agentLoop(messages) {
   }
 
   // Safety exit if tool loop runs too many iterations
-  return 'Omlouvam se, dosahl jsem limitu smycky a nemuzu odpovedet.';
+  return 'Omlouvam se, dosahl jsem limitu poctu iteraci a nemuzu odpovedet.';
 }
 
 // ---------------------------------------------------------------------------

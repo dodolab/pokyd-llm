@@ -109,8 +109,9 @@ The server prints its listening address and waits for DOS clients.
 | `OPENAI_MAX_TOKENS` | `512` | Max tokens per API call |
 | `BRIDGE_PORT` | `8765` | TCP port to listen on |
 | `BRIDGE_BIND` | `0.0.0.0` | Bind address (`127.0.0.1` for localhost-only) |
-| `OPENAI_SYSTEM_PROMPT` | (built-in) | Override the Pokyd persona system prompt |
 | `BRIDGE_TIMEOUT_MS` | `30000` | Max ms to wait for an OpenAI response |
+
+The Pokyd persona **system prompt** is read from `bridge/system_prompt.txt` at startup (UTF-8). Edit that file to change behavior; it must be non-empty.
 
 ### Agentic tools
 
@@ -125,8 +126,6 @@ Built-in tools:
 |---|---|
 | `get_current_datetime` | Returns current date and time on the host |
 | `calculate` | Evaluates a safe arithmetic expression |
-| `get_joke` | Returns one of several canned Czech-flavour jokes |
-
 ---
 
 ## DOS client (Pokyd)

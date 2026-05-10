@@ -376,7 +376,7 @@ if (llm_enabled) {
   DBGLOGF("main: LLM_CONNECT to %s:%u", (char *)llm_host, (unsigned)llm_port);
   if (LLM_CONNECT()) {
     BARVA(barvapocitac1);
-    NAPISRETEZEC("LLM: pripojeno ke bridge serveru.", barvapocitac1);
+    NAPISRETEZEC("LLM Pripojeni navazano!", barvapocitac1);
     LLM_SEND_CONFIG();
     STRANA(1);
   } else {
