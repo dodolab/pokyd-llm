@@ -28,3 +28,5 @@ bridge/.bridge.pid
 vendor/watt32-dos/
 vendor/watt-32/
 node_modules
+src/pokyd.
+src/slova.
