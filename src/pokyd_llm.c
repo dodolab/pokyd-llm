@@ -19,6 +19,9 @@
  *   - Runtime:   packet driver loaded before pokyd.exe; WATTCP.CFG present
  *
  * Protocol (see bridge/README.md for the full spec):
+ *   DOS -> Node:  optional "CONFIG_START\n" ... lines ... "CONFIG_END\n" (POKYD.CFG)
+ *   Node -> DOS:  "OK CONFIG\n" after CONFIG block (optional; failure is non-fatal)
+ *   DOS -> Node:  "ASSISTANT <text>\n" — Pokyd rule-engine line (conversation context)
  *   DOS -> Node:  "USER <text>\n"   (ASCII, <=79 chars)
  *   Node -> DOS:  "REPLY <text>\n"  (ASCII, <=3980 chars, no embedded newlines)
  *                 "ERROR <msg>\n"   (bridge-side failure)
@@ -172,6 +175,61 @@ static WORD llm_recv_line(BYTE *buf, WORD maxlen, int timeout_sec) {
 }
 
 /* ---------------------------------------------------------------------------
+ * LLM_SEND_CONFIG_WATT
+ * After connect, send POKYD.CFG so the bridge can feed structured settings to the LLM.
+ * Non-fatal if the file is missing or OK CONFIG is not received.
+ * ------------------------------------------------------------------------- */
+static BYTE llm_send_config_watt(void) {
+  FILE *f;
+  char  line[256];
+  int   n;
+  WORD  rlen;
+  static const char start[] = "CONFIG_START\n";
+  static const char end[]   = "CONFIG_END\n";
+
+  if (!llm_connected)
+    return 0;
+
+  if (sock_write(LLM_SK, start, (int)sizeof(start) - 1) != (int)sizeof(start) - 1) {
+    DBGLOG("LLM_SEND_CONFIG: sock_write CONFIG_START failed");
+    llm_connected = 0;
+    return 0;
+  }
+
+  f = fopen("POKYD.CFG", "rt");
+  if (f != NULL) {
+    while (fgets(line, (int)sizeof(line), f) != NULL) {
+      n = (int)strlen(line);
+      while (n > 0 && (line[n - 1] == '\n' || line[n - 1] == '\r'))
+        line[--n] = 0;
+      line[n]     = '\n';
+      line[n + 1] = 0;
+      if (sock_write(LLM_SK, line, n + 1) != n + 1) {
+        DBGLOG("LLM_SEND_CONFIG: sock_write body failed");
+        fclose(f);
+        llm_connected = 0;
+        return 0;
+      }
+    }
+    fclose(f);
+  }
+
+  if (sock_write(LLM_SK, end, (int)sizeof(end) - 1) != (int)sizeof(end) - 1) {
+    DBGLOG("LLM_SEND_CONFIG: sock_write CONFIG_END failed");
+    llm_connected = 0;
+    return 0;
+  }
+
+  memset(dlouhe, 0, sizeof(dlouhe));
+  rlen = llm_recv_line(dlouhe, (WORD)sizeof(dlouhe), 15);
+  if (rlen > 0 && strncmp((char *)dlouhe, "OK CONFIG", 9) == 0)
+    DBGLOG("LLM_SEND_CONFIG: bridge acknowledged config");
+  else if (rlen > 0)
+    DBGLOGF("LLM_SEND_CONFIG: unexpected ack: %.60s", (char *)dlouhe);
+  return 1;
+}
+
+/* ---------------------------------------------------------------------------
  * LLM_SEND_RECV_WATT  (internal)
  * Send "USER <retezec1>\n", receive reply, fill dlouhe[], set pozodp=100.
  * Returns 1 for success (caller should goto OD), 0 to fall back to legacy.
@@ -180,12 +238,11 @@ static BYTE llm_send_recv_watt(void) {
   BYTE  msg[90];
   WORD  dlen;
   WORD  rlen;
-  BYTE  tmp;
 
-  /* Show a brief waiting indicator on the computer's colour. */
+  /* Brief waiting indicator (no "AI" prefix; reply text is shown verbatim). */
   STRANA(1);
   BARVA(barvapocitac1);
-  NAPISRETEZEC("AI: ...", barvapocitac1);
+  NAPISRETEZEC("...", barvapocitac1);
 
   /* Build "USER <text>\n". */
   msg[0] = 'U'; msg[1] = 'S'; msg[2] = 'E'; msg[3] = 'R'; msg[4] = ' ';
@@ -219,6 +276,7 @@ static BYTE llm_send_recv_watt(void) {
     memmove(dlouhe, dlouhe + 6, (size_t)(rlen - 6 + 1));
     pozodp  = 100;        /* long-message path in ODPOVED() */
     pocetuzivvet++;       /* count this as a user turn */
+    llm_odpoved_z_bridge = 1;
     return 1;
   }
 
@@ -258,6 +316,41 @@ BYTE LLM_CONNECT(void) {
 #endif
 }
 
+/* Max payload bytes after "ASSISTANT " on one line (dlouhe may be very long). */
+#define LLM_ASS_MAXPAY 3800
+
+/* LLM_APPEND_ASSISTANT - send rule-engine / native Pokyd reply so the bridge history matches the screen. */
+void LLM_APPEND_ASSISTANT(BYTE *text) {
+#ifdef POKYD_LLM_WATT
+  BYTE   buf[4096];
+  size_t tlen;
+
+  if (!llm_enabled || !llm_connected || text == NULL || text[0] == 0)
+    return;
+  tlen = strlen((char *)text);
+  if (tlen > (size_t)LLM_ASS_MAXPAY)
+    tlen = (size_t)LLM_ASS_MAXPAY;
+  memcpy(buf, "ASSISTANT ", 10);
+  memcpy(buf + 10, text, tlen);
+  buf[10 + tlen] = '\n';
+  if (sock_write(LLM_SK, buf, (int)(11 + tlen)) != (int)(11 + tlen)) {
+    DBGLOG("LLM_APPEND_ASSISTANT: sock_write failed");
+    llm_connected = 0;
+  }
+#else
+  (void)text;
+#endif
+}
+
+/* LLM_SEND_CONFIG - push POKYD.CFG to the bridge (once per connection). */
+BYTE LLM_SEND_CONFIG(void) {
+#ifdef POKYD_LLM_WATT
+  return llm_send_config_watt();
+#else
+  return 0;
+#endif
+}
+
 /* LLM_SEND_RECV - send current user input (retezec1) to the bridge,
  * fill dlouhe[] with the ASCII reply, and set pozodp=100.
  * Returns 1 for success (caller should "goto OD"), 0 to use legacy engine. */
@@ -267,6 +360,7 @@ BYTE LLM_SEND_RECV(void) {
     /* Attempt a lazy reconnect before giving up. */
     DBGLOG("LLM_SEND_RECV: not connected, attempting reconnect");
     if (!llm_connect_watt()) return 0;
+    llm_send_config_watt();
   }
   return llm_send_recv_watt();
 #else

@@ -92,6 +92,8 @@ BYTE llm_connected = 0;
 BYTE llm_host[64]  = "";
 /* Bridge TCP port. Default 8765. */
 WORD llm_port      = 8765;
+/* Next ODPOVED shows text from LLM bridge (do not echo back as ASSISTANT context). */
+BYTE llm_odpoved_z_bridge = 0;
 
 #if test == 1
 DWORD testcyklus;

@@ -49,9 +49,11 @@ const openai = new OpenAI();
 // only patches 3 RAM slots (positions 231, 237, 251 for s-hacek, Y-acute,
 // y-acute).  All other non-ASCII bytes produce CP437 glyphs, not Czech ones.
 //
-// Decision: transliterate all non-ASCII characters to their closest 7-bit
-// ASCII equivalent before sending to DOS.  This is consistent with the
-// stripped-diacritics convention already used throughout the application.
+// Decision: map Czech (and common Latin) letters to 7-bit ASCII for the DOS
+// terminal; preserve uppercase/lowercase and all punctuation.  We use NFD
+// plus stripping combining marks (moøe -> more) and DIACRITIC_MAP where needed.
+// NBSP is normalized to a normal space; line breaks are folded to spaces so the
+// TCP line protocol stays a single REPLY line.
 //
 // A future v2 enhancement could:
 //   - Send CP852-encoded bytes and map UTF-8 Czech chars to the custom font
@@ -60,32 +62,159 @@ const openai = new OpenAI();
 // ---------------------------------------------------------------------------
 
 const DIACRITIC_MAP = {
-  // Lowercase
+  // Lowercase Latin extensions (never use ASCII '?' as key — it maps LLM punctuation wrongly)
   'á':'a','è':'c','ï':'d','é':'e','ì':'e','í':'i','¾':'l','ò':'n',
   'ó':'o','ø':'r','š':'s','':'t','ú':'u','ù':'u','ý':'y','ž':'z',
-  'ä':'a','ë':'e','?':'i','ö':'o','ü':'u','?':'y',
-  '?':'a','â':'a','?':'e','?':'e','î':'i','ô':'o','?':'u',
+  'ä':'a','ë':'e','ö':'o','ü':'u',
+  'â':'a','î':'i','ô':'o',
   // Uppercase
   'Á':'A','È':'C','Ï':'D','É':'E','Ì':'E','Í':'I','¼':'L','Ò':'N',
   'Ó':'O','Ø':'R','Š':'S','':'T','Ú':'U','Ù':'U','Ý':'Y','Ž':'Z',
-  'Ä':'A','Ë':'E','?':'I','Ö':'O','Ü':'U',
-  '?':'A','Â':'A','?':'E','?':'E','Î':'I','Ô':'O','?':'U',
+  'Ä':'A','Ë':'E','Ö':'O','Ü':'U',
+  'Â':'A','Î':'I','Ô':'O',
 };
 
 function toAscii(str) {
+  /* Decompose precomposed letters (ø -> r + combining caron), drop marks. */
+  const base = str.normalize('NFD').replace(/\p{M}+/gu, '');
   let out = '';
-  for (const ch of str) {
+  for (const ch of base) {
+    const cp = ch.codePointAt(0);
+    /* ASCII passes through unchanged — must run before DIACRITIC_MAP so "?" is not mistaken for a letter. */
+    if (cp < 128) {
+      out += ch;
+      continue;
+    }
     const mapped = DIACRITIC_MAP[ch];
     if (mapped !== undefined) {
       out += mapped;
-    } else if (ch.charCodeAt(0) < 128) {
-      out += ch;
     } else {
-      // Non-ASCII, not in map: replace with '?'
+      /* Rare ligatures / letters without decomposition */
       out += '?';
     }
   }
   return out;
+}
+
+/** Transliterate extended Latin to ASCII only; keep case and punctuation. Fold breaks for one-line TCP. */
+function normalizeReplyForDos(str) {
+  let s = str.replace(/\u00A0/g, ' ');
+  s = toAscii(s);
+  s = s.replace(/[\r\n\t]+/g, ' ');
+  s = s.replace(/ {2,}/g, ' ').trim();
+  return s;
+}
+
+const NALADA_LABELS = ['nejlehci', 'lehci', 'normalni', 'tezsi', 'nejtezsi'];
+const CHARAKTER_LABELS = [
+  'stroj',
+  'naivni',
+  'klidny',
+  'prumerny',
+  'neduverivy',
+  'naladovy',
+  'vybusny',
+];
+
+/**
+ * Parse POKYD.CFG text into a plain object (KyblSoft v7 layout).
+ * Labels are matched loosely so minor wording changes still work.
+ */
+function parsePokydCfg(raw) {
+  const text = (raw || '').replace(/^\uFEFF/, '');
+  if (!text.trim()) {
+    return { empty: true };
+  }
+
+  const lines = text.split(/\r?\n/).map((l) => l.replace(/\r$/, ''));
+
+  const valAfter = (predicate) => {
+    const idx = lines.findIndex(predicate);
+    if (idx < 0 || idx >= lines.length - 1) return '';
+    return lines[idx + 1].trim();
+  };
+
+  const num = (s, def = 0) => {
+    const x = parseInt(String(s), 10);
+    return Number.isFinite(x) ? x : def;
+  };
+
+  const pcG = num(valAfter((l) => l.includes('Pohlavi') && l.includes('pocitace')));
+  const pcGender = pcG === 1 ? 'zena' : 'muz';
+
+  const mascName = valAfter((l) => l.includes('Jmeno') && l.includes('mu'));
+  const femName = valAfter((l) => l.includes('Jmeno') && l.includes('zen'));
+
+  const parsed = {
+    userGender: num(valAfter((l) => l.includes('Pohlavi') && l.includes('cloveka'))) === 1 ? 'zena' : 'muz',
+    computerGender: pcGender,
+    computerNameMasc: mascName || '',
+    computerNameFem: femName || '',
+    computerNameActive: pcGender === 'zena' ? (femName || '') : (mascName || ''),
+    moodLevel: num(valAfter((l) => l.includes('Nalada') && l.includes('pocitace'))),
+    characterLevel: num(valAfter((l) => l.includes('Charakter') && l.includes('pocitace'))),
+    secondPcWhenSilent: num(valAfter((l) => l.includes('Zapojeni') && l.includes('druheho'))),
+    quitWhenVeryAngry: num(valAfter((l) => l.includes('Poradnem') && l.includes('nastvani'))),
+    speakerSound: num(valAfter((l) => l.includes('Ma-li') && l.includes('zvuk'))),
+    silenceSecondsBeforeRemark: num(valAfter((l) => l.includes('vterin') && l.includes('klavesy'))),
+    incrementSilenceEachTurn: num(valAfter((l) => l.includes('Zvysovani'))),
+    typingSpeedPercent: num(valAfter((l) => l.includes('Cekaci') && l.includes('odpovidani'))),
+    customFont: num(valAfter((l) => l.includes('vlastni font'))),
+    blankLinesBeforeSentence: num(valAfter((l) => l.includes('odradkovat'))),
+    textEffects: num(valAfter((l) => l.includes('textovych efektu'))),
+    screensaverSeconds: num(valAfter((l) => l.includes('setric'))),
+    slovakLanguage: num(valAfter((l) => l.includes('slovensk'))),
+    typoTolerance: num(valAfter((l) => l.includes('Tolerance'))),
+    logConversationToFile: num(valAfter((l) => l.includes('Psani hovoru'))),
+    separateLogFiles: num(valAfter((l) => l.includes('extra souboru'))),
+    altitudeMeters: num(valAfter((l) => l.includes('Nadmorska'))),
+    startupJokesMode: num(valAfter((l) => l.includes('Psani vtipu'))),
+    startupWeatherMode: num(valAfter((l) => l.includes('predpovedi pocasi'))),
+    weatherNextDayFromHour: num(valAfter((l) => l.includes('Od kolika hodin'))),
+    swapYZ: num(valAfter((l) => l.includes('Y a Z'))),
+    saveSettingsOnExit: num(valAfter((l) => l.includes('Ulozeni nastaveni'))),
+  };
+
+  parsed.moodLabel = NALADA_LABELS[Math.min(Math.max(parsed.moodLevel, 0), 4)] || String(parsed.moodLevel);
+  parsed.characterLabel =
+    CHARAKTER_LABELS[Math.min(Math.max(parsed.characterLevel, 0), 6)] || String(parsed.characterLevel);
+
+  return parsed;
+}
+
+/** Second system message: runtime facts for persona and Czech agreement. */
+function formatCfgForLlm(cfg) {
+  if (cfg.empty) {
+    return (
+      'Pokyd configuration block was empty or missing. Infer neutral defaults for user gender ' +
+      'and computer persona.'
+    );
+  }
+
+  const yn = (v) => (Number(v) === 1 ? 'yes' : Number(v) === 0 ? 'no' : String(v));
+
+  return (
+    `Pokyd settings from the user's POKYD.CFG file (DOS machine):\n` +
+    `- Human user grammatical gender for Czech addressing: ${cfg.userGender} ` +
+    `(use matching verb endings and pronouns when speaking as/about the user).\n` +
+    `- Computer persona grammatical gender: ${cfg.computerGender}.\n` +
+    `- Names for the computer (masculine / feminine forms): "${cfg.computerNameMasc}" / "${cfg.computerNameFem}". ` +
+    `Use the name that matches computer gender: "${cfg.computerNameActive}".\n` +
+    `- Mood slider (0=easiest .. 4=harshest): ${cfg.moodLevel} (${cfg.moodLabel}).\n` +
+    `- Character type (0..6): ${cfg.characterLevel} (${cfg.characterLabel}).\n` +
+    `- Second voice when idle: ${yn(cfg.secondPcWhenSilent)}. Quit when furious: ${yn(cfg.quitWhenVeryAngry)}.\n` +
+    `- Speaker sound enabled: ${yn(cfg.speakerSound)}.\n` +
+    `- Idle nag timing (seconds, 0=never): ${cfg.silenceSecondsBeforeRemark}; increase each turn: ${yn(
+      cfg.incrementSilenceEachTurn,
+    )}.\n` +
+    `- Answer typing speed (%): ${cfg.typingSpeedPercent}. Blank lines before new sentence: ${cfg.blankLinesBeforeSentence}.\n` +
+    `- Text effects on screen: ${yn(cfg.textEffects)}. Screensaver after seconds (0=never): ${cfg.screensaverSeconds}.\n` +
+    `- Slovak mode: ${yn(cfg.slovakLanguage)}. Typo tolerance: ${yn(cfg.typoTolerance)}.\n` +
+    `- Log chats to file / separate files: ${yn(cfg.logConversationToFile)} / ${yn(cfg.separateLogFiles)}.\n` +
+    `- Altitude (m): ${cfg.altitudeMeters}. Startup jokes / weather modes: ${cfg.startupJokesMode} / ${cfg.startupWeatherMode}.\n` +
+    `- Y/Z swap: ${yn(cfg.swapYZ)}. Save settings on exit: ${yn(cfg.saveSettingsOnExit)}.\n` +
+    `Stay consistent with these traits when role-playing as the Pokyd computer.`
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -218,7 +347,7 @@ async function processUserLine(rawLine, session) {
   // We decode defensively as latin1 (byte-for-byte) and convert to UTF-8 string.
   const userText = rawLine.trim();
   if (!userText) {
-    return 'ERROR Prazdna zprava';
+    return 'ERROR ' + normalizeReplyForDos('Prazdna zprava').slice(0, 120);
   }
 
   session.messages.push({ role: 'user', content: userText });
@@ -234,17 +363,19 @@ async function processUserLine(rawLine, session) {
     // Remove the user message we just pushed so the history stays clean on retry
     session.messages.pop();
     if (err.message === 'timeout') {
-      return 'ERROR Casovy limit OpenAI vyptel. Zkuste znovu.';
+      return (
+        'ERROR ' +
+        normalizeReplyForDos('Casovy limit OpenAI vyptel. Zkuste znovu.').slice(0, 200)
+      );
     }
-    return 'ERROR ' + String(err.message).slice(0, 60).replace(/[\r\n]/g, ' ');
+    return (
+      'ERROR ' +
+      normalizeReplyForDos(String(err.message)).slice(0, 120).replace(/^error\s+/i, '')
+    );
   }
 
-  // Transliterate to 7-bit ASCII for the DOS terminal
-  const ascii = toAscii(reply)
-    .replace(/[\r\n]+/g, ' ')   // collapse newlines to spaces
-    .replace(/\s{2,}/g, ' ')    // normalise whitespace
-    .trim()
-    .slice(0, MAX_REPLY_BYTES);
+  // DOS terminal: remove Czech diacritics only; keep capitals and punctuation.
+  const ascii = normalizeReplyForDos(reply).slice(0, MAX_REPLY_BYTES);
 
   return 'REPLY ' + ascii;
 }
@@ -285,6 +416,9 @@ function handleConnection(socket) {
   // Accumulate incoming bytes into lines (DOS sends \n-terminated lines)
   let buf = '';
   let busy = false;
+  let cfgMode = false;
+  /** @type {string[]} */
+  let cfgLines = [];
 
   socket.on('data', (chunk) => {
     if (BRIDGE_VERBOSE) {
@@ -303,7 +437,47 @@ function handleConnection(socket) {
 
     for (const rawLine of lines) {
       const line = rawLine.replace(/\r$/, ''); // strip CR if present
+
+      if (cfgMode) {
+        if (line === 'CONFIG_END') {
+          cfgMode = false;
+          const rawCfg = cfgLines.join('\n');
+          cfgLines = [];
+          try {
+            const parsed = parsePokydCfg(rawCfg);
+            session.messages[0].content += '\n\n' + formatCfgForLlm(parsed);
+            console.log(`[session ${id}] POKYD.CFG parsed (${rawCfg.length} bytes raw)`);
+            sendTcpLine(socket, id, 'OK CONFIG');
+          } catch (err) {
+            console.error(`[session ${id}] CONFIG parse error:`, err.message);
+            sendTcpLine(socket, id, 'ERROR CONFIG parse');
+          }
+          continue;
+        }
+        cfgLines.push(line);
+        continue;
+      }
+
+      if (line === 'CONFIG_START') {
+        cfgMode = true;
+        cfgLines = [];
+        continue;
+      }
+
       if (!line) continue;
+
+      /* Pokyd rule-engine / scripted computer line (already ASCII); keeps chat history aligned with screen */
+      if (line.startsWith('ASSISTANT ')) {
+        const pcText = line.slice(10).trim();
+        if (pcText) {
+          session.messages.push({ role: 'assistant', content: pcText });
+          const prev = session.messages.length - 2;
+          console.log(
+            `[session ${id}] ASSISTANT (${pcText.length} chars, prev role=${prev >= 0 ? session.messages[prev].role : 'n/a'}): ${pcText.slice(0, 100)}${pcText.length > 100 ? '...' : ''}`
+          );
+        }
+        continue;
+      }
 
       if (!line.startsWith('USER ')) {
         console.warn(`[session ${id}] Unknown command: ${line.slice(0, 40)}`);

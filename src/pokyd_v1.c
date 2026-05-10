@@ -493,6 +493,11 @@ BYTE text[160];
 void ODPOVED(BYTE odradkovani) {
 DWORD pozice=0,pozice2,celkempozice;
 BYTE pozice3;
+BYTE llm_preskocit_llm_kontext = 0;
+  if (llm_odpoved_z_bridge != 0) {
+    llm_preskocit_llm_kontext = 1;
+    llm_odpoved_z_bridge      = 0;
+   }
   KONTROLA_UTNUTI(); SMAZKURZOR();
   DBGLOGF("ODPOVED: enter odradkovani=%u pozodp=%u barvapocitac0=%u cursor=(%d,%d)",
           (unsigned)odradkovani, (unsigned)pozodp, (unsigned)barvapocitac0, wherex(), wherey());
@@ -708,6 +713,17 @@ BYTE pozice3;
     PIPNI(100,30); pocetvet++;
     SMYSL_VETY_POCITACE();
    }
+  /* Remote LLM: sync native Pokyd lines to the bridge so OpenAI sees full dialogue. */
+  if (llm_enabled != 0 && llm_connected != 0 && llm_preskocit_llm_kontext == 0) {
+    if (pozodp == 100) {
+      if (dlouhe[0] != 0)
+        LLM_APPEND_ASSISTANT(dlouhe);
+     }
+    else {
+      if (odpovedi[cislo][0] != 0)
+        LLM_APPEND_ASSISTANT(odpovedi[cislo]);
+     }
+   }
   NASTAVKURZOR();
  }
 
@@ -853,8 +869,21 @@ BYTE hlaska[80];
   celkemvtipu=0; pozvtipy=0; pozvtips=0; SOUBOR("VTIPY.TXT");
   if ((vtipys = fopen(soubor,"rb")) == NULL) return;
   vtipy=1; fseek(vtipys,0,SEEK_END); delkavtipu=ftell(vtipys); fseek(vtipys,0,SEEK_SET);
-  maxvtipu=VOLNAPAMET()>>2; if (maxvtipu > 32768) maxvtipu=32768;
-  vtipymisto=malloc(maxvtipu<<2);		   //prideleni pameti
+  /* Size vtipymisto from the file (each joke needs at least "#\n" = 2 bytes), then
+   * cap at what Watcom -ml malloc (=_fmalloc) can actually return in one call:
+   * a single far-heap segment is ~64 KiB minus heap overhead, so 4*maxvtipu must
+   * stay safely below 65 536. Sourcing maxvtipu from the file (not VOLNAPAMET)
+   * avoids two old hazards: (a) coreleft()=0 -> maxvtipu=0 -> NULL writes that
+   * wiped the IVT during "Tridim vtipy"; (b) coreleft()>=64KiB -> malloc(64 KiB)
+   * NULL because _fmalloc cannot satisfy a full segment. */
+  maxvtipu = (delkavtipu >> 1) + 2;       /* worst case: every other byte is '#' */
+  if (maxvtipu < 64) maxvtipu = 64;        /* always allow a tiny file */
+  if (maxvtipu > 16000) maxvtipu = 16000;  /* 16000*4 = 64000 < 65 520 segment limit */
+  if ((vtipymisto = malloc(maxvtipu << 2)) == NULL) {
+    HLASKA("Malo pameti pro nacteni vtipu - prubeh ulozeny bez vtipu.",4);
+    fclose(vtipys); vtipys=NULL; vtipy=0; vtipymisto=NULL;
+    return;
+   }
   while (delkavtipu-- != 0) {
     if ((getc(vtipys)) == '#') {
       if (++celkemvtipu == maxvtipu) {

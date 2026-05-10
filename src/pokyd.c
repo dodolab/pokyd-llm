@@ -88,8 +88,36 @@ static int getcurdir(int drive, char *buffer) {
   return (_getdcwd((int)drive + 1,buffer,64) == NULL) ? -1 : 0;
 }
 
+/* Watcom large-model malloc() lives in the FAR heap (DOS conventional memory).
+ * _memavl() reports only the NEAR heap (DGROUP, <=64 KiB), which is essentially
+ * full once Watt-32 globals are linked in - it then returns 0 even though the
+ * far heap still has plenty of room. That regression made INTRO_NAPISPAMET show
+ * "Pamet: 0 B" and, worse, made VTIPYSOUBOR compute maxvtipu==0 and then write
+ * through a NULL pointer (smashing the DOS IVT - hard freeze on "Tridim vtipy").
+ * Walking the far heap with _fheapwalk and adding the largest still-free DOS
+ * block restores Borland's coreleft() semantics (memory available to malloc). */
 static unsigned long coreleft(void) {
-  return _memavl();
+  struct _heapinfo hinfo;
+  unsigned long total = 0;
+  int rc;
+
+  hinfo._pentry = NULL;
+  for (;;) {
+    rc = _fheapwalk(&hinfo);
+    if (rc != _HEAPOK) break;
+    if (hinfo._useflag == _FREEENTRY)
+      total += (unsigned long)hinfo._size;
+  }
+
+  /* INT 21h AH=48h with BX=FFFFh: DOS leaves the largest free block size
+   * (paragraphs) in BX. Counts memory the far heap can still grow into. */
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x48;
+  _BX = 0xFFFF;
+  geninterrupt(0x21);
+  total += (unsigned long)_BX * 16UL;
+
+  return total;
 }
 
 static unsigned char *searchpath(unsigned char *filename) {
@@ -349,8 +377,9 @@ if (llm_enabled) {
   if (LLM_CONNECT()) {
     BARVA(barvapocitac1);
     NAPISRETEZEC("LLM: pripojeno ke bridge serveru.", barvapocitac1);
+    LLM_SEND_CONFIG();
     STRANA(1);
-   } else {
+  } else {
     DBGLOG("main: LLM_CONNECT failed - continuing without LLM");
    }
  }

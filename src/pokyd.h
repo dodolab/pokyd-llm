@@ -189,5 +189,7 @@ void VYNULUJ_ZACATECNIK(void);
 /* pokyd_llm.c - remote LLM mode via Watt-32 TCP (compiled in only with POKYD_LLM_WATT). */
 BYTE LLM_INIT(BYTE *hostport);
 BYTE LLM_CONNECT(void);
+BYTE LLM_SEND_CONFIG(void);
 BYTE LLM_SEND_RECV(void);
+void LLM_APPEND_ASSISTANT(BYTE *text);
 void LLM_CLOSE(void);
