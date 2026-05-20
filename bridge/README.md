@@ -139,7 +139,6 @@ Built-in tools:
 | Tool | Description |
 |---|---|
 | `get_current_datetime` | Returns current date and time on the host |
-| `calculate` | Evaluates a safe arithmetic expression |
 ---
 
 ## DOS client (Pokyd)

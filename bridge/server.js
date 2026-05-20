@@ -235,23 +235,6 @@ const TOOLS = [
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
-  {
-    type: 'function',
-    function: {
-      name: 'calculate',
-      description: 'Evaluates a safe arithmetic expression and returns the result.',
-      parameters: {
-        type: 'object',
-        properties: {
-          expression: {
-            type: 'string',
-            description: 'A mathematical expression, e.g. "3 * (2 + 5)" or "sqrt(16)"',
-          },
-        },
-        required: ['expression'],
-      },
-    },
-  },
 ];
 
 
@@ -260,18 +243,6 @@ async function executeTool(name, args) {
     case 'get_current_datetime': {
       const now = new Date();
       return { datetime: now.toLocaleString('cs-CZ') };
-    }
-    case 'calculate': {
-      const expr = (args.expression || '').replace(/[^0-9+\-*/().%, sqrt]/g, '');
-      try {
-        // Replace sqrt() with Math.sqrt() for eval safety
-        const safe = expr.replace(/sqrt\(/g, 'Math.sqrt(');
-        // eslint-disable-next-line no-new-func
-        const result = Function('"use strict"; return (' + safe + ')')();
-        return { result: String(result) };
-      } catch (err) {
-        return { error: 'Neplatny vyraz: ' + String(err.message) };
-      }
     }
     default:
       return { error: 'Neznamy nastroj: ' + name };
