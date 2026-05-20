@@ -1,4 +1,4 @@
-# Pokyd Bridge ù Protocol & Setup
+# Pokyd Bridge - Protocol & Setup
 
 The bridge is a Node.js TCP server that sits between the Pokyd DOS client and the
 OpenAI API. Pokyd speaks a minimal line-oriented text protocol over TCP; the bridge
@@ -11,7 +11,7 @@ translates it into an OpenAI agentic loop and returns a plain-ASCII reply.
 ### Transport
 
 Plain TCP (no TLS). Default port **8765**. Suitable for localhost or a trusted LAN.
-For wider exposure use a VPN or terminate TLS in a reverse proxy ù do **not** implement
+For wider exposure use a VPN or terminate TLS in a reverse proxy - do **not** implement
 TLS on the DOS side.
 
 ### Framing
@@ -29,7 +29,7 @@ CLIENT HELLO v1\n
 SERVER OK\n
 ```
 
-### Request ù DOS ? Node
+### Request - DOS -> Node
 
 ```
 USER <text>\n
@@ -53,7 +53,7 @@ INITIATIVE <kind> [<seconds>]\n
 - Response is the same `REPLY` / `ERROR` format as `USER`. Does not count as a
   user turn on the DOS side.
 
-### Response ù Node ? DOS (success)
+### Response - Node -> DOS (success)
 
 ```
 REPLY <text>\n
@@ -62,11 +62,11 @@ REPLY <text>\n
 - `<text>` is plain ASCII, at most 3 980 characters (fits in Pokyd's `dlouhe[4001]`
   buffer, leaving room for the null terminator and the `REPLY ` prefix itself).
 - OpenAI responses in UTF-8 are transliterated to ASCII by the bridge before
-  sending (Czech and other diacritics replaced with their base letter, e.g. `ù ? c`).
+  sending (Czech and other diacritics replaced with their base letter, e.g. `c-caron -> c`).
 - Newlines in the OpenAI response are replaced with a single space, so the entire
   reply fits on one protocol line. Pokyd's `ODPOVED()` handles word-wrap at column 80.
 
-### Response ù Node ? DOS (error)
+### Response - Node -> DOS (error)
 
 ```
 ERROR <reason>\n
@@ -99,7 +99,7 @@ This compiles `pokyd.exe` with Watt-32, starts `node bridge/server.js` in the ba
 
 ### Requirements
 
-- Node.js ? 18
+- Node.js >= 18
 - An OpenAI API key
 
 ### Install & run
@@ -108,7 +108,7 @@ This compiles `pokyd.exe` with Watt-32, starts `node bridge/server.js` in the ba
 cd bridge
 npm install
 cp .env.example .env
-# Edit .env ù set OPENAI_API_KEY at minimum
+# Edit .env - set OPENAI_API_KEY at minimum
 node server.js
 ```
 
@@ -131,7 +131,7 @@ The Pokyd persona **system prompt** is read from `bridge/system_prompt.txt` at s
 
 The bridge runs a full agentic loop: after each user message it calls the OpenAI
 Chat Completions API and, if the model requests tool calls, executes them and loops
-until a final text response is produced. Tools run **on the Node host only** ù no
+until a final text response is produced. Tools run **on the Node host only** - no
 DOS-side tool execution in v1.
 
 Built-in tools:
@@ -146,7 +146,7 @@ Built-in tools:
 ### Build requirements
 
 - **Bundled Watt-32:** this repo ships `vendor/watt32-dos/` (`inc/` + `wattcpwl.lib`).
-  `build.sh` sets `WATT_ROOT` to that path automatically when present ù no manual Watt
+  `build.sh` sets `WATT_ROOT` to that path automatically when present - no manual Watt
   build is required on macOS/Linux **unless** you want to regenerate the library.
 - Optional: set `WATT_ROOT` yourself to override the bundled tree.
 - A packet driver loaded in DOS before running Pokyd (see `assets/NE2000.COM`).
@@ -178,7 +178,7 @@ hostname = pokyd
 ```
 
 The Node bridge then runs on the **host** machine (not inside DOSBox). The `gateway`
-address `10.0.2.2` is the host as seen from the slirp guest ù run the bridge on the
+address `10.0.2.2` is the host as seen from the slirp guest - run the bridge on the
 host and point Pokyd at `10.0.2.2:8765`.
 
 For **real hardware**, set `my_ip` to the machine's static IP and `gateway` to your

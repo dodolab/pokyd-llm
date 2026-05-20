@@ -60,7 +60,7 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
 5. **Documentation**
    - README must include setup/build/run and structure.
    - PRD (`docs/prd.md`) must describe requirements, constraints, and acceptance criteria.
-   - **CODEMAP** (`docs/CODEMAP.md`) documents unity-build fragment order and where to find major subsystemsùmaintain it when fragment responsibilities shift.
+   - **CODEMAP** (`docs/CODEMAP.md`) documents unity-build fragment order and where to find major subsystems - maintain it when fragment responsibilities shift.
 
 ## 7. Non-Functional Requirements
 
@@ -132,7 +132,7 @@ companion Node.js service (`bridge/`).
 ### Build requirements (LLM mode only)
 
 - By default, `build.sh` sets `WATT_ROOT` to **`vendor/watt32-dos`** when `inc/tcp.h`
-  is present (bundled tree ù no separate Watt install needed).
+  is present (bundled tree - no separate Watt install needed).
 - Override with `WATT_ROOT=/path/to/watt-32` if you maintain your own build.
 - Without headers + library, `build.sh` builds Pokyd without LLM TCP code (same as before).
 
