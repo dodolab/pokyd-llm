@@ -909,7 +909,14 @@ BYTE hlaska[80];
 /* Rutina VTIPY - viz implementace a nazvy promennych (konvence Pokyd). */
 void VTIPY(void) {
 DWORD misto,delka,pozdlouhe=0,znak;
-  DBGLOGF("VTIPY: enter celkemvtipu=%lu", (unsigned long)celkemvtipu);
+  DBGLOGF("VTIPY: enter celkemvtipu=%lu llm=%u/%u", (unsigned long)celkemvtipu,
+          (unsigned)llm_enabled, (unsigned)llm_connected);
+  if (llm_enabled != 0 && llm_connected != 0 && LLM_SEND_INITIATIVE((BYTE *)"joke", 0) != 0) {
+    smyslpocvety=3;
+    DBGLOG("VTIPY: LLM joke path");
+    pozodp=100; ODPOVED(1);
+    return;
+  }
   if (celkemvtipu != 0) {
     SOUBOR("VTIPY.TXT"); if ((vtipys=fopen(soubor,"rb")) == NULL) goto NIC;
     misto=VRAT_POZICI_VTIPU();
@@ -947,11 +954,50 @@ WORD NAJDIDALSI(WORD odkud,BYTE okolik) {
   return(odkud);
  }
 
+/* Pick INITIATIVE kind for REALTIMEKEC (mirrors legacy JINYKEC branches). */
+static BYTE *LLM_REALTIME_KIND(void) {
+  if (nadavani == 1) return (BYTE *)"insult";
+  if (smyslpocvety == 3) return (BYTE *)"joke_fallback";
+  if (smyslpocvety == 4) return (BYTE *)"weather_fallback";
+  if (pocetpocitacu == 2 && rand() % 3 > 0) return (BYTE *)"second_pc_rules";
+  if (pocetpocitacu == 2 && pocetrealtimekecu2 < 5 && rand() % 2 == 0)
+    return (BYTE *)"second_pc";
+  if (rand() % 3 == 0) return (BYTE *)"joke";
+  if (pocetrealtimekecu2 < 5) return (BYTE *)"banter";
+  if (pocetrealtimekecu2 > 0 && pocetpocitacu == 1) return (BYTE *)"solo_remark";
+  if (pocetpocitacu == 2) return (BYTE *)"second_pc";
+  switch (rand() % 4) {
+    case 0: return (BYTE *)"joke";
+    case 1: return (BYTE *)"weather";
+    case 2: return (BYTE *)"banter";
+    default: return (BYTE *)"idle";
+  }
+}
+
 /* Rutina REALTIMEKEC - viz implementace a nazvy promennych (konvence Pokyd). */
 void REALTIMEKEC(void) {
 BYTE pozice,celkem=celkemodp,ktera,pozice1,pozice2,pozice3,puvnalada,zmenapozice;
 WORD najit,poziceodp;
- 
+BYTE *llm_kind;
+WORD llm_idle_sec;
+
+  /* LLM mode: replace dictionary idle banter / vtipy / EXTRA_VETA with bridge text. */
+  if (llm_enabled != 0 && llm_connected != 0) {
+    llm_idle_sec = llm_idle_prah_vterin;
+    if (llm_idle_sec == 0) llm_idle_sec = (WORD)pocetvterin;
+    llm_kind = LLM_REALTIME_KIND();
+    if (strncmp((char *)llm_kind, "second_pc", 9) == 0 && pocetpocitacu == 2)
+      ZMEN_POCITAC();
+    if (LLM_INITIATIVE_SHOW(llm_kind, llm_idle_sec, 0) != 0) {
+      strcpy(retezec2, odpovedi[cislo]);
+      pocetrealtimekecu = 0;
+      pocetrealtimekecu2++;
+      DBGLOGF("REALTIMEKEC: LLM initiative kind=%s", (char *)llm_kind);
+      return;
+    }
+    DBGLOG("REALTIMEKEC: LLM failed, legacy fallback");
+  }
+
   if (pocetrealtimekecu == 0) goto JINYKEC;
   if (nadavani == 1) {
     puvnalada=nalada; nalada=rand()%5;

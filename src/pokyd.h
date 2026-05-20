@@ -191,5 +191,7 @@ BYTE LLM_INIT(BYTE *hostport);
 BYTE LLM_CONNECT(void);
 BYTE LLM_SEND_CONFIG(void);
 BYTE LLM_SEND_RECV(void);
+BYTE LLM_SEND_INITIATIVE(BYTE *kind, WORD idle_seconds);
+BYTE LLM_INITIATIVE_SHOW(BYTE *kind, WORD idle_seconds, BYTE odpo_mode);
 void LLM_APPEND_ASSISTANT(BYTE *text);
 void LLM_CLOSE(void);

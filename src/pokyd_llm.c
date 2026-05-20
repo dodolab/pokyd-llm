@@ -21,8 +21,9 @@
  * Protocol (see bridge/README.md for the full spec):
  *   DOS -> Node:  optional "CONFIG_START\n" ... lines ... "CONFIG_END\n" (POKYD.CFG)
  *   Node -> DOS:  "OK CONFIG\n" after CONFIG block (optional; failure is non-fatal)
- *   DOS -> Node:  "ASSISTANT <text>\n" ó Pokyd rule-engine line (conversation context)
+ *   DOS -> Node:  "ASSISTANT <text>\n" ù Pokyd rule-engine line (conversation context)
  *   DOS -> Node:  "USER <text>\n"   (ASCII, <=79 chars)
+ *   DOS -> Node:  "INITIATIVE <kind> [<n>]\n"  proactive line (idle/joke/weather/...)
  *   Node -> DOS:  "REPLY <text>\n"  (ASCII, <=3980 chars, no embedded newlines)
  *                 "ERROR <msg>\n"   (bridge-side failure)
  *
@@ -45,7 +46,7 @@
 
 /*
  * pokyd_pr.c defines BYTE, WORD, DWORD as macros.  Watt-32's inc/sys/wtypes.h
- * uses those names as typedef keywords ó the preprocessor would expand them and
+ * uses those names as typedef keywords ù the preprocessor would expand them and
  * break typedef lines ("typedef unsigned char unsigned char").  Undefine for the
  * Watt headers only, then restore the Pokyd macros (same underlying sizes).
  */
@@ -230,52 +231,43 @@ static BYTE llm_send_config_watt(void) {
 }
 
 /* ---------------------------------------------------------------------------
- * LLM_SEND_RECV_WATT  (internal)
- * Send "USER <retezec1>\n", receive reply, fill dlouhe[], set pozodp=100.
- * Returns 1 for success (caller should goto OD), 0 to fall back to legacy.
+ * llm_send_line_recv  (internal)
+ * Send one CRLF-terminated command, receive REPLY/ERROR into dlouhe[].
+ * Sets pozodp=100 and llm_odpoved_z_bridge on REPLY.
+ * count_user_turn: if 1, increment pocetuzivvet (USER turns only).
+ * Returns 1 on REPLY, 0 on failure.
  * ------------------------------------------------------------------------- */
-static BYTE llm_send_recv_watt(void) {
-  BYTE  msg[90];
-  WORD  dlen;
-  WORD  rlen;
+static BYTE llm_send_line_recv(BYTE *line, WORD line_len, BYTE count_user_turn) {
+  WORD rlen;
 
-  /* Brief waiting indicator (no "AI" prefix; reply text is shown verbatim). */
+  if (!llm_connected) return 0;
+
   STRANA(1);
   BARVA(barvapocitac1);
   NAPISRETEZEC("...", barvapocitac1);
 
-  /* Build "USER <text>\n". */
-  msg[0] = 'U'; msg[1] = 'S'; msg[2] = 'E'; msg[3] = 'R'; msg[4] = ' ';
-  dlen = (WORD)strlen((char *)retezec1);
-  if (dlen > 79) dlen = 79;
-  memcpy(msg + 5, retezec1, (size_t)dlen);
-  msg[5 + dlen] = '\n';
-  dlen = (WORD)(6 + dlen);
-
-  if (sock_write(LLM_SK, msg, (int)dlen) != (int)dlen) {
-    DBGLOG("LLM_SEND_RECV: sock_write failed");
+  if (sock_write(LLM_SK, line, (int)line_len) != (int)line_len) {
+    DBGLOG("llm_send_line_recv: sock_write failed");
     llm_connected = 0;
     return 0;
   }
-  DBGLOGF("LLM_SEND_RECV: sent %u bytes", (unsigned)dlen);
+  DBGLOGF("llm_send_line_recv: sent %u bytes", (unsigned)line_len);
 
-  /* Receive one reply line (OpenAI + tools can exceed 30s; bridge uses TIMEOUT_MS). */
   memset(dlouhe, 0, sizeof(dlouhe));
   rlen = llm_recv_line(dlouhe, (WORD)sizeof(dlouhe), 120);
 
   if (rlen == 0) {
-    DBGLOG("LLM_SEND_RECV: no reply received");
+    DBGLOG("llm_send_line_recv: no reply received");
     HLASKA("LLM: Zadna odpoved z bridge serveru.", 4);
     return 0;
   }
 
-  DBGLOGF("LLM_SEND_RECV: received %u bytes: %.60s", (unsigned)rlen, (char *)dlouhe);
+  DBGLOGF("llm_send_line_recv: received %u bytes: %.60s", (unsigned)rlen, (char *)dlouhe);
 
-  /* Parse prefix: "REPLY " or "ERROR ". */
   if (strncmp((char *)dlouhe, "REPLY ", 6) == 0) {
     memmove(dlouhe, dlouhe + 6, (size_t)(rlen - 6 + 1));
-    pozodp  = 100;        /* long-message path in ODPOVED() */
-    pocetuzivvet++;       /* count this as a user turn */
+    pozodp = 100;
+    if (count_user_turn != 0) pocetuzivvet++;
     llm_odpoved_z_bridge = 1;
     return 1;
   }
@@ -285,14 +277,77 @@ static BYTE llm_send_recv_watt(void) {
     return 0;
   }
 
-  DBGLOGF("LLM_SEND_RECV: unexpected reply prefix: %.40s", (char *)dlouhe);
+  DBGLOGF("llm_send_line_recv: unexpected reply prefix: %.40s", (char *)dlouhe);
   return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * LLM_SEND_RECV_WATT  (internal)
+ * Send "USER <retezec1>\n", receive reply, fill dlouhe[], set pozodp=100.
+ * Returns 1 for success (caller should goto OD), 0 to fall back to legacy.
+ * ------------------------------------------------------------------------- */
+static BYTE llm_send_recv_watt(void) {
+  BYTE  msg[90];
+  WORD  dlen;
+
+  /* Build "USER <text>\n". */
+  msg[0] = 'U'; msg[1] = 'S'; msg[2] = 'E'; msg[3] = 'R'; msg[4] = ' ';
+  dlen = (WORD)strlen((char *)retezec1);
+  if (dlen > 79) dlen = 79;
+  memcpy(msg + 5, retezec1, (size_t)dlen);
+  msg[5 + dlen] = '\n';
+  dlen = (WORD)(6 + dlen);
+
+  return llm_send_line_recv(msg, dlen, 1);
+}
+
+/* ---------------------------------------------------------------------------
+ * LLM_SEND_INITIATIVE_WATT  (internal)
+ * Proactive Pokyd line (idle poke, joke, weather, ...) without a user sentence.
+ * kind: ASCII token (idle, joke, weather, welcome, banter, ...).
+ * idle_seconds: optional; appended for kind "idle" (silence timer from NAPIS).
+ * ------------------------------------------------------------------------- */
+static BYTE llm_send_initiative_watt(BYTE *kind, WORD idle_seconds) {
+  BYTE  msg[96];
+  WORD  dlen;
+  WORD  klen;
+  char  numbuf[8];
+
+  if (!llm_connected) {
+    if (!llm_connect_watt()) return 0;
+    llm_send_config_watt();
+  }
+
+  klen = (WORD)strlen((char *)kind);
+  if (klen > 24) klen = 24;
+
+  memcpy(msg, "INITIATIVE ", 11);
+  memcpy(msg + 11, kind, (size_t)klen);
+  dlen = (WORD)(11 + klen);
+
+  if (idle_seconds > 0) {
+    if (strncmp((char *)kind, "idle", 4) == 0 ||
+        strncmp((char *)kind, "resume", 6) == 0) {
+      sprintf(numbuf, " %u", (unsigned)idle_seconds);
+      {
+        WORD nlen = (WORD)strlen(numbuf);
+        memcpy(msg + dlen, numbuf, (size_t)nlen);
+        dlen = (WORD)(dlen + nlen);
+      }
+    }
+  }
+
+  msg[dlen] = '\n';
+  dlen = (WORD)(dlen + 1);
+
+  DBGLOGF("LLM_SEND_INITIATIVE: kind=%s idle_sec=%u", (char *)kind, (unsigned)idle_seconds);
+  return llm_send_line_recv(msg, dlen, 0);
 }
 
 #endif /* POKYD_LLM_WATT */
 
 /* ===========================================================================
- * Public interface ó always compiled.  Stubs when POKYD_LLM_WATT is absent.
+ * Public interface ù always compiled.  Stubs when POKYD_LLM_WATT is absent.
  * ========================================================================= */
 
 /* LLM_INIT - parse host:port string and initialise Watt-32 stack.
@@ -322,27 +377,29 @@ BYTE LLM_CONNECT(void) {
 /* LLM_APPEND_ASSISTANT - send rule-engine / native Pokyd reply so the bridge history matches the screen. */
 void LLM_APPEND_ASSISTANT(BYTE *text) {
 #ifdef POKYD_LLM_WATT
-  BYTE   buf[4096];
   size_t tlen;
+  WORD   paylen;
 
   if (!llm_enabled || !llm_connected || text == NULL || text[0] == 0)
     return;
   tlen = strlen((char *)text);
   if (tlen > (size_t)LLM_ASS_MAXPAY)
     tlen = (size_t)LLM_ASS_MAXPAY;
-  memcpy(buf, "ASSISTANT ", 10);
-  memcpy(buf + 10, text, tlen);
+  /* Reuse dlouhe[] (already in DGROUP) instead of a second 4KiB stack buffer. */
+  memcpy(dlouhe, "ASSISTANT ", 10);
+  memcpy(dlouhe + 10, text, tlen);
   /* One TCP line only: embedded CR/LF would split the write into extra lines and the
    * bridge would respond ERROR Neznamy prikaz for each continuation (breaks next USER). */
   {
     size_t i;
     for (i = 0; i < tlen; i++) {
-      if (buf[10 + i] == '\n' || buf[10 + i] == '\r')
-        buf[10 + i] = ' ';
+      if (dlouhe[10 + i] == '\n' || dlouhe[10 + i] == '\r')
+        dlouhe[10 + i] = ' ';
     }
   }
-  buf[10 + tlen] = '\n';
-  if (sock_write(LLM_SK, buf, (int)(11 + tlen)) != (int)(11 + tlen)) {
+  dlouhe[10 + tlen] = '\n';
+  paylen = (WORD)(11 + tlen);
+  if (sock_write(LLM_SK, dlouhe, (int)paylen) != (int)paylen) {
     DBGLOG("LLM_APPEND_ASSISTANT: sock_write failed");
     llm_connected = 0;
   }
@@ -375,6 +432,27 @@ BYTE LLM_SEND_RECV(void) {
 #else
   return 0;
 #endif
+}
+
+/* LLM_SEND_INITIATIVE - proactive line (jokes, idle remarks, weather, ...).
+ * Does not count as a user turn. Returns 1 when dlouhe[] is ready (pozodp=100). */
+BYTE LLM_SEND_INITIATIVE(BYTE *kind, WORD idle_seconds) {
+#ifdef POKYD_LLM_WATT
+  if (!llm_enabled) return 0;
+  return llm_send_initiative_watt(kind, idle_seconds);
+#else
+  (void)kind;
+  (void)idle_seconds;
+  return 0;
+#endif
+}
+
+/* LLM_INITIATIVE_SHOW - send INITIATIVE and display via ODPOVED (long-message path).
+ * Returns 1 on success. odpo_mode is passed to ODPOVED (0 or 1). */
+BYTE LLM_INITIATIVE_SHOW(BYTE *kind, WORD idle_seconds, BYTE odpo_mode) {
+  if (LLM_SEND_INITIATIVE(kind, idle_seconds) == 0) return 0;
+  ODPOVED(odpo_mode);
+  return 1;
 }
 
 /* LLM_CLOSE - close the TCP socket and shut down the Watt-32 stack.

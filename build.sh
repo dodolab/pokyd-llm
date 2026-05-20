@@ -88,9 +88,9 @@ if [[ -n "$WATT_ROOT" ]]; then
     LLM_CFLAGS="-DPOKYD_LLM_WATT=1 -I$WATT_INC"
     LLM_LIBS="$WATT_LIB"
     # Watt-32 static library pushes DGROUP near the 64KiB limit; shrink stack to leave room.
-    # INTRO still fits if kept shallow; raise back toward -k16384 if you hit stack faults.
-    # Watt + DBGLOG strings sit near 64KiB DGROUP; stack shares that budget (-k is stack bytes).
-    LLM_STACK="-k3584"
+    # INTRO still fits if kept shallow; raise toward -k3584 only if link fits (E2020).
+    # Watt + near data share DGROUP with stack (-k bytes). Over ~480B needs -k3008 not -k3584.
+    LLM_STACK="-k3008"
     echo "Watt-32 found at $WATT_ROOT -- LLM mode (-llm=host:port) will be compiled in."
   else
     echo "WARNING: WATT_ROOT=$WATT_ROOT set but tcp.h or wattcplf.lib not found -- skipping LLM."

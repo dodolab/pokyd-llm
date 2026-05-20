@@ -94,6 +94,8 @@ BYTE llm_host[64]  = "";
 WORD llm_port      = 8765;
 /* Next ODPOVED shows text from LLM bridge (do not echo back as ASSISTANT context). */
 BYTE llm_odpoved_z_bridge = 0;
+/* Silence threshold (seconds) when NAPIS fired REALTIMEKEC; for INITIATIVE idle hint. */
+WORD llm_idle_prah_vterin = 0;
 
 #if test == 1
 DWORD testcyklus;

@@ -464,16 +464,31 @@ ZAARGC:
  }
 
 if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
-  VYNULUJ_ODPOVEDI(); EXTRA_VETA(1);
-  sprintf(predtimretezec,odpovedi[0],pocetsouboru+1); strcpy(odpovedi[0],predtimretezec);
-  ODPOVED(1); VYNULUJ_ODPOVEDI(); odpovedi[0][0]=0;
+  VYNULUJ_ODPOVEDI();
+  if (llm_enabled != 0 && llm_connected != 0 &&
+      LLM_INITIATIVE_SHOW((BYTE *)"resume", (WORD)(pocetsouboru + 1), 1) != 0) {
+    DBGLOG("main: LLM resume (replaces EXTRA_VETA 1)");
+   }
+  else {
+    EXTRA_VETA(1);
+    sprintf(predtimretezec,odpovedi[0],pocetsouboru+1); strcpy(odpovedi[0],predtimretezec);
+    ODPOVED(1);
+   }
+  VYNULUJ_ODPOVEDI(); odpovedi[0][0]=0;
  }
 
-DBGLOG("main: before EXTRA_VETA 7/8");
-EXTRA_VETA(7);
-DBGLOGF("main: after EXTRA_VETA(7) pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
-EXTRA_VETA(8);
-DBGLOGF("main: after EXTRA_VETA(8) pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+DBGLOG("main: before welcome / EXTRA_VETA 7/8");
+if (llm_enabled != 0 && llm_connected != 0 && LLM_SEND_INITIATIVE((BYTE *)"welcome", 0) != 0) {
+  DBGLOG("main: LLM welcome (replaces EXTRA_VETA 7/8)");
+  ODPOVED(1);
+  VYNULUJ_ODPOVEDI();
+ }
+else {
+  EXTRA_VETA(7);
+  DBGLOGF("main: after EXTRA_VETA(7) pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+  EXTRA_VETA(8);
+  DBGLOGF("main: after EXTRA_VETA(8) pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+ }
 { unsigned ip;
   DBGLOGF("main: welcome queue pozodp=%u barvapocitac0 will be=%u", (unsigned)pozodp, (unsigned)barvapocitac1);
   for (ip = 0; ip < (unsigned)pozodp && ip < 8u; ip++)
@@ -508,6 +523,17 @@ KONECSAMOML: strcpy(puvretezec,textpredsamomluvou);
     samomluva=0; goto START;
    }
   ZMEN_POCITAC();
+  if (llm_enabled != 0 && llm_connected != 0 &&
+      LLM_INITIATIVE_SHOW((BYTE *)"samomluva", 0, 0) != 0) {
+    { DWORD cek;
+      DBGLOG("main: LLM samomluva");
+      strcpy(retezec2, odpovedi[cislo]);
+      for (cek = strlen((char *)dlouhe) * 50 + 300; cek > 0; cek -= 50) {
+        CEKEJ(50); if (kbhit() != 0) goto KONECSAMOML;
+       }
+     }
+    goto START;
+   }
   strcpy(predtimretezec,retezec1);
   strcpy(retezec1,odpovedi[cislo]);		//minula odpoved je prikazem
   strcpy(puvretezec,retezec1);
@@ -551,8 +577,20 @@ if (retezec1[0] == '*' && vypnutecheaty == 0) {		//cheat
 if (EXTRA_SANCE_CHEAT() == 1) goto START;
 
 if (nadavani == 1) {
-  nadavani=nalada; nalada=rand()%5; EXTRA_VETA(16); EXTRA_VETA(17);
-  ODPOVED(1); nalada=nadavani; nadavani=1; goto START;
+  { BYTE puv_nalada_insult = nalada;
+    nalada = (BYTE)(rand() % 5);
+    if (llm_enabled != 0 && llm_connected != 0 &&
+        LLM_INITIATIVE_SHOW((BYTE *)"insult", 0, 1) != 0) {
+      DBGLOG("main: LLM insult (replaces EXTRA_VETA 16/17)");
+     }
+    else {
+      EXTRA_VETA(16); EXTRA_VETA(17);
+      ODPOVED(1);
+     }
+    nalada = puv_nalada_insult;
+    nadavani = 1;
+   }
+  goto START;
  }
 
 if (SLOVO("spust") != 255) {			//spousteni programu

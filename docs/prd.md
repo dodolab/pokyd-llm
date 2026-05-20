@@ -60,7 +60,7 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
 5. **Documentation**
    - README must include setup/build/run and structure.
    - PRD (`docs/prd.md`) must describe requirements, constraints, and acceptance criteria.
-   - **CODEMAP** (`docs/CODEMAP.md`) documents unity-build fragment order and where to find major subsystemsómaintain it when fragment responsibilities shift.
+   - **CODEMAP** (`docs/CODEMAP.md`) documents unity-build fragment order and where to find major subsystemsùmaintain it when fragment responsibilities shift.
 
 ## 7. Non-Functional Requirements
 
@@ -104,6 +104,10 @@ companion Node.js service (`bridge/`).
 
 - A new CLI flag `-llm=<host>:<port>` routes every user sentence to a remote
   Node.js TCP bridge instead of the legacy rule engine.
+- Spontaneous lines (idle timer, jokes/weather, welcome, samomluva, insult cheat,
+  dual-PC banter, resume, goodbye) use `INITIATIVE <kind>` on the same TCP session
+  when LLM mode is active; legacy `VTIPY.TXT` / `SLOVNIK.DAT` paths run only if
+  the bridge fails.
 - The bridge runs an OpenAI agentic loop (tool execution included) and returns
   a plain-ASCII reply that is displayed through the existing `ODPOVED()` long-
   message path (`pozodp=100`, `dlouhe[]`).
@@ -128,7 +132,7 @@ companion Node.js service (`bridge/`).
 ### Build requirements (LLM mode only)
 
 - By default, `build.sh` sets `WATT_ROOT` to **`vendor/watt32-dos`** when `inc/tcp.h`
-  is present (bundled tree ó no separate Watt install needed).
+  is present (bundled tree ù no separate Watt install needed).
 - Override with `WATT_ROOT=/path/to/watt-32` if you maintain your own build.
 - Without headers + library, `build.sh` builds Pokyd without LLM TCP code (same as before).
 

@@ -967,6 +967,13 @@ signed long stupen=0,pomoc;
 char pulrok,bio,pomoc1[40];
 BYTE novyden=0,spatnysignal=0,textpocasi[300];
 
+  if (llm_enabled != 0 && llm_connected != 0 && LLM_SEND_INITIATIVE((BYTE *)"weather", 0) != 0) {
+    smyslpocvety=4;
+    pozodp=100;
+    DBGLOG("POCASI: LLM weather path");
+    return;
+  }
+
   pres = time(NULL)/60/60/24;
   _AH = 0x2C; geninterrupt(0x21); if (_CH >= vkolikhodin) novyden=1;
   if (novyden == 1) pres++;			//novy den

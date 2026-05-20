@@ -70,7 +70,7 @@ const openai = new OpenAI();
 //
 // Decision: map Czech (and common Latin) letters to 7-bit ASCII for the DOS
 // terminal; preserve uppercase/lowercase and all punctuation.  We use NFD
-// plus stripping combining marks (mo¯e -> more) and DIACRITIC_MAP where needed.
+// plus stripping combining marks (moùe -> more) and DIACRITIC_MAP where needed.
 // NBSP is normalized to a normal space; line breaks are folded to spaces so the
 // TCP line protocol stays a single REPLY line.
 //
@@ -81,25 +81,25 @@ const openai = new OpenAI();
 // ---------------------------------------------------------------------------
 
 const DIACRITIC_MAP = {
-  // Lowercase Latin extensions (never use ASCII '?' as key ó it maps LLM punctuation wrongly)
-  '·':'a','Ë':'c','Ô':'d','È':'e','Ï':'e','Ì':'i','æ':'l','Ú':'n',
-  'Û':'o','¯':'r','ö':'s','ù':'t','˙':'u','˘':'u','˝':'y','û':'z',
-  '‰':'a','Î':'e','ˆ':'o','¸':'u',
-  '‚':'a','Ó':'i','Ù':'o',
+  // Lowercase Latin extensions (never use ASCII '?' as key ù it maps LLM punctuation wrongly)
+  'ù':'a','ù':'c','ù':'d','ù':'e','ù':'e','ù':'i','ù':'l','ù':'n',
+  'ù':'o','ù':'r','ù':'s','ù':'t','ù':'u','ù':'u','ù':'y','ù':'z',
+  'ù':'a','ù':'e','ù':'o','ù':'u',
+  'ù':'a','ù':'i','ù':'o',
   // Uppercase
-  '¡':'A','»':'C','œ':'D','…':'E','Ã':'E','Õ':'I','º':'L','“':'N',
-  '”':'O','ÿ':'R','ä':'S','ç':'T','⁄':'U','Ÿ':'U','›':'Y','é':'Z',
-  'ƒ':'A','À':'E','÷':'O','‹':'U',
-  '¬':'A','Œ':'I','‘':'O',
+  'ù':'A','ù':'C','ù':'D','ù':'E','ù':'E','ù':'I','ù':'L','ù':'N',
+  'ù':'O','ù':'R','ù':'S','ù':'T','ù':'U','ù':'U','ù':'Y','ù':'Z',
+  'ù':'A','ù':'E','ù':'O','ù':'U',
+  'ù':'A','ù':'I','ù':'O',
 };
 
 function toAscii(str) {
-  /* Decompose precomposed letters (¯ -> r + combining caron), drop marks. */
+  /* Decompose precomposed letters (ù -> r + combining caron), drop marks. */
   const base = str.normalize('NFD').replace(/\p{M}+/gu, '');
   let out = '';
   for (const ch of base) {
     const cp = ch.codePointAt(0);
-    /* ASCII passes through unchanged ó must run before DIACRITIC_MAP so "?" is not mistaken for a letter. */
+    /* ASCII passes through unchanged ù must run before DIACRITIC_MAP so "?" is not mistaken for a letter. */
     if (cp < 128) {
       out += ch;
       continue;
@@ -298,7 +298,7 @@ async function agentLoop(messages) {
     // Always push the assistant turn so history stays consistent
     messages.push(msg);
 
-    // No tool calls ó we have our final answer
+    // No tool calls ù we have our final answer
     if (!msg.tool_calls || msg.tool_calls.length === 0) {
       return msg.content || '';
     }
@@ -320,6 +320,99 @@ async function agentLoop(messages) {
 
   // Safety exit if tool loop runs too many iterations
   return 'Omlouvam se, dosahl jsem limitu poctu iteraci a nemuzu odpovedet.';
+}
+
+// ---------------------------------------------------------------------------
+// Proactive Pokyd lines (idle timer, jokes, weather, welcome) ù not user input
+// ---------------------------------------------------------------------------
+
+const INITIATIVE_PROMPTS = {
+  idle:
+    'The user has been silent at the keyboard. Say one short in-character line to ' +
+    'draw them back: gentle poke, dry joke, or witty remark. Do not ask a long question.',
+  joke:
+    'Tell one short joke or funny anecdote (Czech, early-2000s computer buddy tone). ' +
+    'No setup longer than two sentences.',
+  weather:
+    'Give a brief playful fake weather forecast for today (humorous, invented details). ' +
+    'Like the old Pokyd "pocasi" feature ù not real meteorology.',
+  welcome:
+    'Open the conversation with a short greeting to the user (first lines after connect). ' +
+    'Stay in character; one or two sentences.',
+  banter:
+    'Say something spontaneous and in character without the user asking ù comment, quip, ' +
+    'or observation. Keep it short.',
+  samomluva:
+    'You are talking to yourself aloud (samomluva) while the user listens. One short ' +
+    'rambling or self-directed line in character; do not address the user directly.',
+  insult:
+    'The insult mode cheat is on. Say one sharp, playful insult to the user (no slurs, ' +
+    'stay PG-13). One or two sentences max.',
+  resume:
+    'The user returns to an ongoing Pokyd session. Welcome them back briefly; mention ' +
+    'that conversation logs exist (visit count may be in the prompt).',
+  second_pc:
+    'A second computer persona speaks (dual-PC mode). One short line as the alternate PC ' +
+    'voice; different tone or opinion from the main Pokyd.',
+  second_pc_rules:
+    'Dual-PC mode: improvise a short exchange starter as if the other computer butted in ' +
+    'while the user was quiet. One sentence.',
+  solo_remark:
+    'Say a brief spontaneous remark as the only computer voice (no user prompt).',
+  joke_fallback:
+    'You wanted to tell a joke but had none loaded. Make a short in-character excuse, then ' +
+    'still tell a tiny joke or witty line.',
+  weather_fallback:
+    'Weather feature failed. Give a one-line humorous fake forecast anyway.',
+  goodbye:
+    'The user is leaving via the quit hotkey. One short dramatic or funny farewell line.',
+};
+
+function buildInitiativeUserMessage(kind, extra) {
+  const base = INITIATIVE_PROMPTS[kind] || INITIATIVE_PROMPTS.banter;
+  let detail = base;
+  if (kind === 'idle' && extra > 0) {
+    detail += ` Silence lasted about ${extra} seconds (configured threshold).`;
+  }
+  if (kind === 'resume' && extra > 0) {
+    detail += ` This is approximately visit or log file number ${extra}.`;
+  }
+  return `[[INITIATIVE:${kind}]] ${detail}`;
+}
+
+async function processInitiativeLine(kind, idleSeconds, session) {
+  const k = (kind || 'banter').toLowerCase().replace(/[^a-z0-9_]/g, '') || 'banter';
+  const extra =
+    k === 'idle' || k === 'resume'
+      ? Math.max(0, parseInt(String(idleSeconds), 10) || 0)
+      : 0;
+  const prompt = buildInitiativeUserMessage(k, extra);
+
+  session.messages.push({ role: 'user', content: prompt });
+
+  let reply;
+  try {
+    const timer = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), TIMEOUT_MS)
+    );
+    reply = await Promise.race([agentLoop(session.messages), timer]);
+  } catch (err) {
+    console.error(`[session ${session.id}] OpenAI initiative error:`, err.message);
+    session.messages.pop();
+    if (err.message === 'timeout') {
+      return (
+        'ERROR ' +
+        normalizeReplyForDos('Casovy limit OpenAI vyprsel. Zkuste znovu.').slice(0, 200)
+      );
+    }
+    return (
+      'ERROR ' +
+      normalizeReplyForDos(String(err.message)).slice(0, 120).replace(/^error\s+/i, '')
+    );
+  }
+
+  const ascii = normalizeReplyForDos(reply).slice(0, MAX_REPLY_BYTES);
+  return 'REPLY ' + ascii;
 }
 
 // ---------------------------------------------------------------------------
@@ -465,6 +558,37 @@ function handleConnection(socket) {
         continue;
       }
 
+      const runOpenAi = (label, promiseFactory) => {
+        if (busy) {
+          sendTcpLine(socket, id, 'ERROR Predchozi dotaz jeste nebyl zpracovan');
+          return;
+        }
+        busy = true;
+        console.log(`[session ${id}] OpenAI ${label} starting...`);
+        promiseFactory()
+          .then((replyLine) => {
+            console.log(`[session ${id}] OpenAI ${label} ready (${replyLine.length} chars)`);
+            sendTcpLine(socket, id, replyLine);
+          })
+          .catch((err) => {
+            console.error(`[session ${id}] Unexpected error:`, err);
+            sendTcpLine(socket, id, 'ERROR Interna chyba serveru');
+          })
+          .finally(() => {
+            busy = false;
+          });
+      };
+
+      if (line.startsWith('INITIATIVE ')) {
+        const rest = line.slice(11).trim();
+        const parts = rest.split(/\s+/);
+        const kind = parts[0] || 'banter';
+        const idleSec = parts[1] || '0';
+        console.log(`[session ${id}] INITIATIVE: ${kind} (${idleSec})`);
+        runOpenAi(`initiative:${kind}`, () => processInitiativeLine(kind, idleSec, session));
+        continue;
+      }
+
       if (!line.startsWith('USER ')) {
         console.warn(`[session ${id}] Unknown command: ${line.slice(0, 40)}`);
         sendTcpLine(socket, id, 'ERROR Neznamy prikaz');
@@ -474,25 +598,7 @@ function handleConnection(socket) {
       const userText = line.slice(5); // strip "USER " prefix
       console.log(`[session ${id}] USER: ${userText}`);
 
-      if (busy) {
-        sendTcpLine(socket, id, 'ERROR Predchozi dotaz jeste nebyl zpracovan');
-        continue;
-      }
-
-      busy = true;
-      console.log(`[session ${id}] OpenAI request starting...`);
-      processUserLine(userText, session)
-        .then((replyLine) => {
-          console.log(`[session ${id}] OpenAI reply ready (${replyLine.length} chars)`);
-          sendTcpLine(socket, id, replyLine);
-        })
-        .catch((err) => {
-          console.error(`[session ${id}] Unexpected error:`, err);
-          sendTcpLine(socket, id, 'ERROR Interna chyba serveru');
-        })
-        .finally(() => {
-          busy = false;
-        });
+      runOpenAi('user', () => processUserLine(userText, session));
     }
   });
 

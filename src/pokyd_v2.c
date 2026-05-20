@@ -804,6 +804,7 @@ SETRIC:  PRECTIOBRAZOVKU(1); SETRIC_OBRAZOVKY(); NASTAVSPRAVNYMOD();
       ZAPISOBRAZOVKU(); goto NAPISSTART;
      }
     if (celkem == 0 && pocetvterin > 0 && dalsikec+pocetkecvterin < time(NULL)) {
+      llm_idle_prah_vterin = (WORD)pocetkecvterin;
       ZACATECNIK("Nyni pocitac rekne dalsi vetu, aniz by cekal na tebe.",06);
       REALTIMEKEC(); dalsikec=time(NULL); VYNULOVANI(0);
       if (zvysovani == 1 && pocetkecvterin < 255) pocetkecvterin++;
@@ -958,7 +959,11 @@ POZICE:
       if (znak != 0) break; else goto UKONCENI;
     case 45: if (znak != 0) break;		//Alt-X
 UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A",6+100) == 'a' || _AL == 'A' || _AL == 'y' || _AL == 'Y' || _AL == '\r') {
-        EXTRA_VETA(9); BARVA(barvapocitac1); ODPOVED(0);
+        if (llm_enabled == 0 || llm_connected == 0 ||
+            LLM_INITIATIVE_SHOW((BYTE *)"goodbye", 0, 0) == 0) {
+          EXTRA_VETA(9); BARVA(barvapocitac1); ODPOVED(0);
+         }
+        else BARVA(barvapocitac1);
         ZAVRISOUBORSKYDAMA("\nProgram Pokyd byl ukoncen funkcni klavesou.",1);
         ZAPIS_INFORMACE_O_VETACH(3,1); STRANA(1); PREDKONEC(); KONEC();
        }
