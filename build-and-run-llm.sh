@@ -8,8 +8,8 @@
 # Network env (same names on Windows): BRIDGE_PORT, POKYD_LLM_IP, POKYD_LLM_PORT, POKYD_LLM_HOST.
 #
 # Usage:
-#   ./build-and-run-gpt.sh
-#   ./build-and-run-gpt.sh --exit-after-pokyd   # CI/automation only (closes DOSBox when pokyd exits)
+#   ./build-and-run-llm.sh
+#   ./build-and-run-llm.sh --exit-after-pokyd   # CI/automation only (closes DOSBox when pokyd exits)
 #
 set -euo pipefail
 
@@ -112,5 +112,5 @@ echo "[gpt] Building pokyd.exe with LLM (Watt-32)..."
 
 export POKYD_LLM_HOST="$(pokyd_resolve_llm_host "$ROOT_DIR")"
 echo "[gpt] Launching DOSBox-X with -llm=${POKYD_LLM_HOST}"
-# Do not `exec` ù we need the EXIT trap to stop the bridge when DOSBox-X closes.
+# Do not `exec` ÔøΩ we need the EXIT trap to stop the bridge when DOSBox-X closes.
 "$ROOT_DIR/build-and-run.sh" --no-build "$@"

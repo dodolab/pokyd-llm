@@ -3,18 +3,18 @@
   Build Pokyd with Watt-32 LLM support, start the Node OpenAI bridge, then launch DOSBox-X with NE2000 (slirp).
 
 .DESCRIPTION
-  Windows equivalent of build-and-run-gpt.sh (macOS). Requires Node 18+, bridge/.env with OPENAI_API_KEY,
+  Windows equivalent of build-and-run-llm.sh (macOS). Requires Node 18+, bridge/.env with OPENAI_API_KEY,
   vendor/watt32-dos (see build.sh), and assets/NE2000.COM for the guest packet driver.
 
-  Optional args (also accepted from build-and-run-gpt.bat):
+  Optional args (also accepted from build-and-run-llm.bat):
     -ExitAfterPokyd   Close DOSBox-X when pokyd.exe exits (automation).
     -SkipIntro        Pass -pokyd to skip the intro.
 
   Network env (same as macOS): BRIDGE_PORT, POKYD_LLM_IP, POKYD_LLM_PORT, POKYD_LLM_HOST.
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File scripts\build-and-run-gpt.ps1
-  powershell -ExecutionPolicy Bypass -File scripts\build-and-run-gpt.ps1 -ExitAfterPokyd
+  powershell -ExecutionPolicy Bypass -File scripts\build-and-run-llm.ps1
+  powershell -ExecutionPolicy Bypass -File scripts\build-and-run-llm.ps1 -ExitAfterPokyd
 #>
 
 [CmdletBinding()]

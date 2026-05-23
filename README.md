@@ -47,7 +47,7 @@ Původní zdrojové kódy jsou [zde](https://old.kyblsoft.cz/iqpokyd)
 
 5. **Spuštění „vše v jednom“ s LLM (macOS/Linux)**  
    - Po splnění výše uvedeného (včetně doplnění parametrů do `bridge/.env`), spusť:  
-     `./build-and-run-gpt.sh`
+     `./build-and-run-llm.sh`
 
 ### Windows
 
@@ -71,7 +71,7 @@ Původní zdrojové kódy jsou [zde](https://old.kyblsoft.cz/iqpokyd)
 
 5. **Spuštění „vše v jednom“ s LLM (Windows)**  
    - Po bootstrapu Watt-32 a doplnění `bridge\.env` spusť:  
-     `build-and-run-gpt.bat`
+     `build-and-run-llm.bat`
 
 
 ## Sestavení a spuštění
@@ -98,7 +98,7 @@ build.bat
 LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
 
 ```bat
-build-and-run-gpt.bat
+build-and-run-llm.bat
 ```
 
 Podrobnosti k síti, `WATTCP.CFG` a `assets\NE2000.COM`: [bridge/README.md](bridge/README.md).
@@ -125,7 +125,7 @@ Jen překlad:
 LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
 
 ```bash
-./build-and-run-gpt.sh
+./build-and-run-llm.sh
 ```
 
 ---
@@ -149,14 +149,14 @@ LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
 # macOS/Linux – vlastní port bridge i Pokyd
 export BRIDGE_PORT=9000
 export POKYD_LLM_IP=10.0.2.2
-./build-and-run-gpt.sh
+./build-and-run-llm.sh
 ```
 
 ```bat
 rem Windows – stejné názvy
 set BRIDGE_PORT=9000
 set POKYD_LLM_IP=10.0.2.2
-build-and-run-gpt.bat
+build-and-run-llm.bat
 ```
 
 ```bash

@@ -88,10 +88,10 @@ can be added without changing the per-message format.
 From the repository root, with `bridge/.env` configured and Open Watcom + DOSBox-X installed:
 
 ```bash
-./build-and-run-gpt.sh
+./build-and-run-llm.sh
 ```
 
-This compiles `pokyd.exe` with Watt-32, starts `node bridge/server.js` in the background (log: `bridge/pokyd-bridge.log`), and launches DOSBox-X with `-llm=<host>:<port>` for slirp networking (default host `10.0.2.2`, port from `BRIDGE_PORT` / `bridge/.env`). Use `./build-and-run-gpt.sh --exit-after-pokyd` for a non-interactive smoke run.
+This compiles `pokyd.exe` with Watt-32, starts `node bridge/server.js` in the background (log: `bridge/pokyd-bridge.log`), and launches DOSBox-X with `-llm=<host>:<port>` for slirp networking (default host `10.0.2.2`, port from `BRIDGE_PORT` / `bridge/.env`). Use `./build-and-run-llm.sh --exit-after-pokyd` for a non-interactive smoke run.
 
 Environment variables (same names on Windows and macOS/Linux; see repo `README.md`):
 

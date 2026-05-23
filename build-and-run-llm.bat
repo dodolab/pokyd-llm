@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 
-rem Windows equivalent of build-and-run-gpt.sh (macOS).
+rem Windows equivalent of build-and-run-llm.sh (macOS).
 rem Optional: --exit-after-pokyd  --skip-intro
 
 set "FLAGARGS="
@@ -19,11 +19,11 @@ if /i "%~1"=="--skip-intro" (
   goto argloop
 )
 echo Unknown argument: %~1
-echo Usage: build-and-run-gpt.bat [--exit-after-pokyd] [--skip-intro]
+echo Usage: build-and-run-llm.bat [--exit-after-pokyd] [--skip-intro]
 exit /b 1
 :argdone
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\build-and-run-gpt.ps1"%FLAGARGS%
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\build-and-run-llm.ps1"%FLAGARGS%
 set "ERR=%ERRORLEVEL%"
 if not "%ERR%"=="0" exit /b %ERR%
 exit /b 0
