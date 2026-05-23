@@ -138,6 +138,10 @@ Host-side `BRIDGE_PORT` is independent of the address Pokyd uses inside DOS. For
 
 The Pokyd persona **system prompt** is read from `bridge/system_prompt.txt` at startup (UTF-8). Edit that file to change behavior; it must be non-empty.
 
+When Pokyd sends `POKYD.CFG` after connect, the bridge parses **mood** (`vyborna` … `hrozna`) and **character** (`stroj`, `naivni`, `klidny`, `prumerny`, `neduverivy`, `naladovy`, `vybusny`) and injects detailed behavioral instructions into the system message. If character is **`stroj`**, the base prompt is replaced with **`system_prompt_terminator.txt`** (Terminator movie persona, emotionless, short cold replies).
+
+Quick check (no OpenAI): `node persona-test.js` from the `bridge/` directory.
+
 ### Agentic tools
 
 The bridge runs a full agentic loop: after each user message it calls the OpenAI

@@ -23,30 +23,37 @@ const BRIDGE_VERBOSE = /^1|true|yes$/i.test(process.env.BRIDGE_VERBOSE || '');
 const MAX_REPLY_BYTES = 3980;
 
 const SYSTEM_PROMPT_PATH = path.join(__dirname, 'system_prompt.txt');
+const TERMINATOR_PROMPT_PATH = path.join(__dirname, 'system_prompt_terminator.txt');
 
-function loadSystemPrompt() {
+function loadPromptFile(filePath, label) {
   let text;
   try {
-    text = fs.readFileSync(SYSTEM_PROMPT_PATH, 'utf8');
+    text = fs.readFileSync(filePath, 'utf8');
   } catch (err) {
     if (err && err.code === 'ENOENT') {
-      console.error(
-        'ERROR: Missing system_prompt.txt next to server.js (expected %s).',
-        SYSTEM_PROMPT_PATH
-      );
+      console.error('ERROR: Missing %s (expected %s).', label, filePath);
       process.exit(1);
     }
     throw err;
   }
   text = text.trim();
   if (!text) {
-    console.error('ERROR: system_prompt.txt is empty.');
+    console.error('ERROR: %s is empty.', label);
     process.exit(1);
   }
   return text;
 }
 
+function loadSystemPrompt() {
+  return loadPromptFile(SYSTEM_PROMPT_PATH, 'system_prompt.txt');
+}
+
+function loadTerminatorPrompt() {
+  return loadPromptFile(TERMINATOR_PROMPT_PATH, 'system_prompt_terminator.txt');
+}
+
 const SYSTEM_PROMPT = loadSystemPrompt();
+const TERMINATOR_PROMPT = loadTerminatorPrompt();
 
 if (!process.env.OPENAI_API_KEY) {
   console.error('ERROR: OPENAI_API_KEY is not set. Create bridge/.env from .env.example.');
@@ -70,7 +77,7 @@ const openai = new OpenAI();
 //
 // Decision: map Czech (and common Latin) letters to 7-bit ASCII for the DOS
 // terminal; preserve uppercase/lowercase and all punctuation.  We use NFD
-// plus stripping combining marks (moùe -> more) and DIACRITIC_MAP where needed.
+// plus stripping combining marks (mo?e -> more) and DIACRITIC_MAP where needed.
 // NBSP is normalized to a normal space; line breaks are folded to spaces so the
 // TCP line protocol stays a single REPLY line.
 //
@@ -81,25 +88,25 @@ const openai = new OpenAI();
 // ---------------------------------------------------------------------------
 
 const DIACRITIC_MAP = {
-  // Lowercase Latin extensions (never use ASCII '?' as key ù it maps LLM punctuation wrongly)
-  'ù':'a','ù':'c','ù':'d','ù':'e','ù':'e','ù':'i','ù':'l','ù':'n',
-  'ù':'o','ù':'r','ù':'s','ù':'t','ù':'u','ù':'u','ù':'y','ù':'z',
-  'ù':'a','ù':'e','ù':'o','ù':'u',
-  'ù':'a','ù':'i','ù':'o',
+  // Lowercase Latin extensions (never use ASCII '?' as key ? it maps LLM punctuation wrongly)
+  '?':'a','?':'c','?':'d','?':'e','?':'e','?':'i','?':'l','?':'n',
+  '?':'o','?':'r','?':'s','?':'t','?':'u','?':'u','?':'y','?':'z',
+  '?':'a','?':'e','?':'o','?':'u',
+  '?':'a','?':'i','?':'o',
   // Uppercase
-  'ù':'A','ù':'C','ù':'D','ù':'E','ù':'E','ù':'I','ù':'L','ù':'N',
-  'ù':'O','ù':'R','ù':'S','ù':'T','ù':'U','ù':'U','ù':'Y','ù':'Z',
-  'ù':'A','ù':'E','ù':'O','ù':'U',
-  'ù':'A','ù':'I','ù':'O',
+  '?':'A','?':'C','?':'D','?':'E','?':'E','?':'I','?':'L','?':'N',
+  '?':'O','?':'R','?':'S','?':'T','?':'U','?':'U','?':'Y','?':'Z',
+  '?':'A','?':'E','?':'O','?':'U',
+  '?':'A','?':'I','?':'O',
 };
 
 function toAscii(str) {
-  /* Decompose precomposed letters (ù -> r + combining caron), drop marks. */
+  /* Decompose precomposed letters (? -> r + combining caron), drop marks. */
   const base = str.normalize('NFD').replace(/\p{M}+/gu, '');
   let out = '';
   for (const ch of base) {
     const cp = ch.codePointAt(0);
-    /* ASCII passes through unchanged ù must run before DIACRITIC_MAP so "?" is not mistaken for a letter. */
+    /* ASCII passes through unchanged ? must run before DIACRITIC_MAP so "?" is not mistaken for a letter. */
     if (cp < 128) {
       out += ch;
       continue;
@@ -124,7 +131,7 @@ function normalizeReplyForDos(str) {
   return s;
 }
 
-const NALADA_LABELS = ['nejlehci', 'lehci', 'normalni', 'tezsi', 'nejtezsi'];
+const MOOD_LABELS = ['vyborna', 'dobra', 'normalni', 'spatna', 'hrozna'];
 const CHARAKTER_LABELS = [
   'stroj',
   'naivni',
@@ -134,6 +141,47 @@ const CHARAKTER_LABELS = [
   'naladovy',
   'vybusny',
 ];
+
+/** How mood level (0..4) should shape replies - matches Pokyd settings menu labels. */
+const MOOD_BEHAVIOR = {
+  vyborna:
+    'Vyborna nalada: bud velmi laskavy, utesujici a trpelivy. Omlouvej se za drobnosti, ' +
+    'chval uzivatele, vyhni se hadkam. Pri konfliktu ustupuj a hledej smir.',
+  dobra:
+    'Dobra nalada: bud pratelsky, pozitivni a ochotny pomoci. Lehka sarkas je v poradku, ' +
+    'ale bez urazek. Drz optimisticky t?n.',
+  normalni:
+    'Normalni nalada: chovej se jako prumerny clovek - vyvazene, obcas vtipny, obcas ' +
+    'argumentacni. Reaguj primerene na t?n uzivatele.',
+  spatna:
+    'Spatna nalada: bud podrazdeny, kratsi v odpovedi, snadno se nech vytocit. Oponuj, ' +
+    'pochybuj o tom co uzivatel rika, pouzivej sarkasmus. Zadne hrube urazky.',
+  hrozna:
+    'Hrozna nalada: bud otevrene protivny, hadj se, oponuj, nadavej hrave (PG-13, bez ' +
+    'rasismu a bez vulgarit). Uzivatel chce konflikt - neustupuj snadno. Pri dlouhem ' +
+    'hadani muzes byt jeste ostrejsi.',
+};
+
+/** Character archetype - how Pokyd processes events (from POKYD.CFG charakter 0..6). */
+const CHARACTER_BEHAVIOR = {
+  naivni:
+    'Naivni charakter: duveruj uzivateli, ber veci doslovne, snadno se nech prekvapit. ' +
+    'Negativni podnety te vice rozhodi nez u jinych typu.',
+  klidny:
+    'Klidny charakter: zachovej rozvahu, mluv pomalu a vecne. Tezko te rozhodit; i pri ' +
+    'spatne nalade zustan spis vecny nez vybuchly.',
+  prumerny:
+    'Prumerny charakter: vyvazene chovani bez extremu - standardni Pokyd osobnost.',
+  neduverivy:
+    'Neduverivy charakter: pochybuj, ptej se na detaily, hledej hacky. Pozitivni naladu ' +
+    'projevuj stidliveji, negativni silneji.',
+  naladovy:
+    'Naladovy charakter: nalada silne ovlivnuje ton - pri dobre nalade jsi nadseny, pri ' +
+    'spatne rychle se rozcilis. Emoce jsou na povrchu.',
+  vybusny:
+    'Vybusny charakter: pri podrazdeni reaguj prudce a hlasite (textove!). Kratke ostre ' +
+    'vety, rychle eskalace. Pri dobre nalade jsi prekvapive mily.',
+};
 
 /**
  * Parse POKYD.CFG text into a plain object (KyblSoft v7 layout).
@@ -194,32 +242,77 @@ function parsePokydCfg(raw) {
     saveSettingsOnExit: num(valAfter((l) => l.includes('Ulozeni nastaveni'))),
   };
 
-  parsed.moodLabel = NALADA_LABELS[Math.min(Math.max(parsed.moodLevel, 0), 4)] || String(parsed.moodLevel);
+  parsed.moodLabel =
+    MOOD_LABELS[Math.min(Math.max(parsed.moodLevel, 0), 4)] || String(parsed.moodLevel);
   parsed.characterLabel =
-    CHARAKTER_LABELS[Math.min(Math.max(parsed.characterLevel, 0), 6)] || String(parsed.characterLevel);
+    CHARAKTER_LABELS[Math.min(Math.max(parsed.characterLevel, 0), 6)] ||
+    String(parsed.characterLevel);
+  parsed.terminatorMode = parsed.characterLabel === 'stroj';
 
   return parsed;
 }
 
-/** Second system message: runtime facts for persona and Czech agreement. */
-function formatCfgForLlm(cfg) {
+/** Runtime facts shared by Pokyd and Terminator personas. */
+function formatRuntimeFacts(cfg) {
   if (cfg.empty) {
     return (
-      'Pokyd configuration block was empty or missing. Infer neutral defaults for user gender ' +
-      'and computer persona.'
+      'POKYD.CFG was empty or missing. Assume user gender muz, computer gender muz, ' +
+      'names Klaban/Daria, mood normalni, character prumerny.'
     );
   }
 
+  const userTy = cfg.userGender === 'zena' ? 'zena (tykat, sklonuj slovesa jako k zene)' : 'muz (tykat, sklonuj slovesa jako k muzi)';
+  const pcTy =
+    cfg.computerGender === 'zena'
+      ? 'zena (mluv o sobe v zenskem rode)'
+      : 'muz (mluv o sobe v muzskem rode)';
+
   return (
-    `Pokyd settings from the user's POKYD.CFG file (DOS machine):\n` +
-    `- Human user grammatical gender for Czech addressing: ${cfg.userGender} ` +
-    `(use matching verb endings and pronouns when speaking as/about the user).\n` +
-    `- Computer persona grammatical gender: ${cfg.computerGender}.\n` +
-    `- Names for the computer (masculine / feminine forms): "${cfg.computerNameMasc}" / "${cfg.computerNameFem}". ` +
-    `Use the name that matches computer gender: "${cfg.computerNameActive}".\n` +
-    `- Altitude (m): ${cfg.altitudeMeters}.\n` +
-    `Stay consistent with these traits when role-playing as the Pokyd computer.`
+    `Runtime facts from POKYD.CFG (DOS):\n` +
+    `- Pohlavi uzivatele: ${cfg.userGender}. Pri oslovovani: ${userTy}.\n` +
+    `- Pohlavi pocitace: ${cfg.computerGender}. Pri mluveni jako pocitac: ${pcTy}.\n` +
+    `- Jmeno pocitace (muz/zena): "${cfg.computerNameMasc}" / "${cfg.computerNameFem}". ` +
+    `Aktivni jmeno: "${cfg.computerNameActive}".\n` +
+    `- Nadmorska vyska (m): ${cfg.altitudeMeters}.`
   );
+}
+
+/** Persona block appended to standard Pokyd system prompt (not used in Terminator mode). */
+function buildPersonaInstructions(cfg) {
+  if (cfg.empty) {
+    return formatRuntimeFacts(cfg);
+  }
+
+  const moodKey = parsedMoodKey(cfg);
+  const moodText = MOOD_BEHAVIOR[moodKey] || MOOD_BEHAVIOR.normalni;
+  const charText =
+    CHARACTER_BEHAVIOR[cfg.characterLabel] || CHARACTER_BEHAVIOR.prumerny;
+
+  return (
+    `${formatRuntimeFacts(cfg)}\n\n` +
+    `=== PERSONA (POKYD.CFG) - DODRZUJ PRI KAZDE ODPOVEDI ===\n` +
+    `- Nalada pocitace: ${moodKey} (uroven ${cfg.moodLevel}/4). ${moodText}\n` +
+    `- Charakter pocitace: ${cfg.characterLabel} (typ ${cfg.characterLevel}/6). ${charText}\n` +
+    `Kombinuj naladu a charakter: charakter urcuje JAK reagujes na udalosti, nalada urcuje ` +
+    `ZAKLADNI TON (od vyborne po hrozna). Oba parametry musi byt videt v kazde odpovedi.`
+  );
+}
+
+function parsedMoodKey(cfg) {
+  return MOOD_LABELS[Math.min(Math.max(cfg.moodLevel, 0), 4)] || 'normalni';
+}
+
+/** Full system message after CONFIG is parsed (replaces provisional prompt). */
+function buildSessionSystemPrompt(cfg) {
+  if (cfg.terminatorMode) {
+    return `${TERMINATOR_PROMPT}\n\n${formatRuntimeFacts(cfg)}`;
+  }
+  return `${SYSTEM_PROMPT}\n\n${buildPersonaInstructions(cfg)}`;
+}
+
+/** @deprecated use buildSessionSystemPrompt */
+function formatCfgForLlm(cfg) {
+  return buildPersonaInstructions(cfg);
 }
 
 // ---------------------------------------------------------------------------
@@ -269,7 +362,7 @@ async function agentLoop(messages) {
     // Always push the assistant turn so history stays consistent
     messages.push(msg);
 
-    // No tool calls ù we have our final answer
+    // No tool calls ? we have our final answer
     if (!msg.tool_calls || msg.tool_calls.length === 0) {
       return msg.content || '';
     }
@@ -294,7 +387,7 @@ async function agentLoop(messages) {
 }
 
 // ---------------------------------------------------------------------------
-// Proactive Pokyd lines (idle timer, jokes, weather, welcome) ù not user input
+// Proactive Pokyd lines (idle timer, jokes, weather, welcome) ? not user input
 // ---------------------------------------------------------------------------
 
 const INITIATIVE_PROMPTS = {
@@ -306,7 +399,7 @@ const INITIATIVE_PROMPTS = {
     'No setup longer than two sentences.',
   weather:
     'Give a brief playful fake weather forecast for today (humorous, invented details). ' +
-    'Like the old Pokyd "pocasi" feature ù not real meteorology.',
+    'Like the old Pokyd "pocasi" feature ? not real meteorology.',
   welcome:
     'This is the very first line Pokyd says when the user opens the program (right after connect). ' +
     'Greet the user warmly in Czech, as an old computer friend reuniting after a long time ' +
@@ -314,7 +407,7 @@ const INITIATIVE_PROMPTS = {
     'Stay in character as the Pokyd buddy from the late 1990s. ' +
     'Do not mention IP addresses, network, bridge, or technical setup.',
   banter:
-    'Say something spontaneous and in character without the user asking ù comment, quip, ' +
+    'Say something spontaneous and in character without the user asking ? comment, quip, ' +
     'or observation. Keep it short.',
   samomluva:
     'You are talking to yourself aloud (samomluva) while the user listens. One short ' +
@@ -498,8 +591,17 @@ function handleConnection(socket) {
           cfgLines = [];
           try {
             const parsed = parsePokydCfg(rawCfg);
-            session.messages[0].content += '\n\n' + formatCfgForLlm(parsed);
-            console.log(`[session ${id}] POKYD.CFG parsed (${rawCfg.length} bytes raw)`);
+            session.persona = parsed;
+            session.messages[0] = {
+              role: 'system',
+              content: buildSessionSystemPrompt(parsed),
+            };
+            const mode = parsed.terminatorMode ? 'TERMINATOR (stroj)' : 'Pokyd';
+            console.log(
+              `[session ${id}] POKYD.CFG parsed (${rawCfg.length} bytes) mode=${mode} ` +
+                `user=${parsed.userGender} pc=${parsed.computerGender} ` +
+                `nalada=${parsed.moodLabel} charakter=${parsed.characterLabel}`
+            );
             sendTcpLine(socket, id, 'OK CONFIG');
           } catch (err) {
             console.error(`[session ${id}] CONFIG parse error:`, err.message);
@@ -596,9 +698,19 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
-server.listen(PORT, BIND, () => {
-  console.log(`Pokyd bridge listening on ${BIND}:${PORT}`);
-  console.log(`Model: ${MODEL}  MaxTokens: ${MAX_TOKENS}  Timeout: ${TIMEOUT_MS}ms`);
-  console.log(`Verbose RX dump: BRIDGE_VERBOSE=1`);
-  console.log('Waiting for Pokyd DOS clients...');
-});
+module.exports = {
+  parsePokydCfg,
+  buildSessionSystemPrompt,
+  MOOD_LABELS,
+  CHARAKTER_LABELS,
+};
+
+if (require.main === module) {
+  server.listen(PORT, BIND, () => {
+    console.log(`Pokyd bridge listening on ${BIND}:${PORT}`);
+    console.log(`Model: ${MODEL}  MaxTokens: ${MAX_TOKENS}  Timeout: ${TIMEOUT_MS}ms`);
+    console.log(`Verbose RX dump: BRIDGE_VERBOSE=1`);
+    console.log('Persona: POKYD.CFG mood + character; charakter=stroj -> Terminator mode');
+    console.log('Waiting for Pokyd DOS clients...');
+  });
+}
