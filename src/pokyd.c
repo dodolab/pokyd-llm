@@ -345,7 +345,7 @@ static void pokyd_finish_intro_handoff(void) {
  }
 
 static void pokyd_run_after_intro(void) {
-  int argc = pokyd_main_argc;
+  int argc = pokyd_effective_argc;
   char **argv = pokyd_main_argv;
 
 /* Hlavni smycka konverzace zacina zde po uvodni obrazovce. */
@@ -411,26 +411,32 @@ if (llm_enabled && !llm_connected) {
   DBGLOG("main: LLM connect before welcome/VTIPY");
   if (LLM_CONNECT()) {
     LLM_SEND_CONFIG();
+    LLM_ZOBRAZ_PRIPOJENO();
     DBGLOG("main: LLM bridge ready");
   } else {
+    LLM_ZOBRAZ_CHYBU((BYTE *)"LLM: Bridge nedostupny.");
     DBGLOG("main: LLM bridge not ready yet (classic fallback)");
   }
 }
 DBGLOG("main: before optional startup messages");
-DBGLOGF("main: svtipy=%d spocasi=%d celkemvtipu=%lu delayprocenta=%lu textefekty=%u",
-        (int)svtipy, (int)spocasi, (unsigned long)celkemvtipu, (unsigned long)delayprocenta, (unsigned)textefekty);
-if (svtipy == 1 || (svtipy == 2 && rand()%2 == 0)) {
-  DBGLOG("main: calling VTIPY() (startup joke path)");
-  pozodp=1;
-  VTIPY();
-  DBGLOGF("main: after VTIPY pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
- }
-if (spocasi == 1 || (spocasi == 2 && rand()%2 == 0)) {
-  DBGLOG("main: calling POCASI()+ODPOVED (startup weather path)");
-  pozodp=1;
-  POCASI();
-  ODPOVED(1);
-  DBGLOGF("main: after POCASI ODPOVED pozodp=%u", (unsigned)pozodp);
+DBGLOGF("main: svtipy=%d spocasi=%d celkemvtipu=%lu llm=%u/%u",
+        (int)svtipy, (int)spocasi, (unsigned long)celkemvtipu,
+        (unsigned)llm_enabled, (unsigned)llm_connected);
+/* LLM mode: first line is the welcome initiative, not startup joke/weather/resume. */
+if (llm_enabled == 0) {
+  if (svtipy == 1 || (svtipy == 2 && rand()%2 == 0)) {
+    DBGLOG("main: calling VTIPY() (startup joke path)");
+    pozodp=1;
+    VTIPY();
+    DBGLOGF("main: after VTIPY pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
+   }
+  if (spocasi == 1 || (spocasi == 2 && rand()%2 == 0)) {
+    DBGLOG("main: calling POCASI()+ODPOVED (startup weather path)");
+    pozodp=1;
+    POCASI();
+    ODPOVED(1);
+    DBGLOGF("main: after POCASI ODPOVED pozodp=%u", (unsigned)pozodp);
+   }
  }
 VYNULUJ_ODPOVEDI();
 DBGLOGF("main: after optional startup messages pozodp=%u skutecnychodp=%u", (unsigned)pozodp, (unsigned)skutecnychodp);
@@ -464,25 +470,29 @@ ZAARGC:
    }
  }
 
-if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
+if (llm_enabled == 0 && pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
   VYNULUJ_ODPOVEDI();
-  if (llm_enabled != 0 &&
-      LLM_INITIATIVE_SHOW((BYTE *)"resume", (WORD)(pocetsouboru + 1), 1) != 0) {
-    DBGLOG("main: LLM resume (replaces EXTRA_VETA 1)");
-   }
-  else {
-    EXTRA_VETA(1);
-    sprintf(predtimretezec,odpovedi[0],pocetsouboru+1); strcpy(odpovedi[0],predtimretezec);
-    ODPOVED(1);
-   }
+  EXTRA_VETA(1);
+  sprintf(predtimretezec,odpovedi[0],pocetsouboru+1); strcpy(odpovedi[0],predtimretezec);
+  ODPOVED(1);
   VYNULUJ_ODPOVEDI(); odpovedi[0][0]=0;
  }
 
 DBGLOG("main: before welcome / EXTRA_VETA 7/8");
-if (llm_enabled != 0 && LLM_SEND_INITIATIVE((BYTE *)"welcome", 0) != 0) {
-  DBGLOG("main: LLM welcome (replaces EXTRA_VETA 7/8)");
-  ODPOVED(1);
-  VYNULUJ_ODPOVEDI();
+{ BYTE llm_startup_welcome = 0;
+if (llm_enabled != 0) {
+  if (LLM_SEND_INITIATIVE((BYTE *)"welcome", 0) != 0) {
+    if (llm_connected) LLM_ZOBRAZ_PRIPOJENO();
+    DBGLOG("main: LLM welcome (replaces EXTRA_VETA 7/8)");
+    ODPOVED(1);
+    VYNULUJ_ODPOVEDI();
+    llm_startup_welcome = 1;
+   }
+  else {
+    DBGLOG("main: LLM welcome failed, classic EXTRA_VETA fallback");
+    EXTRA_VETA(7);
+    EXTRA_VETA(8);
+   }
  }
 else {
   EXTRA_VETA(7);
@@ -497,6 +507,11 @@ else {
  }
 
 docasnenaladabody=0;
+if (llm_startup_welcome != 0) {
+  DBGLOG("main: LLM welcome shown, skip empty initial ODPOVED");
+  goto START;
+ }
+}
 DBGLOG("main: before initial goto OD");
 
 goto OD;
@@ -738,6 +753,7 @@ if (argc > 1) {
    }
   if (docasnenaladabody == 0) argc=0;
  }
+pokyd_effective_argc = argc;
 if (pokyd_do_consplit) {
   int ry, rx;
   memset(&pokyd_regs, 0, sizeof(pokyd_regs));

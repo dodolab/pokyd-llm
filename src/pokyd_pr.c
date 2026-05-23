@@ -82,6 +82,8 @@ BYTE readonlymod=0,vypnutecheaty=0,psanivetyskryto=0;
 /* Set before INTRO(): INTRO uses a huge stack frame; Watcom can corrupt the incoming
    argc slot so KONEC sees garbage (e.g. 200), then "argc>=2" runs gotoxy(1,badY) and hangs. */
 int pokyd_intro_argc_snapshot = 0;
+/* argv count after stripping switches (-llm host port must not become user text). */
+int pokyd_effective_argc = 0;
 
 /* --- Remote LLM mode (pokyd_llm.c / Watt-32) --- */
 /* 1 = -llm host:port was parsed (Watt-32 may start later on first connect). */

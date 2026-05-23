@@ -308,8 +308,11 @@ const INITIATIVE_PROMPTS = {
     'Give a brief playful fake weather forecast for today (humorous, invented details). ' +
     'Like the old Pokyd "pocasi" feature ù not real meteorology.',
   welcome:
-    'Open the conversation with a short greeting to the user (first lines after connect). ' +
-    'Stay in character; one or two sentences.',
+    'This is the very first line Pokyd says when the user opens the program (right after connect). ' +
+    'Greet the user warmly in Czech, as an old computer friend reuniting after a long time ' +
+    '(e.g. "Ahoj, uz jsme se dlouho nevideli." or similar). One or two short sentences. ' +
+    'Stay in character as the Pokyd buddy from the late 1990s. ' +
+    'Do not mention IP addresses, network, bridge, or technical setup.',
   banter:
     'Say something spontaneous and in character without the user asking ù comment, quip, ' +
     'or observation. Keep it short.',

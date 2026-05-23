@@ -405,6 +405,46 @@ static BYTE llm_send_initiative_watt(BYTE *kind, WORD idle_seconds) {
   return llm_send_line_recv(msg, dlen, 0);
 }
 
+/* Paint status into the consplit shell strip (physical rows above Pokyd).
+ * Replaces the echoed "-llm host port" command line with a short label. */
+static void llm_zapis_shell_stav(BYTE *text, BYTE attr) {
+  BYTE  r, puvx, puvy;
+  WORD  len, pos, c;
+  BYTE *p;
+
+  if (pokyd_shell_rows == 0 || text == NULL || text[0] == 0)
+    return;
+
+  puvx = (BYTE)wherex();
+  puvy = (BYTE)wherey();
+  len  = (WORD)strlen((char *)text);
+  if (len > 80) len = 80;
+  pos = (WORD)((80 - len) / 2);
+  if (pos < 1) pos = 1;
+
+  for (r = 1; r <= pokyd_shell_rows; r++) {
+    memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+    _AH = 0x02;
+    _BH = 0;
+    _DH = (BYTE)(r - 1);
+    _DL = 0;
+    geninterrupt(0x10);
+    for (c = 0; c < 80; c++)
+      NAPISZNAK(' ', 7);
+  }
+
+  memset(&pokyd_regs, 0, sizeof(pokyd_regs));
+  _AH = 0x02;
+  _BH = 0;
+  _DH = (BYTE)(pokyd_shell_rows - 1);
+  _DL = (BYTE)(pos - 1);
+  geninterrupt(0x10);
+  for (p = text; *p != 0; p++)
+    NAPISZNAK(*p, attr);
+
+  gotoxy(puvx, puvy);
+}
+
 #endif /* POKYD_LLM_WATT */
 
 /* ===========================================================================
@@ -518,6 +558,36 @@ BYTE LLM_INITIATIVE_SHOW(BYTE *kind, WORD idle_seconds, BYTE odpo_mode) {
   if (LLM_SEND_INITIATIVE(kind, idle_seconds) == 0) return 0;
   ODPOVED(odpo_mode);
   return 1;
+}
+
+/* Show "LLM Pripojeno" once on the first conversation row (yellow status label). */
+static BYTE llm_stav_zobrazen = 0;
+
+static void llm_zapis_stav_radek(void) {
+  STRANA(1);
+  NAPISRETEZEC("LLM Pripojeno", 14);
+  pokyd_emit_nl();
+}
+
+/* LLM_ZOBRAZ_PRIPOJENO - replace consplit command echo with a short OK label. */
+void LLM_ZOBRAZ_PRIPOJENO(void) {
+#ifdef POKYD_LLM_WATT
+  if (llm_stav_zobrazen != 0)
+    return;
+  llm_stav_zobrazen = 1;
+  DBGLOG("LLM_ZOBRAZ_PRIPOJENO: status label");
+  if (pokyd_shell_rows != 0)
+    llm_zapis_shell_stav((BYTE *)"LLM Pripojeno", 14);
+  llm_zapis_stav_radek();
+#else
+  (void)0;
+#endif
+}
+
+/* LLM_ZOBRAZ_CHYBU - connection / bridge failure in the standard HLASKA bar. */
+void LLM_ZOBRAZ_CHYBU(BYTE *text) {
+  if (text != NULL && text[0] != 0)
+    HLASKA(text, 4);
 }
 
 /* LLM_CLOSE - close the TCP socket and shut down the Watt-32 stack.

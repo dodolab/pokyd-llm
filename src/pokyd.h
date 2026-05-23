@@ -13,6 +13,7 @@
 /* DOS console split: keep COMMAND.COM / autoexec lines visible above Pokyd (see -consplit). */
 extern unsigned char pokyd_shell_rows;
 extern int pokyd_intro_argc_snapshot;
+extern int pokyd_effective_argc;
 
 void INTRO_CARY(void);
 DWORD VOLNAPAMET(void);
@@ -194,4 +195,6 @@ BYTE LLM_SEND_RECV(void);
 BYTE LLM_SEND_INITIATIVE(BYTE *kind, WORD idle_seconds);
 BYTE LLM_INITIATIVE_SHOW(BYTE *kind, WORD idle_seconds, BYTE odpo_mode);
 void LLM_APPEND_ASSISTANT(BYTE *text);
+void LLM_ZOBRAZ_PRIPOJENO(void);
+void LLM_ZOBRAZ_CHYBU(BYTE *text);
 void LLM_CLOSE(void);
