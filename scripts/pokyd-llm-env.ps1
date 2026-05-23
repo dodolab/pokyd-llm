@@ -49,6 +49,7 @@ function Resolve-PokydLlmHost {
     $ip = if ($env:POKYD_LLM_IP -and $env:POKYD_LLM_IP.Trim().Length -gt 0) {
         $env:POKYD_LLM_IP.Trim()
     } else {
+        # Slirp NAT gateway (see DOSBox-X wiki ipv4_host default).
         '10.0.2.2'
     }
 

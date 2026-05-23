@@ -4,7 +4,8 @@
 
 .DESCRIPTION
   Windows equivalent of build-and-run-llm.sh (macOS). Requires Node 18+, bridge/.env with OPENAI_API_KEY,
-  vendor/watt32-dos (see build.sh), and assets/NE2000.COM for the guest packet driver.
+  vendor/watt32-dos (see build.sh), assets/NE2000.COM for the guest packet driver, and a MinGW DOSBox-X
+  build with NE2000/slirp (auto-downloaded to .tools/dosbox-x-mingw/ if missing).
 
   Optional args (also accepted from build-and-run-llm.bat):
     -ExitAfterPokyd   Close DOSBox-X when pokyd.exe exits (automation).
@@ -69,8 +70,11 @@ function Stop-ListenersOnPort {
 }
 
 function Invoke-GptCleanup {
+    param([switch] $Silent)
     if ($bridgeProc -and -not $bridgeProc.HasExited) {
-        Write-Host "[gpt] Stopping bridge (pid $($bridgeProc.Id))..."
+        if (-not $Silent) {
+            Write-Host "[gpt] Stopping Node bridge (pid $($bridgeProc.Id))..."
+        }
         Stop-Process -Id $bridgeProc.Id -Force -ErrorAction SilentlyContinue
         try { $bridgeProc.WaitForExit(5000) | Out-Null } catch { }
     }
@@ -138,26 +142,53 @@ Run scripts\bootstrap-watt32-docker.bat or scripts/bootstrap-watt32-docker.sh, o
     }
 
     Write-Host "[gpt] Bridge pid=$($bridgeProc.Id) (log: bridge/pokyd-bridge.log, pokyd-bridge.err)"
+    $tnc = Test-NetConnection -ComputerName 127.0.0.1 -Port $BridgePort -WarningAction SilentlyContinue
+    if (-not $tnc.TcpTestSucceeded) {
+        throw "Bridge is not listening on TCP $BridgePort (check bridge/pokyd-bridge.err)."
+    }
     Write-Host "[gpt] Building pokyd.exe with LLM (Watt-32)..."
+    $llmHost = Resolve-PokydLlmHost -RepoRoot $RepoRoot
+    $env:POKYD_LLM_HOST = $llmHost
+    if ($llmHost -match '^([^:]+):(\d+)$') {
+        $env:POKYD_LLM_IP = $Matches[1]
+        $env:POKYD_LLM_PORT = $Matches[2]
+    }
     $buildBat = Join-Path $RepoRoot "build.bat"
     & $buildBat
     if ($LASTEXITCODE -ne 0) { throw "build.bat failed with exit $LASTEXITCODE" }
 
-    $llmHost = Resolve-PokydLlmHost -RepoRoot $RepoRoot
-    $env:POKYD_LLM_HOST = $llmHost
-    Write-Host "[gpt] Launching DOSBox-X with -llm=$llmHost"
+    $exeBytes = [System.IO.File]::ReadAllBytes((Join-Path $RepoRoot "pokyd.exe"))
+    $exeText = [System.Text.Encoding]::ASCII.GetString($exeBytes)
+    if ($exeText.Contains("LLM_INIT: no Watt-32")) {
+        throw "pokyd.exe was built without Watt-32 LLM support. Check build.bat output."
+    }
+    if (-not $exeText.Contains("LLM_INIT: host=")) {
+        throw "pokyd.exe does not contain Watt-32 LLM code. Re-run scripts\bootstrap-watt32-docker.bat."
+    }
 
-    $runArgs = @{}
+    Write-Host "[gpt] Launching DOSBox-X with -llm $llmHost (DOS-safe argv)"
+
+    $runArgs = @{
+        EnableLlm = $true
+        LlmHost   = $llmHost
+    }
     if ($ExitAfterPokyd) { $runArgs.ExitAfterNotes = $true }
     if ($SkipIntro) { $runArgs.SkipIntro = $true }
 
     & (Join-Path $PSScriptRoot "run-dosbox.ps1") @runArgs
     $dbExit = $LASTEXITCODE
+    if ($dbExit -eq 0) {
+        Write-Host ""
+        Write-Host '[gpt] Session finished - you closed DOSBox-X (or typed EXIT at the C:\> prompt).'
+        Write-Host '[gpt] This is normal, not an error. The Node bridge is shut down too.'
+    } else {
+        Write-Host ('[gpt] DOSBox exited with code ' + $dbExit + '. Check DEBUG.LOG and bridge/pokyd-bridge.log.')
+    }
 } catch {
     Write-Host $_
     $dbExit = 1
 } finally {
-    Invoke-GptCleanup
+    Invoke-GptCleanup -Silent
 }
 
 exit $dbExit

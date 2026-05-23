@@ -371,17 +371,9 @@ else if (mod == 50 && delkastrany == 24) {
 NASTAVSPRAVNYFONT();
 NAPISHLAVICKOVYRADEK();
 DBGLOG("main: after NAPISHLAVICKOVYRADEK");
-/* Attempt TCP connection to the LLM bridge now that the screen is ready. */
+/* LLM TCP connect is deferred to first LLM_SEND_* call (lazy in pokyd_llm.c). */
 if (llm_enabled) {
-  DBGLOGF("main: LLM_CONNECT to %s:%u", (char *)llm_host, (unsigned)llm_port);
-  if (LLM_CONNECT()) {
-    BARVA(barvapocitac1);
-    NAPISRETEZEC("LLM Pripojeno...", barvapocitac1);
-    LLM_SEND_CONFIG();
-    STRANA(1);
-  } else {
-    DBGLOG("main: LLM_CONNECT failed - continuing without LLM");
-   }
+  DBGLOGF("main: LLM enabled, bridge %s:%u (connect on first use)", (char *)llm_host, (unsigned)llm_port);
  }
 DBGLOGF("main: video state after header wherex=%d wherey=%d delkastrany=%u",
         wherex(), wherey(), (unsigned)delkastrany);
@@ -415,6 +407,15 @@ ZACATECNIK("Pocitac te nejdrive uvita a zacne hovor.",01);
 
 CAS(1);	ZAPIS_NALADU();		//kvuli prepsani zacatecnickym textem
 textcolor(11);
+if (llm_enabled && !llm_connected) {
+  DBGLOG("main: LLM connect before welcome/VTIPY");
+  if (LLM_CONNECT()) {
+    LLM_SEND_CONFIG();
+    DBGLOG("main: LLM bridge ready");
+  } else {
+    DBGLOG("main: LLM bridge not ready yet (classic fallback)");
+  }
+}
 DBGLOG("main: before optional startup messages");
 DBGLOGF("main: svtipy=%d spocasi=%d celkemvtipu=%lu delayprocenta=%lu textefekty=%u",
         (int)svtipy, (int)spocasi, (unsigned long)celkemvtipu, (unsigned long)delayprocenta, (unsigned)textefekty);
@@ -465,7 +466,7 @@ ZAARGC:
 
 if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
   VYNULUJ_ODPOVEDI();
-  if (llm_enabled != 0 && llm_connected != 0 &&
+  if (llm_enabled != 0 &&
       LLM_INITIATIVE_SHOW((BYTE *)"resume", (WORD)(pocetsouboru + 1), 1) != 0) {
     DBGLOG("main: LLM resume (replaces EXTRA_VETA 1)");
    }
@@ -478,7 +479,7 @@ if (pocetsouboru > 0 && pocetsouboru < 1000 && rand()%2 == 0) {
  }
 
 DBGLOG("main: before welcome / EXTRA_VETA 7/8");
-if (llm_enabled != 0 && llm_connected != 0 && LLM_SEND_INITIATIVE((BYTE *)"welcome", 0) != 0) {
+if (llm_enabled != 0 && LLM_SEND_INITIATIVE((BYTE *)"welcome", 0) != 0) {
   DBGLOG("main: LLM welcome (replaces EXTRA_VETA 7/8)");
   ODPOVED(1);
   VYNULUJ_ODPOVEDI();
@@ -523,7 +524,7 @@ KONECSAMOML: strcpy(puvretezec,textpredsamomluvou);
     samomluva=0; goto START;
    }
   ZMEN_POCITAC();
-  if (llm_enabled != 0 && llm_connected != 0 &&
+  if (llm_enabled != 0 &&
       LLM_INITIATIVE_SHOW((BYTE *)"samomluva", 0, 0) != 0) {
     { DWORD cek;
       DBGLOG("main: LLM samomluva");
@@ -579,7 +580,7 @@ if (EXTRA_SANCE_CHEAT() == 1) goto START;
 if (nadavani == 1) {
   { BYTE puv_nalada_insult = nalada;
     nalada = (BYTE)(rand() % 5);
-    if (llm_enabled != 0 && llm_connected != 0 &&
+    if (llm_enabled != 0 &&
         LLM_INITIATIVE_SHOW((BYTE *)"insult", 0, 1) != 0) {
       DBGLOG("main: LLM insult (replaces EXTRA_VETA 16/17)");
      }
@@ -694,6 +695,10 @@ if (argc > 1) {
   docasnenaladabody=0;				//docasne pouziti
   for (cislo=1; cislo < argc; cislo++) {
     strcpy(dlouhe,argv[cislo]); if (dlouhe[0] == '/') dlouhe[0]='-';
+    if (dlouhe[0] == '"') memmove(dlouhe, dlouhe + 1, strlen((char *)dlouhe));
+    { WORD qlen = (WORD)strlen((char *)dlouhe);
+      if (qlen > 0 && dlouhe[qlen - 1] == '"') dlouhe[qlen - 1] = 0;
+    }
     if (stricmp(dlouhe,"-test") == 0) introakcespusteni=1;
     else if (stricmp(dlouhe,"-setric") == 0) introakcespusteni=2;
     else if (stricmp(dlouhe,"-uloz") == 0) introakcespusteni=3;
@@ -709,10 +714,25 @@ if (argc > 1) {
     else if (stricmp(dlouhe,"-bezcheatu") == 0) vypnutecheaty=1;
     else if (stricmp(dlouhe,"-bezvsechcheatu") == 0) vypnutecheaty=2;
     else if (strnicmp(dlouhe,"-llm",4) == 0) {
-      /* Accept: -llm=host:port  or  -llm:host:port  or  -llmhost:port */
+      /* Accept: -llm=host:port  or  -llm:host:port  or  -llm host:port
+         or  -llm host port (DOS-safe: COMMAND.COM treats colons specially). */
       BYTE *sep = (BYTE *)dlouhe + 4;
-      if (*sep == '=' || *sep == ':') sep++;
-      if (*sep) LLM_INIT(sep);
+      BYTE hostport_buf[80];
+      if (*sep == '=' || *sep == ':') {
+        sep++;
+        if (*sep) LLM_INIT(sep);
+        else if (cislo + 1 < argc) LLM_INIT((BYTE *)argv[++cislo]);
+      } else if (*sep == 0 && cislo + 2 < argc) {
+        WORD hlen = (WORD)strlen((char *)argv[cislo + 1]);
+        WORD plen = (WORD)strlen((char *)argv[cislo + 2]);
+        if (hlen + 1 + plen + 1 <= (WORD)sizeof(hostport_buf)) {
+          sprintf((char *)hostport_buf, "%s:%s", argv[cislo + 1], argv[cislo + 2]);
+          LLM_INIT(hostport_buf);
+          cislo += 2;
+        }
+      } else if (*sep == 0 && cislo + 1 < argc) {
+        LLM_INIT((BYTE *)argv[++cislo]);
+      }
      }
     else docasnenaladabody=1;
    }
@@ -729,7 +749,7 @@ if (pokyd_do_consplit) {
   pokyd_shell_rows = (unsigned char)ry;
   if (rx > 1) pokyd_shell_rows++;
   if (pokyd_shell_rows > 12 || (25 - (int)pokyd_shell_rows) < 12) pokyd_shell_rows = 0;
- }
+}
 DBGLOGF("main: argc=%d llm=%u p=%u", argc, (unsigned)llm_enabled, (unsigned)llm_port);
 DBGLOG("main: start");
 NASTARTUJ_PROGRAM();

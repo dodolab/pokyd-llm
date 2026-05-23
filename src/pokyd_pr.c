@@ -84,7 +84,7 @@ BYTE readonlymod=0,vypnutecheaty=0,psanivetyskryto=0;
 int pokyd_intro_argc_snapshot = 0;
 
 /* --- Remote LLM mode (pokyd_llm.c / Watt-32) --- */
-/* 1 = -llm=host:port was parsed and sock_init() succeeded. */
+/* 1 = -llm host:port was parsed (Watt-32 may start later on first connect). */
 BYTE llm_enabled   = 0;
 /* 1 = TCP connection to the Node bridge is currently open. */
 BYTE llm_connected = 0;

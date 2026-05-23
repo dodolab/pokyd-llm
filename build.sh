@@ -98,6 +98,7 @@ if [[ -n "$WATT_ROOT" ]]; then
     # Watt-32 static library pushes DGROUP near the 64KiB limit; shrink stack to leave room.
     # INTRO still fits if kept shallow; raise toward -k3584 only if link fits (E2020).
     # Watt + near data share DGROUP with stack (-k bytes). Over ~480B needs -k3008 not -k3584.
+  # llm_sock lives on far heap so -k3008 still links after connect helpers grew.
     LLM_STACK="-k3008"
     echo "Watt-32 found at $WATT_ROOT -- LLM mode (-llm=host:port) will be compiled in."
   else

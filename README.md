@@ -58,8 +58,9 @@ Původní zdrojové kódy jsou [zde](https://old.kyblsoft.cz/iqpokyd)
    - `build.bat` očekává přesně tuto strukturu
 
 2. **DOSBox-X**  
-   - Nainstaluj globálně, nebo pomocí skriptu `scripts\run-dosbox.ps1` stáhni portable verzi do **`.tools\dosbox-x\`**
-   - Volitelně nastav cestu k `dosbox-x.exe` do proměnné **`NOTES_DOSBOX_X`**.
+   - **Bez LLM:** stačí běžná VS instalace (např. `dosbox\x64\Release\dosbox-x.exe` nebo portable VS build).  
+   - **S LLM:** potřebuješ **MinGW win64** build se **slirp** backendem (NE2000). Visual Studio build v `dosbox\` síť neumí — skript `run-dosbox.ps1` / `build-and-run-llm.bat` stáhne MinGW automaticky do **`.tools\dosbox-x-mingw\`**, pokud tam ještě není.  
+   - Volitelně nastav cestu k MinGW `dosbox-x.exe` do **`NOTES_DOSBOX_X`** (musí podporovat slirp).
 
 3. **Node.js** (jen pro LLM bridge na stejném PC)  
    - Instalace z [nodejs.org](https://nodejs.org/) (LTS). V adresáři `bridge` spusť `npm install`, zkopíruj`.env.example` do souboru `.env` a uprav parametry – viz [bridge/README.md](bridge/README.md).

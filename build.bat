@@ -27,14 +27,11 @@ if exist "%~dp0vendor\watt32-dos\inc\tcp.h" (
   if not defined WATT_LIB if exist "%~dp0vendor\watt32-dos\lib\wattcpwl.lib" set "WATT_LIB=%~dp0vendor\watt32-dos\lib\wattcpwl.lib"
   if defined WATT_LIB (
     set "LLM_STACK=-k3008"
-    set "LLM_CFLAGS=-DPOKYD_LLM_WATT=1 -I%~dp0vendor\watt32-dos\inc"
-    if defined POKYD_LLM_IP set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_HOST=\"%POKYD_LLM_IP%\""
-    if not defined POKYD_LLM_IP if defined POKYD_LLM_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_HOST=\"10.0.2.2\""
-    if defined POKYD_LLM_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_PORT=%POKYD_LLM_PORT%"
-    if not defined POKYD_LLM_PORT if defined BRIDGE_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_PORT=%BRIDGE_PORT%"
-    if defined POKYD_LLM_IP if not defined POKYD_LLM_PORT if not defined BRIDGE_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_PORT=8765"
-    if defined POKYD_LLM_IP echo LLM compile defaults: %POKYD_LLM_IP% (set POKYD_LLM_PORT for port; runtime -llm= overrides^)
-    if not defined POKYD_LLM_IP if defined POKYD_LLM_PORT echo LLM compile default port: %POKYD_LLM_PORT% (runtime -llm= overrides^)
+    set "LLM_CFLAGS="
+    if defined POKYD_LLM_PORT set "LLM_CFLAGS=-DPOKYD_LLM_DEFAULT_PORT=%POKYD_LLM_PORT%"
+    if not defined POKYD_LLM_PORT if defined BRIDGE_PORT set "LLM_CFLAGS=-DPOKYD_LLM_DEFAULT_PORT=%BRIDGE_PORT%"
+    if defined POKYD_LLM_PORT echo LLM compile default port: %POKYD_LLM_PORT% (runtime -llm= overrides^)
+    if not defined POKYD_LLM_PORT if defined BRIDGE_PORT echo LLM compile default port: %BRIDGE_PORT% (runtime -llm= overrides^)
     echo Watt-32 found -- LLM mode (-llm=host:port^) will be compiled in.
   ) else (
     echo WARNING: vendor\watt32-dos\inc\tcp.h found but no wattcplf.lib / wattcpwl.lib -- building without LLM.
@@ -51,7 +48,7 @@ if defined WATT_LIB goto build_pokyd_watt
 wcl -bt=dos -ml -zm -zq -ox -fo=. -fe=..\pokyd.exe pokyd.c
 goto build_pokyd_done
 :build_pokyd_watt
-wcl -bt=dos -ml -zm -zq -ox %LLM_STACK% %LLM_CFLAGS% -fo=. -fe=..\pokyd.exe pokyd.c "%WATT_LIB%"
+wcl -bt=dos -ml -zm -zq -ox %LLM_STACK% -DPOKYD_LLM_WATT=1 -I"%~dp0vendor\watt32-dos\inc" %LLM_CFLAGS% -fo=. -fe=..\pokyd.exe pokyd.c "%WATT_LIB%"
 :build_pokyd_done
 set "BUILDERR=%ERRORLEVEL%"
 popd
@@ -74,6 +71,15 @@ if not "%SLVERR%"=="0" (
 if not exist "%~dp0pokyd.exe" (
   echo Build finished but pokyd.exe was not created.
   exit /b 1
+)
+
+if defined WATT_LIB (
+  findstr /M /C:"LLM_INIT: no Watt-32" "%~dp0pokyd.exe" >nul 2>&1
+  if not errorlevel 1 (
+    echo ERROR: pokyd.exe lacks Watt-32 LLM support ^(broken compile flags^).
+    echo        Use build-and-run-llm.bat and ensure vendor\watt32-dos exists.
+    exit /b 1
+  )
 )
 
 echo Build succeeded: pokyd.exe

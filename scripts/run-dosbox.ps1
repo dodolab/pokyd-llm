@@ -5,7 +5,9 @@
 .DESCRIPTION
   - Uses DOSBox-X for reliable long filenames on a Windows-mounted folder.
   - Resolves dosbox-x.exe via scripts/common.ps1 (NOTES_DOSBOX_X, PATH, repo dosbox\, then .tools\dosbox-x\).
-  - If still not found, downloads the portable win64 ZIP into .tools/dosbox-x/ (optional fallback).
+  - LLM mode (-llm / Watt-32): requires MinGW DOSBox-X with NE2000 slirp (NOT the VS build in dosbox\).
+    Auto-downloads into .tools\dosbox-x-mingw\ when missing.
+  - Non-LLM fallback: portable VS win64 ZIP in .tools\dosbox-x\.
 
   Build on Windows first: build.bat (Open Watcom). This script only runs the DOS binary.
 
@@ -28,7 +30,8 @@ param(
     [switch] $AllegroTest,
     [switch] $RawKey,
     [string] $LlmHost = "",
-    [switch] $SkipIntro
+    [switch] $SkipIntro,
+    [switch] $EnableLlm
 )
 
 $ErrorActionPreference = "Stop"
@@ -38,7 +41,10 @@ Initialize-NotesScriptsDir -ScriptsDirectory $PSScriptRoot
 
 $RepoRoot = Get-NotesRepoRoot
 
-if (-not $LlmHost -and (Test-PokydLlmConfigured)) {
+if ($EnableLlm -and -not $LlmHost) {
+    $LlmHost = Resolve-PokydLlmHost -RepoRoot $RepoRoot
+}
+elseif (-not $LlmHost -and (Test-PokydLlmConfigured)) {
     $LlmHost = Resolve-PokydLlmHost -RepoRoot $RepoRoot
 }
 
@@ -62,8 +68,13 @@ if (-not (Test-Path $GuestExe)) {
     }
 }
 
-$db = Find-DosBoxX -RepoRoot $RepoRoot
-if (-not $db) { $db = Install-DosBoxXPortable -RepoRoot $RepoRoot }
+if ($LlmHost) {
+    $db = Find-DosBoxX -RepoRoot $RepoRoot -RequireSlirp
+    if (-not $db) { $db = Install-DosBoxXPortable -RepoRoot $RepoRoot -RequireSlirp }
+} else {
+    $db = Find-DosBoxX -RepoRoot $RepoRoot
+    if (-not $db) { $db = Install-DosBoxXPortable -RepoRoot $RepoRoot }
+}
 
 $mountPath = $RepoRoot
 
@@ -79,7 +90,16 @@ if ($ExeToRun -eq "pokyd.exe") {
     $pArgs = @()
     if ($SkipIntro) { $pArgs += "-pokyd" }
     $pArgs += "-consplit"
-    if ($LlmHost) { $pArgs += "-llm=$LlmHost" }
+    if ($LlmHost) {
+        # DOS COMMAND.COM splits on ':' (drive labels); pass host and port separately.
+        if ($LlmHost -match '^([^:]+):(\d+)$') {
+            $pArgs += "-llm"
+            $pArgs += $Matches[1]
+            $pArgs += $Matches[2]
+        } else {
+            $pArgs += "-llm=$LlmHost"
+        }
+    }
     $guestLaunchLine = "pokyd.exe " + ($pArgs -join " ")
 }
 
@@ -88,6 +108,7 @@ $autoexecTail = @(
     "if not exist C:\SLOVNIK.DAT if exist C:\assets\pokydx.pkd copy C:\assets\pokydx.pkd C:\POKYDX.PKD >nul",
     "if not exist C:\SLOVNIK.DAT if exist C:\slova.exe slova.exe",
     "echo [pokyd] Starting $ExeToRun ...",
+    "echo [pokyd] Command: $guestLaunchLine",
     $guestLaunchLine,
     "echo.",
     "echo $ExeToRun ended with errorlevel %ERRORLEVEL%",
@@ -105,17 +126,30 @@ if ($LlmHost) {
         "ne2000=true",
         "nicbase=0x300",
         "nicirq=10",
-        "backend=slirp"
+        "backend=slirp",
+        "macaddr=AC:DE:48:88:99:01"
     )
     $ne2000Autoexec = @(
         "copy C:\assets\WATTCP.CFG C:\WATTCP.CFG >nul",
         "SET WATTCP.CFG=C:",
         "echo [pokyd] NE2000 assets\NE2000.COM 0x60 10 0x300",
-        "C:\assets\NE2000.COM 0x60 10 0x300"
+        "echo [pokyd] If MAC is FF:FF:FF:FF:FF:FF below, slirp/LLM will not work.",
+        "C:\assets\NE2000.COM 0x60 10 0x300",
+        "if errorlevel 1 echo [pokyd] WARNING: NE2000.COM returned errorlevel %ERRORLEVEL%"
+    )
+}
+
+$slirpSection = @()
+if ($LlmHost) {
+    $slirpSection = @(
+        "[ethernet, slirp]",
+        "disable_host_loopback=false",
+        "restricted=false"
     )
 }
 
 $coreLine = "core=normal"
+$cputypeLine = @()
 if ($LlmHost) {
     $coreOverride = $env:POKYD_DOSBOX_CPU_CORE
     if ($coreOverride) {
@@ -123,11 +157,17 @@ if ($LlmHost) {
     } else {
         $coreLine = "core=dynamic"
     }
+    $cputypeLine = @("cputype=pentium")
+}
+
+$sdlOutput = "surface"
+if ($LlmHost -and $db -match 'mingw-sdl2') {
+    $sdlOutput = "opengl"
 }
 
 $confLines = @(
     "[sdl]",
-    "output=surface",
+    "output=$sdlOutput",
     "usescancodes=false",
     "[render]",
     "aspect=true",
@@ -141,13 +181,14 @@ $confLines = @(
     ),
     "keyboard hook=false",
     "[cpu]",
-    $coreLine,
+    $coreLine
+) + $cputypeLine + @(
     "fpu=true",
     "[dos]",
     "ver=7.1",
     "lfn=true",
     "keyboardlayout=us"
-) + $ne2000Section + @(
+) + $ne2000Section + $slirpSection + @(
     "[autoexec]",
     "@echo off",
     "echo [pokyd] Autoexec started",
@@ -160,9 +201,14 @@ $confPath = Join-Path $env:TEMP "pokyd-dosbox-x-$([Guid]::NewGuid().ToString('n'
 $confLines | Set-Content -Path $confPath -Encoding ASCII
 
 Write-Host "Launching: $db"
+if ($LlmHost) {
+    Write-Host "Network:   NE2000 + slirp (host bridge at $LlmHost)"
+    if ($db -match 'dosbox-x-llm') { Write-Host "Emulator:  .tools/dosbox-x-llm (MinGW SDL2, slirp)" }
+    elseif ($db -match 'mingw-sdl2') { Write-Host "Emulator:  MinGW SDL2 build (slirp)" }
+}
 Write-Host "Guest EXE: $ExeToRun"
 Write-Host "Config:    $confPath"
-& $db -conf $confPath
-$dbExit = $LASTEXITCODE
+Write-Host "Waiting for DOSBox-X to close (PowerShell stays blocked until you type EXIT in DOSBox)..."
+$dbExit = Wait-DosBoxXSession -ExePath $db -ConfPath $confPath
 if ($null -eq $dbExit) { $dbExit = 0 }
 exit $dbExit

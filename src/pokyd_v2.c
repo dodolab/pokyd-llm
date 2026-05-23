@@ -958,7 +958,7 @@ POZICE:
       if (znak != 0) break; else goto UKONCENI;
     case 45: if (znak != 0) break;		//Alt-X
 UKONCENI: if (HLASKA("Coze? Ty chces ukoncit tenhle program? To snad ne! [A/N] A",6+100) == 'a' || _AL == 'A' || _AL == 'y' || _AL == 'Y' || _AL == '\r') {
-        if (llm_enabled == 0 || llm_connected == 0 ||
+        if (llm_enabled == 0 ||
             LLM_INITIATIVE_SHOW((BYTE *)"goodbye", 0, 0) == 0) {
           EXTRA_VETA(9); BARVA(barvapocitac1); ODPOVED(0);
          }

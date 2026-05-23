@@ -911,7 +911,7 @@ void VTIPY(void) {
 DWORD misto,delka,pozdlouhe=0,znak;
   DBGLOGF("VTIPY: enter celkemvtipu=%lu llm=%u/%u", (unsigned long)celkemvtipu,
           (unsigned)llm_enabled, (unsigned)llm_connected);
-  if (llm_enabled != 0 && llm_connected != 0 && LLM_SEND_INITIATIVE((BYTE *)"joke", 0) != 0) {
+  if (llm_enabled != 0 && LLM_SEND_INITIATIVE((BYTE *)"joke", 0) != 0) {
     smyslpocvety=3;
     DBGLOG("VTIPY: LLM joke path");
     pozodp=100; ODPOVED(1);
@@ -982,7 +982,7 @@ BYTE *llm_kind;
 WORD llm_idle_sec;
 
   /* LLM mode: replace dictionary idle banter / vtipy / EXTRA_VETA with bridge text. */
-  if (llm_enabled != 0 && llm_connected != 0) {
+  if (llm_enabled != 0) {
     llm_idle_sec = llm_idle_prah_vterin;
     if (llm_idle_sec == 0) llm_idle_sec = (WORD)pocetvterin;
     llm_kind = LLM_REALTIME_KIND();

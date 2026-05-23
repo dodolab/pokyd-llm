@@ -967,7 +967,7 @@ signed long stupen=0,pomoc;
 char pulrok,bio,pomoc1[40];
 BYTE novyden=0,spatnysignal=0,textpocasi[300];
 
-  if (llm_enabled != 0 && llm_connected != 0 && LLM_SEND_INITIATIVE((BYTE *)"weather", 0) != 0) {
+  if (llm_enabled != 0 && LLM_SEND_INITIATIVE((BYTE *)"weather", 0) != 0) {
     smyslpocvety=4;
     pozodp=100;
     DBGLOG("POCASI: LLM weather path");

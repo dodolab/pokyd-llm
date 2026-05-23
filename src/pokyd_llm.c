@@ -21,7 +21,7 @@
  * Protocol (see bridge/README.md for the full spec):
  *   DOS -> Node:  optional "CONFIG_START\n" ... lines ... "CONFIG_END\n" (POKYD.CFG)
  *   Node -> DOS:  "OK CONFIG\n" after CONFIG block (optional; failure is non-fatal)
- *   DOS -> Node:  "ASSISTANT <text>\n" ù Pokyd rule-engine line (conversation context)
+ *   DOS -> Node:  "ASSISTANT <text>\n" ? Pokyd rule-engine line (conversation context)
  *   DOS -> Node:  "USER <text>\n"   (ASCII, <=79 chars)
  *   DOS -> Node:  "INITIATIVE <kind> [<n>]\n"  proactive line (idle/joke/weather/...)
  *   Node -> DOS:  "REPLY <text>\n"  (ASCII, <=3980 chars, no embedded newlines)
@@ -46,7 +46,7 @@
 
 /*
  * pokyd_pr.c defines BYTE, WORD, DWORD as macros.  Watt-32's inc/sys/wtypes.h
- * uses those names as typedef keywords ù the preprocessor would expand them and
+ * uses those names as typedef keywords ? the preprocessor would expand them and
  * break typedef lines ("typedef unsigned char unsigned char").  Undefine for the
  * Watt headers only, then restore the Pokyd macros (same underlying sizes).
  */
@@ -58,21 +58,89 @@
 #define WORD unsigned short
 #define DWORD unsigned long
 
-/* Single persistent TCP socket for the bridge connection. */
-static tcp_Socket llm_sock;
+/* TCP socket on the far heap (keeps ~200B out of tight DGROUP). */
+static tcp_Socket far *llm_sock     = NULL;
+static BYTE            llm_watt_up    = 0;
+static BYTE            llm_timer_isr  = 0;
 
 /* Watt sock_* APIs take sock_type* (union); tcp_Socket layout matches .tcp member. */
-#define LLM_SK ((sock_type *)&llm_sock)
+#define LLM_SK ((sock_type *)llm_sock)
+
+/* Start Watt-32 + timer ISR once, after INTRO has loaded POKYD.CFG / SLOVNIK.DAT. */
+static BYTE llm_boot_watt(void) {
+  int rc;
+
+  if (llm_watt_up)
+    return 1;
+  if (!llm_enabled)
+    return 0;
+
+  if (llm_sock == NULL) {
+    llm_sock = (tcp_Socket far *)_fmalloc(sizeof(tcp_Socket));
+    if (llm_sock == NULL) {
+      DBGLOG("LLM boot: _fmalloc socket failed");
+      return 0;
+    }
+  }
+
+  rc = sock_init();
+  if (rc != 0) {
+    DBGLOGF("LLM boot: sock_init failed rc=%d", rc);
+    return 0;
+  }
+
+  init_timer_isr();
+  llm_timer_isr = 1;
+  init_userSuppliedTimerTick();
+  llm_watt_up = 1;
+  DBGLOG("LLM boot: Watt-32 stack OK");
+  return 1;
+}
+
+/* Try one TCP open + poll until established or timeout. Returns 1 when connected. */
+static BYTE llm_connect_to_ip(longword ip) {
+  unsigned wait;
+  int      rc;
+
+  DBGLOGF("LLM_CONNECT: connecting to %08lx:%u", (unsigned long)ip, (unsigned)llm_port);
+  memset(llm_sock, 0, sizeof(*llm_sock));
+  rc = tcp_open(llm_sock, 0, ip, llm_port, NULL);
+  if (rc == 0) {
+    DBGLOGF("LLM_CONNECT: tcp_open failed rc=%d", rc);
+    return 0;
+  }
+
+  for (wait = 0; wait < 80; wait++) {
+    if (tcp_established(llm_sock)) {
+      DBGLOG("LLM_CONNECT: connected");
+      llm_connected = 1;
+      return 1;
+    }
+    userTimerTick(20);
+    tcp_tick(llm_sock);
+    tcp_tick(llm_sock);
+    tcp_tick(llm_sock);
+    tcp_tick(llm_sock);
+    CEKEJ(20);
+  }
+
+  DBGLOG("LLM_CONNECT: timeout waiting for established");
+  sock_close(LLM_SK);
+  llm_connected = 0;
+  return 0;
+}
 
 /* ---------------------------------------------------------------------------
  * LLM_INIT_WATT
- * Parse "host:port" string into llm_host/llm_port and initialise Watt-32.
- * Called once from main() before INTRO.
- * Returns 1 on success, 0 on failure.
+ * Parse "host:port" into llm_host/llm_port.  Watt-32 starts lazily on connect
+ * so INTRO can read POKYD.CFG / SLOVNIK.DAT before the packet driver hooks run.
+ * Returns 1 when host/port parsed, 0 on failure.
  * ------------------------------------------------------------------------- */
 static BYTE llm_init_watt(BYTE *hostport) {
   char *colon;
-  int   rc;
+
+  if (hostport == NULL || hostport[0] == 0)
+    return 0;
 
   /* Copy hostport into llm_host; isolate host and port parts. */
   strncpy((char *)llm_host, (char *)hostport, (size_t)(sizeof(llm_host) - 1));
@@ -85,17 +153,8 @@ static BYTE llm_init_watt(BYTE *hostport) {
   }
   if (llm_port == 0) llm_port = 8765;
 
-  DBGLOGF("LLM_INIT: host=%s port=%u", (char *)llm_host, (unsigned)llm_port);
-
-  rc = sock_init();
-  if (rc != 0) {
-    DBGLOGF("LLM_INIT: sock_init failed rc=%d", rc);
-    HLASKA("LLM: Watt-32 sock_init selhal. Skontrolujte WATTCP.CFG a packet driver.", 4);
-    return 0;
-  }
-
   llm_enabled = 1;
-  DBGLOG("LLM_INIT: Watt-32 stack OK");
+  DBGLOGF("LLM_INIT: host=%s port=%u (Watt-32 deferred until connect)", (char *)llm_host, (unsigned)llm_port);
   return 1;
 }
 
@@ -106,37 +165,36 @@ static BYTE llm_init_watt(BYTE *hostport) {
  * ------------------------------------------------------------------------- */
 static BYTE llm_connect_watt(void) {
   longword ip;
-  int      status;
-  int      rc;
+
+  if (!llm_enabled)
+    return 0;
+  if (!llm_boot_watt())
+    return 0;
 
   DBGLOGF("LLM_CONNECT: resolving %s", (char *)llm_host);
   ip = resolve((char *)llm_host);
-  if (ip == 0L) {
-    DBGLOGF("LLM_CONNECT: resolve failed for %s", (char *)llm_host);
-    HLASKA("LLM: Nelze prelozit adresu bridge serveru.", 4);
-    return 0;
+  if (ip != 0L && llm_connect_to_ip(ip))
+    return 1;
+
+  if (strcmp((char *)llm_host, "127.0.0.1") == 0 ||
+      strcmp((char *)llm_host, "10.0.2.2") == 0) {
+    /* Slirp NAT gateway (10.0.2.2) is the documented host address inside the guest. */
+    if (strcmp((char *)llm_host, "127.0.0.1") == 0) {
+      DBGLOG("LLM_CONNECT: retry via slirp gateway 10.0.2.2");
+    }
+    ip = resolve("10.0.2.2");
+    if (ip != 0L && llm_connect_to_ip(ip))
+      return 1;
   }
 
-  DBGLOGF("LLM_CONNECT: connecting to %08lx:%u", (unsigned long)ip, (unsigned)llm_port);
-  memset(&llm_sock, 0, sizeof(llm_sock));
-  /* Watt-32 tcp_open returns 1 on success, 0 on error (see pctcp.c). */
-  rc = tcp_open(&llm_sock, 0, ip, llm_port, NULL);
-  if (rc == 0) {
-    DBGLOGF("LLM_CONNECT: tcp_open failed rc=%d", rc);
-    HLASKA("LLM: tcp_open selhal.", 4);
-    return 0;
+  if (strcmp((char *)llm_host, "10.0.2.2") == 0) {
+    DBGLOG("LLM_CONNECT: retry via host loopback 127.0.0.1");
+    ip = resolve("127.0.0.1");
+    if (ip != 0L && llm_connect_to_ip(ip))
+      return 1;
   }
 
-  /* Slirp/NE2000 can be slow; match generous bridge-side OpenAI timeouts. */
-  sock_wait_established(LLM_SK, 30, NULL, &status);
-  DBGLOG("LLM_CONNECT: connected");
-  llm_connected = 1;
-  return 1;
-
-sock_err:
-  DBGLOGF("LLM_CONNECT: connection timeout/error status=%d", status);
-  HLASKA("LLM: Nelze se pripojit ke bridge serveru.", 4);
-  sock_close(LLM_SK);
+  DBGLOG("LLM_CONNECT: failed (caller may fall back to classic Pokyd)");
   return 0;
 }
 
@@ -150,20 +208,18 @@ sock_err:
  * Returns line length (excluding NUL), or 0 on timeout / disconnect.
  * ------------------------------------------------------------------------- */
 static WORD llm_recv_line(BYTE *buf, WORD maxlen, int timeout_sec) {
-  DWORD deadline_ms;
-  WORD  n;
+  unsigned ticks;
+  unsigned limit;
+  WORD     n;
 
   if (timeout_sec < 1) timeout_sec = 1;
-  deadline_ms = set_timeout(1000UL * (DWORD)timeout_sec);
+  limit = (unsigned)timeout_sec * 50;
 
-  for (;;) {
+  for (ticks = 0; ticks < limit; ticks++) {
+    userTimerTick(20);
     tcp_tick(LLM_SK);
 
-    if (chk_timeout(deadline_ms)) {
-      DBGLOG("llm_recv_line: timeout");
-      return 0;
-    }
-    if (!tcp_established(&llm_sock)) {
+    if (!tcp_established(llm_sock)) {
       DBGLOG("llm_recv_line: connection closed by remote");
       llm_connected = 0;
       return 0;
@@ -172,7 +228,12 @@ static WORD llm_recv_line(BYTE *buf, WORD maxlen, int timeout_sec) {
     n = sock_gets(LLM_SK, buf, (int)maxlen);
     if (n > 0)
       return n;
+
+    CEKEJ(20);
   }
+
+  DBGLOG("llm_recv_line: timeout");
+  return 0;
 }
 
 /* ---------------------------------------------------------------------------
@@ -347,7 +408,7 @@ static BYTE llm_send_initiative_watt(BYTE *kind, WORD idle_seconds) {
 #endif /* POKYD_LLM_WATT */
 
 /* ===========================================================================
- * Public interface ù always compiled.  Stubs when POKYD_LLM_WATT is absent.
+ * Public interface ? always compiled.  Stubs when POKYD_LLM_WATT is absent.
  * ========================================================================= */
 
 /* LLM_INIT - parse host:port string and initialise Watt-32 stack.
@@ -356,6 +417,10 @@ BYTE LLM_INIT(BYTE *hostport) {
 #ifdef POKYD_LLM_WATT
   return llm_init_watt(hostport);
 #else
+  DBGLOG("LLM_INIT: no Watt-32 in this build (rebuild with vendor/watt32-dos)");
+  if (hostport != NULL && hostport[0] != 0) {
+    HLASKA("LLM: tato pokyd.exe nema Watt-32. Spustte build-and-run-llm.bat znovu.", 4);
+  }
   (void)hostport;
   return 0;
 #endif
@@ -464,7 +529,18 @@ void LLM_CLOSE(void) {
     sock_close(LLM_SK);
     llm_connected = 0;
   }
-  sock_exit();
+  if (llm_watt_up) {
+    if (llm_timer_isr) {
+      exit_timer_isr();
+      llm_timer_isr = 0;
+    }
+    sock_exit();
+    llm_watt_up = 0;
+  }
+  if (llm_sock != NULL) {
+    _ffree(llm_sock);
+    llm_sock = NULL;
+  }
   DBGLOG("LLM_CLOSE ok");
 #endif
 }
