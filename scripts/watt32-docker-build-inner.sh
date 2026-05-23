@@ -3,7 +3,11 @@
 set -ex
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -qq -y wget xz-utils dosbox ca-certificates coreutils git doxygen >/dev/null
+apt-get install -qq -y wget xz-utils dosbox ca-certificates coreutils git findutils sed >/dev/null
+
+# Windows host git clone often stores CRLF; mkmake then emits a truncated watcom_l.mak
+# whose default target is doxygen (needs Windows hhc.exe). Strip CR before configure.
+find /watt/src -type f \( -name 'makefile.all' -o -name '*.mak' \) -exec sed -i 's/\r$//' {} +
 
 cd /tmp
 wget -q https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz
@@ -23,6 +27,6 @@ cd /watt/src
 ../util/linux/mkmake -w -o watcom_l.mak -d build/watcom/large makefile.all WATCOM LARGE
 ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/watcom/watt32.dep
 echo "neterr.c: build/watcom/syserr.c" >> build/watcom/watt32.dep
-wmake -h -f watcom_l.mak
+wmake -h -f watcom_l.mak all
 test -f /watt/lib/wattcpwl.lib
 echo "Watt-32 build OK."

@@ -47,7 +47,7 @@ if errorlevel 1 (
 echo ==^> Cloning Watt-32 into vendor\watt-32 ^(shallow, reproducible^)...
 if not exist "%ROOT_DIR%\vendor" mkdir "%ROOT_DIR%\vendor"
 if exist "%VENDOR_SRC%" rd /s /q "%VENDOR_SRC%"
-git clone --depth 1 https://github.com/gvanem/Watt-32.git "%VENDOR_SRC%"
+git -c core.autocrlf=false -c core.eol=lf clone --depth 1 https://github.com/gvanem/Watt-32.git "%VENDOR_SRC%"
 if errorlevel 1 (
   echo git clone failed.
   exit /b 1

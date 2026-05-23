@@ -28,7 +28,7 @@ fi
 echo "==> Cloning Watt-32 into vendor/watt-32 (shallow, reproducible)..."
 mkdir -p "$ROOT_DIR/vendor"
 rm -rf "$VENDOR_SRC"
-git clone --depth 1 https://github.com/gvanem/Watt-32.git "$VENDOR_SRC"
+git -c core.autocrlf=false -c core.eol=lf clone --depth 1 https://github.com/gvanem/Watt-32.git "$VENDOR_SRC"
 
 echo "==> Building wattcpwl.lib inside Docker (Ubuntu + Open Watcom snapshot + DOSBox)..."
 docker run --rm --platform linux/amd64 \
