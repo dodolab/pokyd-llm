@@ -10,6 +10,8 @@
     -ExitAfterPokyd   Close DOSBox-X when pokyd.exe exits (automation).
     -SkipIntro        Pass -pokyd to skip the intro.
 
+  Network env (same as macOS): BRIDGE_PORT, POKYD_LLM_IP, POKYD_LLM_PORT, POKYD_LLM_HOST.
+
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File scripts\build-and-run-gpt.ps1
   powershell -ExecutionPolicy Bypass -File scripts\build-and-run-gpt.ps1 -ExitAfterPokyd
@@ -24,30 +26,14 @@ param(
 $ErrorActionPreference = "Stop"
 
 . "$PSScriptRoot\common.ps1"
+. "$PSScriptRoot\pokyd-llm-env.ps1"
 Initialize-NotesScriptsDir -ScriptsDirectory $PSScriptRoot
 
 $RepoRoot = Get-NotesRepoRoot
 $BridgeDir = Join-Path $RepoRoot "bridge"
 $BridgePidFile = Join-Path $BridgeDir ".bridge.pid"
-$BridgePort = 8765
-
-if ($env:BRIDGE_PORT -match '^\s*(\d+)\s*$') {
-    $p = [int]$Matches[1]
-    if ($p -gt 0) { $BridgePort = $p }
-}
-
-$envPath = Join-Path $BridgeDir ".env"
-if (Test-Path -LiteralPath $envPath) {
-    Get-Content -LiteralPath $envPath | ForEach-Object {
-        if ($_ -match '^\s*BRIDGE_PORT\s*=\s*([^#]+)') {
-            $v = $Matches[1].Trim().Trim('"').Trim()
-            $parsed = 0
-            if ([int]::TryParse($v, [ref]$parsed) -and $parsed -gt 0) {
-                $BridgePort = $parsed
-            }
-        }
-    }
-}
+$BridgePort = Get-PokydBridgePort -RepoRoot $RepoRoot
+$env:BRIDGE_PORT = [string]$BridgePort
 
 $bridgeProc = $null
 
@@ -157,12 +143,11 @@ Run scripts\bootstrap-watt32-docker.bat or scripts/bootstrap-watt32-docker.sh, o
     & $buildBat
     if ($LASTEXITCODE -ne 0) { throw "build.bat failed with exit $LASTEXITCODE" }
 
-    $llmHost = "10.0.2.2:$BridgePort"
+    $llmHost = Resolve-PokydLlmHost -RepoRoot $RepoRoot
+    $env:POKYD_LLM_HOST = $llmHost
     Write-Host "[gpt] Launching DOSBox-X with -llm=$llmHost"
 
-    $runArgs = @{
-        LlmHost = $llmHost
-    }
+    $runArgs = @{}
     if ($ExitAfterPokyd) { $runArgs.ExitAfterNotes = $true }
     if ($SkipIntro) { $runArgs.SkipIntro = $true }
 

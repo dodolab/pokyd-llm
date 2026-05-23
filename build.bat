@@ -28,6 +28,13 @@ if exist "%~dp0vendor\watt32-dos\inc\tcp.h" (
   if defined WATT_LIB (
     set "LLM_STACK=-k3008"
     set "LLM_CFLAGS=-DPOKYD_LLM_WATT=1 -I%~dp0vendor\watt32-dos\inc"
+    if defined POKYD_LLM_IP set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_HOST=\"%POKYD_LLM_IP%\""
+    if not defined POKYD_LLM_IP if defined POKYD_LLM_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_HOST=\"10.0.2.2\""
+    if defined POKYD_LLM_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_PORT=%POKYD_LLM_PORT%"
+    if not defined POKYD_LLM_PORT if defined BRIDGE_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_PORT=%BRIDGE_PORT%"
+    if defined POKYD_LLM_IP if not defined POKYD_LLM_PORT if not defined BRIDGE_PORT set "LLM_CFLAGS=%LLM_CFLAGS% -DPOKYD_LLM_DEFAULT_PORT=8765"
+    if defined POKYD_LLM_IP echo LLM compile defaults: %POKYD_LLM_IP% (set POKYD_LLM_PORT for port; runtime -llm= overrides^)
+    if not defined POKYD_LLM_IP if defined POKYD_LLM_PORT echo LLM compile default port: %POKYD_LLM_PORT% (runtime -llm= overrides^)
     echo Watt-32 found -- LLM mode (-llm=host:port^) will be compiled in.
   ) else (
     echo WARNING: vendor\watt32-dos\inc\tcp.h found but no wattcplf.lib / wattcpwl.lib -- building without LLM.

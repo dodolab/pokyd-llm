@@ -2,13 +2,15 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/pokyd-llm-env.sh
+. "$ROOT_DIR/scripts/pokyd-llm-env.sh"
+
 DOSBOX_X_BIN="${NOTES_DOSBOX_X:-}"
 EXIT_AFTER_POKYD=0
 SKIP_BUILD=0
 SKIP_INTRO=0
-# Optional: set POKYD_LLM_HOST=host:port to enable LLM mode inside DOSBox-X.
-# The Node bridge must be running on the HOST before launching DOSBox-X.
-# Example: POKYD_LLM_HOST=10.0.2.2:8765 ./build-and-run.sh
+# LLM mode (optional): POKYD_LLM_HOST=host:port, or POKYD_LLM_IP + POKYD_LLM_PORT / BRIDGE_PORT.
+# Node bridge must be running on the host before DOSBox-X when using LLM.
 POKYD_LLM_HOST="${POKYD_LLM_HOST:-}"
 
 for arg in "$@"; do
@@ -32,6 +34,10 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+if [[ -z "$POKYD_LLM_HOST" ]] && pokyd_llm_configured; then
+  POKYD_LLM_HOST="$(pokyd_resolve_llm_host "$ROOT_DIR")"
+fi
 
 if [[ "$EXIT_AFTER_POKYD" -eq 1 ]]; then
   SKIP_INTRO=1

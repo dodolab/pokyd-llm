@@ -6,7 +6,7 @@ This repository is an **MS-DOS program in C**, compiled with **Open Watcom** as 
 
 | Priority | File | Purpose |
 |----------|------|---------|
-| 1 | [docs/prd.md](docs/prd.md) | Project scope, limits, Czech font / DOS, acceptance criteria |
+| 1 | [docs/prd.md](docs/prd.md) | Project scope, limits, how font the used, acceptance criteria |
 | 2 | [docs/CODEMAP.md](docs/CODEMAP.md) | `#include` order of fragments, where to look for functions (no blind grepping) |
 
 ## Where to find rules
@@ -29,6 +29,7 @@ This repository is an **MS-DOS program in C**, compiled with **Open Watcom** as 
 
 - `./build.sh` / `build.bat` -> `pokyd.exe`
 - `./build-and-run.sh` - requires DOSBox-X (see [README.md](README.md))
+- LLM networking env (same on Windows and Unix): `BRIDGE_PORT`, `POKYD_LLM_HOST`, `POKYD_LLM_IP`, `POKYD_LLM_PORT` - resolved in `scripts/pokyd-llm-env.sh` / `pokyd-llm-env.ps1`
 
 ## Bulk comments in source files
 

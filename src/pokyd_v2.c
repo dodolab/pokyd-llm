@@ -488,7 +488,7 @@ DWORD blikaniverze=0,otaznikcas=0,cassetric;
   INTRO_NAPIS(54,8,"Autor programu Ales Janda",7);
   INTRO_NAPIS(56,9,"KYBLSoft (C) 1999-2005",7);
   INTRO_NAPIS(57,10,"4. vydani, verze 2005",15);
-  INTRO_NAPIS(40,11,"Pridan LLM modul Adamem Veseckym (2026)",15);
+  INTRO_NAPIS(40,11,"Rozsireno o LLM modul by DoDoLab (2026)",15);
 
   INTRO_NAPIS(59,3,"Napsano v Borland C++",7);
 

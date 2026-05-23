@@ -135,6 +135,9 @@ companion Node.js service (`bridge/`).
   is present (bundled tree - no separate Watt install needed).
 - Override with `WATT_ROOT=/path/to/watt-32` if you maintain your own build.
 - Without headers + library, `build.sh` builds Pokyd without LLM TCP code (same as before).
+- Optional at compile time (same variable names on Windows and Unix): `POKYD_LLM_IP`,
+  `POKYD_LLM_PORT` / `BRIDGE_PORT` bake default `llm_host` / `llm_port` into `pokyd.exe`;
+  runtime `-llm=host:port` still overrides. See `scripts/pokyd-llm-env.sh`.
 
 ### DOS runtime requirements (LLM mode only)
 

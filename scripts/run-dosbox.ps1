@@ -17,8 +17,9 @@
     powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1 -ExitAfterNotes
     powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1 -AllegroTest
     powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1 -RawKey
-    powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1 -LlmHost 10.0.2.2:8765
-    powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1 -LlmHost 10.0.2.2:8765 -SkipIntro
+    set POKYD_LLM_HOST=10.0.2.2:8765
+    powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1
+    powershell -ExecutionPolicy Bypass -File scripts\run-dosbox.ps1 -SkipIntro
 #>
 
 [CmdletBinding()]
@@ -32,9 +33,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\common.ps1"
+. "$PSScriptRoot\pokyd-llm-env.ps1"
 Initialize-NotesScriptsDir -ScriptsDirectory $PSScriptRoot
 
 $RepoRoot = Get-NotesRepoRoot
+
+if (-not $LlmHost -and (Test-PokydLlmConfigured)) {
+    $LlmHost = Resolve-PokydLlmHost -RepoRoot $RepoRoot
+}
 
 if ($RawKey -and $AllegroTest) {
     Write-Error "Use only one of -RawKey or -AllegroTest."

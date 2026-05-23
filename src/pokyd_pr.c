@@ -88,10 +88,18 @@ int pokyd_intro_argc_snapshot = 0;
 BYTE llm_enabled   = 0;
 /* 1 = TCP connection to the Node bridge is currently open. */
 BYTE llm_connected = 0;
-/* Bridge host string (hostname or dotted-decimal IP). */
+/* Bridge host string (hostname or dotted-decimal IP). Optional build-time default via POKYD_LLM_IP. */
+#ifdef POKYD_LLM_DEFAULT_HOST
+BYTE llm_host[64]  = POKYD_LLM_DEFAULT_HOST;
+#else
 BYTE llm_host[64]  = "";
-/* Bridge TCP port. Default 8765. */
+#endif
+/* Bridge TCP port. Optional build-time default via POKYD_LLM_PORT / BRIDGE_PORT at build. */
+#ifdef POKYD_LLM_DEFAULT_PORT
+WORD llm_port      = POKYD_LLM_DEFAULT_PORT;
+#else
 WORD llm_port      = 8765;
+#endif
 /* Next ODPOVED shows text from LLM bridge (do not echo back as ASSISTANT context). */
 BYTE llm_odpoved_z_bridge = 0;
 /* Silence threshold (seconds) when NAPIS fired REALTIMEKEC; for INITIATIVE idle hint. */

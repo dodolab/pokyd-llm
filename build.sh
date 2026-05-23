@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/pokyd-llm-env.sh
+. "$ROOT_DIR/scripts/pokyd-llm-env.sh"
 
 if [[ ! -f "$ROOT_DIR/src/pokyd.c" ]]; then
   echo "Source file missing: src/pokyd.c"
@@ -86,6 +88,12 @@ if [[ -n "$WATT_ROOT" ]]; then
   fi
   if [[ -f "$WATT_INC/tcp.h" && -n "$WATT_LIB" ]]; then
     LLM_CFLAGS="-DPOKYD_LLM_WATT=1 -I$WATT_INC"
+    if pokyd_llm_configured; then
+      _llm_ip="${POKYD_LLM_IP:-10.0.2.2}"
+      _llm_port="${POKYD_LLM_PORT:-$(pokyd_read_bridge_port "$ROOT_DIR")}"
+      LLM_CFLAGS="$LLM_CFLAGS -DPOKYD_LLM_DEFAULT_HOST=\\\"${_llm_ip}\\\" -DPOKYD_LLM_DEFAULT_PORT=${_llm_port}"
+      echo "LLM compile defaults: ${_llm_ip}:${_llm_port} (runtime -llm=host:port overrides)"
+    fi
     LLM_LIBS="$WATT_LIB"
     # Watt-32 static library pushes DGROUP near the 64KiB limit; shrink stack to leave room.
     # INTRO still fits if kept shallow; raise toward -k3584 only if link fits (E2020).

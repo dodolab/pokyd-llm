@@ -5,6 +5,8 @@
 # Prerequisites: Open Watcom (see build.sh), Node 18+, DOSBox-X, bridge/.env with OPENAI_API_KEY,
 # and `lsof` (standard on macOS) so we can free BRIDGE_PORT after a crash (avoids EADDRINUSE).
 #
+# Network env (same names on Windows): BRIDGE_PORT, POKYD_LLM_IP, POKYD_LLM_PORT, POKYD_LLM_HOST.
+#
 # Usage:
 #   ./build-and-run-gpt.sh
 #   ./build-and-run-gpt.sh --exit-after-pokyd   # CI/automation only (closes DOSBox when pokyd exits)
@@ -12,27 +14,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/pokyd-llm-env.sh
+. "$ROOT_DIR/scripts/pokyd-llm-env.sh"
+
 BRIDGE_DIR="$ROOT_DIR/bridge"
 DOSBOX_X_BIN="${NOTES_DOSBOX_X:-}"
 BRIDGE_PID=""
-BRIDGE_PORT="${BRIDGE_PORT:-8765}"
-
-# Optional: read BRIDGE_PORT from bridge/.env (do not source whole file).
-if [[ -f "$BRIDGE_DIR/.env" ]]; then
-  line="$(grep -E '^BRIDGE_PORT=' "$BRIDGE_DIR/.env" | tail -1 || true)"
-  if [[ -n "${line}" ]]; then
-    v="${line#BRIDGE_PORT=}"
-    v="${v%%#*}"
-    v="$(echo "$v" | tr -d ' \t\r\"')"
-    if [[ -n "$v" ]] && [[ "$v" =~ ^[0-9]+$ ]]; then
-      BRIDGE_PORT="$v"
-    fi
-  fi
-fi
-
-if [[ -z "${BRIDGE_PORT}" || "${BRIDGE_PORT}" -lt 1 ]]; then
-  BRIDGE_PORT=8765
-fi
+BRIDGE_PORT="$(pokyd_read_bridge_port "$ROOT_DIR")"
+export BRIDGE_PORT
 
 BRIDGE_PID_FILE="$BRIDGE_DIR/.bridge.pid"
 
@@ -121,8 +110,7 @@ echo "[gpt] Bridge pid=${BRIDGE_PID} (log: bridge/pokyd-bridge.log)"
 echo "[gpt] Building pokyd.exe with LLM (Watt-32)..."
 "$ROOT_DIR/build.sh"
 
-# DOSBox-X slirp: guest uses 10.0.2.2 to reach services on the host.
-export POKYD_LLM_HOST="10.0.2.2:${BRIDGE_PORT}"
+export POKYD_LLM_HOST="$(pokyd_resolve_llm_host "$ROOT_DIR")"
 echo "[gpt] Launching DOSBox-X with -llm=${POKYD_LLM_HOST}"
-# Do not `exec` ó we need the EXIT trap to stop the bridge when DOSBox-X closes.
+# Do not `exec` ù we need the EXIT trap to stop the bridge when DOSBox-X closes.
 "$ROOT_DIR/build-and-run.sh" --no-build "$@"

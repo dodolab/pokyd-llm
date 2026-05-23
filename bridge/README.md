@@ -91,7 +91,16 @@ From the repository root, with `bridge/.env` configured and Open Watcom + DOSBox
 ./build-and-run-gpt.sh
 ```
 
-This compiles `pokyd.exe` with Watt-32, starts `node bridge/server.js` in the background (log: `bridge/pokyd-bridge.log`), and launches DOSBox-X with `-llm=10.0.2.2:<port>` for slirp networking. Use `./build-and-run-gpt.sh --exit-after-pokyd` for a non-interactive smoke run.
+This compiles `pokyd.exe` with Watt-32, starts `node bridge/server.js` in the background (log: `bridge/pokyd-bridge.log`), and launches DOSBox-X with `-llm=<host>:<port>` for slirp networking (default host `10.0.2.2`, port from `BRIDGE_PORT` / `bridge/.env`). Use `./build-and-run-gpt.sh --exit-after-pokyd` for a non-interactive smoke run.
+
+Environment variables (same names on Windows and macOS/Linux; see repo `README.md`):
+
+| Variable | Role |
+|----------|------|
+| `BRIDGE_PORT` | Node bridge listen port |
+| `POKYD_LLM_IP` | Bridge address as seen from the DOS guest (default `10.0.2.2` with slirp) |
+| `POKYD_LLM_PORT` | Port for `pokyd.exe -llm=` (defaults to `BRIDGE_PORT`) |
+| `POKYD_LLM_HOST` | Full `host:port` for `-llm=` (overrides IP + port) |
 
 ---
 
@@ -124,6 +133,8 @@ The server prints its listening address and waits for DOS clients.
 | `BRIDGE_PORT` | `8765` | TCP port to listen on |
 | `BRIDGE_BIND` | `0.0.0.0` | Bind address (`127.0.0.1` for localhost-only) |
 | `BRIDGE_TIMEOUT_MS` | `30000` | Max ms to wait for an OpenAI response |
+
+Host-side `BRIDGE_PORT` is independent of the address Pokyd uses inside DOS. For DOSBox-X slirp, set `POKYD_LLM_IP=10.0.2.2` (or `POKYD_LLM_HOST=10.0.2.2:<port>`) when launching Pokyd; see `scripts/pokyd-llm-env.sh` / `pokyd-llm-env.ps1`.
 
 The Pokyd persona **system prompt** is read from `bridge/system_prompt.txt` at startup (UTF-8). Edit that file to change behavior; it must be non-empty.
 
@@ -206,8 +217,8 @@ Then:
 
 ### DOSBox-X NE2000 configuration
 
-Add to your DOSBox-X config (or let `build-and-run.sh` do it when `POKYD_LLM_HOST`
-is set):
+Add to your DOSBox-X config (or let `build-and-run.sh` / `run-dosbox.ps1` do it when
+`POKYD_LLM_HOST` or `POKYD_LLM_IP` / `POKYD_LLM_PORT` is set):
 
 ```ini
 [ne2000]

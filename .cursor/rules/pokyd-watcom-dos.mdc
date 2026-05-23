@@ -4,17 +4,17 @@ globs: src/pokyd.c
 alwaysApply: false
 ---
 
-# Open Watcom a legacy kompatibilita
+# Open Watcom and legacy compatibility
 
-## Makra a preruseni
+## Macros and interrupts
 
-- `geninterrupt` pouziva **`pokyd_regs`** (`pokyd.c`), ne primy Borland `_AX` bez inicializace.
-- **`pokyd_intro_argc_snapshot`**: kvuli velkemu stack ramu v `INTRO()` muze byt `argc` po navratu spatne - hlavni program pouziva snapshot z `main`.
+- `geninterrupt` uses **`pokyd_regs`** (`pokyd.c`), not raw Borland `_AX` without initialization.
+- **`pokyd_intro_argc_snapshot`**: because `INTRO()` uses a large stack frame, `argc` may be wrong after return - the main program uses the snapshot from `main`.
 
-## Konzole / split obrazovky
+## Console / split screen
 
-- **`pokyd_shell_rows`**: posun virtualnich souradnic pro `gettext`/`puttext` pri split konzoli - pri novych vypisech over posun radku.
+- **`pokyd_shell_rows`**: virtual coordinate offset for `gettext`/`puttext` in a split console - verify row offset when adding new output.
 
-## Ladeni
+## Debugging
 
-- **`DBGLOG` / `DEBUG.LOG`**: nepouzivaji line-buffering zamerne; pri padu muze chybet flush - kriticke hlasky pres `fflush` uz jsou v `DBGLOG`.
+- **`DBGLOG` / `DEBUG.LOG`**: intentionally without line buffering; flush may be missing on crash - critical messages already use `fflush` inside `DBGLOG`.
