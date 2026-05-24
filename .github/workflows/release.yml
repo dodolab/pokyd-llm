@@ -1,0 +1,40 @@
+# Build Pokyd and publish an MS-DOS release zip when a git tag is pushed.
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Open Watcom
+        run: |
+          set -euo pipefail
+          wget -q https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz
+          mkdir -p watcom
+          tar xf ow-snapshot.tar.xz -C watcom
+          test -x watcom/binl64/wcl || test -x watcom/binl/wcl
+
+      - name: Bootstrap Watt-32 (LLM build)
+        run: ./scripts/bootstrap-watt32-docker.sh
+
+      - name: Build and package MS-DOS release
+        env:
+          WATCOM: ${{ github.workspace }}/watcom
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: ./scripts/package-release.sh "${{ github.ref_name }}"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/pokyd-${{ github.ref_name }}-dos.zip
+          generate_release_notes: true
