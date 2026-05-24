@@ -1,6 +1,0 @@
-NE2000.COM comes from the Crynwr Software DOS packet driver collection (historically
-distributed as pktd11.zip). This binary was extracted via Internet Archive:
-https://web.archive.org/web/20060209004759/http://www.crynwr.com/drivers/pktd11.zip
-
-Redistribution note: Crynwr drivers were traditionally offered as shareware / source
-available; verify upstream terms if you ship commercial derivatives.

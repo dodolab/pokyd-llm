@@ -2,7 +2,7 @@
 Tyto zdrojové kódy jsou pod licencí GNU/GPL. Původní zdrojové kódy byly staženy z [Kyblsoft](https://old.kyblsoft.cz/iqpokyd) a rozšířeny o napojení na LLM v roce 2026 uživatelem [dodolab](https://github.com/dodolab)
 
 
-## Původní licence
+## Původní licence od Kyblsoft.cz
 
 
    Zdrojové kódy k Pokydu 7.0 a IQ Pokydu 0.15
