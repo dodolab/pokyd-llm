@@ -489,6 +489,65 @@ BYTE text[160];
   ODP(text,cislo);
  }
 
+#define POKYD_SIRKA_RADKU 80
+
+/* Delka slova od idx (bez mezer a koncu radku). */
+static BYTE DELKA_SLOVA_ODP(BYTE *text, DWORD idx, DWORD len) {
+BYTE n = 0;
+  while (idx + n < len) {
+    BYTE c = text[idx + n];
+    if (c == ' ' || c == '\t' || c == '\n' || c == '\r')
+      break;
+    n++;
+   }
+  return(n);
+ }
+
+/*
+ * Jeden znak odpovedi s word-wrap na 80 sloupcu (zalomeni na mezere, ne uprostred slova).
+ * idx se posune; vraci 0 az je konec retezce.
+ */
+static BYTE VYPS_ODPOVED_ZNAK(BYTE *text, DWORD *idx, DWORD len) {
+DWORD i;
+BYTE c, wx, wl;
+
+  i = *idx;
+  if (i >= len)
+    return(0);
+  c = text[i];
+  if (c == '\r') {
+    (*idx)++;
+    if (*idx < len && text[*idx] == '\n')
+      (*idx)++;
+    STRANA(1);
+    return(1);
+   }
+  if (c == '\n') {
+    (*idx)++;
+    STRANA(1);
+    return(1);
+   }
+  if (c == ' ' || c == '\t') {
+    wx = (BYTE)wherex();
+    if (wx < POKYD_SIRKA_RADKU)
+      NAPISZNAKODP(' ');
+    else
+      STRANA(1);
+    (*idx)++;
+    return(1);
+   }
+  wl = DELKA_SLOVA_ODP(text, i, len);
+  wx = (BYTE)wherex();
+  if (wx > 1 && (DWORD)wx + (DWORD)wl - 1 >= POKYD_SIRKA_RADKU)
+    STRANA(1);
+  wx = (BYTE)wherex();
+  if (wx >= POKYD_SIRKA_RADKU)
+    STRANA(1);
+  NAPISZNAKODP(c);
+  (*idx)++;
+  return(1);
+ }
+
 /* Rutina ODPOVED - viz implementace a nazvy promennych (konvence Pokyd). */
 void ODPOVED(BYTE odradkovani) {
 DWORD pozice=0,pozice2,celkempozice;
@@ -509,9 +568,9 @@ BYTE llm_preskocit_llm_kontext = 0;
     pozice2=ODRIZNIENTERY();
     DBGLOGF("ODPOVED: long message path (VTIPY/POCASI dlouhe) len=%u preview=\"%.80s\"",
             (unsigned)pozice2, dlouhe);
-    for (pozice=0; pozice < pozice2; pozice++) {
-      if (dlouhe[pozice] == '\n' || wherex() == 80) STRANA(1);
-      else NAPISZNAKODP(dlouhe[pozice]);
+    pozice = 0;
+    while (pozice < pozice2) {
+      VYPS_ODPOVED_ZNAK(dlouhe, &pozice, pozice2);
       PIPNI(50,45);
      }
     if (kydy != NULL) fprintf(kydy,"%s\n",dlouhe);
@@ -536,9 +595,12 @@ BYTE llm_preskocit_llm_kontext = 0;
      }
 
     if (delayprocenta == 0 || textefekty == 0) {	//odpoved napsana hned
-      DBGLOG("ODPOVED: immediate NAPISRETEZEC (no typewriter effect)");
+      DBGLOG("ODPOVED: immediate print (no typewriter effect)");
       DBGLOGF("ODPOVED: immediate text attr=%u=\"%.200s\"", (unsigned)barvapocitac0, (char *)odpovedi[cislo]);
-      NAPISRETEZEC(odpovedi[cislo],barvapocitac0); goto DAL;
+      pozice = 0;
+      while (pozice < celkempozice)
+        VYPS_ODPOVED_ZNAK(odpovedi[cislo], &pozice, celkempozice);
+      goto DAL;
      }
 
     pozice3=(BYTE)(rand()%12);
@@ -553,7 +615,7 @@ BYTE llm_preskocit_llm_kontext = 0;
     switch(pozice3) {			//Vyber efektu
       case 0:					//Normalni efekt
 	pozice=0; while (pozice < celkempozice) {
-	  NAPISZNAKODP(odpovedi[cislo][pozice++]);
+	  VYPS_ODPOVED_ZNAK(odpovedi[cislo], &pozice, celkempozice);
 	  PIPNI(30,30);
 	 } break;
       case 1:					//Vykreslovani 2. bodu

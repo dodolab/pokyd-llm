@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * Verify POKYD.CFG parsing and persona / Terminator prompt assembly (no OpenAI).
+ * Verify POKYD.CFG parsing and persona prompt assembly (no OpenAI).
  *
  *   node persona-test.js
  *   node persona-test.js ../POKYD.CFG
@@ -29,7 +29,7 @@ console.log('  userGender:', parsed.userGender);
 console.log('  computerGender:', parsed.computerGender);
 console.log('  moodLabel:', parsed.moodLabel, `(level ${parsed.moodLevel})`);
 console.log('  characterLabel:', parsed.characterLabel, `(level ${parsed.characterLevel})`);
-console.log('  terminatorMode:', parsed.terminatorMode);
+console.log('  machineMode:', parsed.machineMode);
 console.log('  activeName:', parsed.computerNameActive);
 
 const prompt = buildSessionSystemPrompt(parsed);
@@ -44,13 +44,13 @@ const stroj = parsePokydCfg(
     'Charakter pocitace (0..stroj):\n0'
   )
 );
-if (!stroj.terminatorMode) {
-  console.error('FAIL: expected terminatorMode for charakter stroj');
+if (!stroj.machineMode) {
+  console.error('FAIL: expected machineMode for charakter stroj');
   process.exit(1);
 }
 const tPrompt = buildSessionSystemPrompt(stroj);
-if (!tPrompt.includes('TERMINATOR') && !tPrompt.includes('Terminator')) {
-  console.error('FAIL: Terminator prompt missing for stroj');
+if (!tPrompt.includes('MACHINE') && !tPrompt.includes('Machine')) {
+  console.error('FAIL: Machine prompt missing for stroj');
   process.exit(1);
 }
 

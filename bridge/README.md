@@ -60,7 +60,7 @@ REPLY <text>\n
 ```
 
 - `<text>` is plain ASCII, at most 3 980 characters (fits in Pokyd's `dlouhe[4001]`
-  buffer, leaving room for the null terminator and the `REPLY ` prefix itself).
+  buffer, leaving room for the null machine and the `REPLY ` prefix itself).
 - OpenAI responses in UTF-8 are transliterated to ASCII by the bridge before
   sending (Czech and other diacritics replaced with their base letter, e.g. `c-caron -> c`).
 - Newlines in the OpenAI response are replaced with a single space, so the entire
@@ -138,7 +138,7 @@ Host-side `BRIDGE_PORT` is independent of the address Pokyd uses inside DOS. For
 
 The Pokyd persona **system prompt** is read from `bridge/system_prompt.txt` at startup (UTF-8). Edit that file to change behavior; it must be non-empty.
 
-When Pokyd sends `POKYD.CFG` after connect, the bridge parses **mood** (`vyborna` … `hrozna`) and **character** (`stroj`, `naivni`, `klidny`, `prumerny`, `neduverivy`, `naladovy`, `vybusny`) and injects detailed behavioral instructions into the system message. If character is **`stroj`**, the base prompt is replaced with **`system_prompt_terminator.txt`** (Terminator movie persona, emotionless, short cold replies).
+When Pokyd sends `POKYD.CFG` after connect, the bridge parses **mood** (`vyborna` … `hrozna`) and **character** (`stroj`, `naivni`, `klidny`, `prumerny`, `neduverivy`, `naladovy`, `vybusny`) and injects detailed behavioral instructions into the system message. If character is **`stroj`**, the base prompt is replaced with **`system_prompt_machine.txt`** (Machine persona, emotionless, short cold replies).
 
 Quick check (no OpenAI): `node persona-test.js` from the `bridge/` directory.
 

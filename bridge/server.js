@@ -23,7 +23,6 @@ const BRIDGE_VERBOSE = /^1|true|yes$/i.test(process.env.BRIDGE_VERBOSE || '');
 const MAX_REPLY_BYTES = 3980;
 
 const SYSTEM_PROMPT_PATH = path.join(__dirname, 'system_prompt.txt');
-const TERMINATOR_PROMPT_PATH = path.join(__dirname, 'system_prompt_terminator.txt');
 
 function loadPromptFile(filePath, label) {
   let text;
@@ -48,12 +47,7 @@ function loadSystemPrompt() {
   return loadPromptFile(SYSTEM_PROMPT_PATH, 'system_prompt.txt');
 }
 
-function loadTerminatorPrompt() {
-  return loadPromptFile(TERMINATOR_PROMPT_PATH, 'system_prompt_terminator.txt');
-}
-
 const SYSTEM_PROMPT = loadSystemPrompt();
-const TERMINATOR_PROMPT = loadTerminatorPrompt();
 
 if (!process.env.OPENAI_API_KEY) {
   console.error('ERROR: OPENAI_API_KEY is not set. Create bridge/.env from .env.example.');
@@ -247,12 +241,12 @@ function parsePokydCfg(raw) {
   parsed.characterLabel =
     CHARAKTER_LABELS[Math.min(Math.max(parsed.characterLevel, 0), 6)] ||
     String(parsed.characterLevel);
-  parsed.terminatorMode = parsed.characterLabel === 'stroj';
+  parsed.machineMode = parsed.characterLabel === 'stroj';
 
   return parsed;
 }
 
-/** Runtime facts shared by Pokyd and Terminator personas. */
+/** Runtime facts shared by Pokyd and Machine personas. */
 function formatRuntimeFacts(cfg) {
   if (cfg.empty) {
     return (
@@ -277,7 +271,7 @@ function formatRuntimeFacts(cfg) {
   );
 }
 
-/** Persona block appended to standard Pokyd system prompt (not used in Terminator mode). */
+/** Persona block appended to standard Pokyd system prompt (not used in Stroj mode). */
 function buildPersonaInstructions(cfg) {
   if (cfg.empty) {
     return formatRuntimeFacts(cfg);
@@ -294,7 +288,7 @@ function buildPersonaInstructions(cfg) {
     `- Nalada pocitace: ${moodKey} (uroven ${cfg.moodLevel}/4). ${moodText}\n` +
     `- Charakter pocitace: ${cfg.characterLabel} (typ ${cfg.characterLevel}/6). ${charText}\n` +
     `Kombinuj naladu a charakter: charakter urcuje JAK reagujes na udalosti, nalada urcuje ` +
-    `ZAKLADNI TON (od vyborne po hrozna). Oba parametry musi byt videt v kazde odpovedi.`
+    `ZAKLADNI TON (od vyborne po hrozna).`
   );
 }
 
@@ -304,9 +298,6 @@ function parsedMoodKey(cfg) {
 
 /** Full system message after CONFIG is parsed (replaces provisional prompt). */
 function buildSessionSystemPrompt(cfg) {
-  if (cfg.terminatorMode) {
-    return `${TERMINATOR_PROMPT}\n\n${formatRuntimeFacts(cfg)}`;
-  }
   return `${SYSTEM_PROMPT}\n\n${buildPersonaInstructions(cfg)}`;
 }
 
@@ -596,7 +587,7 @@ function handleConnection(socket) {
               role: 'system',
               content: buildSessionSystemPrompt(parsed),
             };
-            const mode = parsed.terminatorMode ? 'TERMINATOR (stroj)' : 'Pokyd';
+            const mode = parsed.machineMode ? 'MACHINE (stroj)' : 'Pokyd';
             console.log(
               `[session ${id}] POKYD.CFG parsed (${rawCfg.length} bytes) mode=${mode} ` +
                 `user=${parsed.userGender} pc=${parsed.computerGender} ` +
@@ -710,7 +701,7 @@ if (require.main === module) {
     console.log(`Pokyd bridge listening on ${BIND}:${PORT}`);
     console.log(`Model: ${MODEL}  MaxTokens: ${MAX_TOKENS}  Timeout: ${TIMEOUT_MS}ms`);
     console.log(`Verbose RX dump: BRIDGE_VERBOSE=1`);
-    console.log('Persona: POKYD.CFG mood + character; charakter=stroj -> Terminator mode');
+    console.log('Persona: POKYD.CFG mood + character; charakter=stroj -> Machine mode');
     console.log('Waiting for Pokyd DOS clients...');
   });
 }
