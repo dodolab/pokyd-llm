@@ -45,6 +45,7 @@ pokyd_free_tcp_port() {
   done
 }
 
+
 cleanup() {
   set +e
   if [[ -n "${BRIDGE_PID}" ]] && kill -0 "${BRIDGE_PID}" 2>/dev/null; then

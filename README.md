@@ -7,6 +7,8 @@ Původní zdrojové kódy jsou [zde](https://old.kyblsoft.cz/iqpokyd)
 Původní [README z roku 2002](./docs/pokyd_old.md)
 
 ![Pokyd screenshot](./docs/pokyd_scr01.png)
+![Pokyd screenshot2](./docs/pokyd_scr02.png)
+
 
 ## Struktura repozitáře
 
@@ -191,7 +193,7 @@ Podrobnosti k protokolu a Watt-32: [bridge/README.md](bridge/README.md).
 
 - **[docs/prd.md](docs/prd.md)** – požadavky, rozsah, kritéria akceptace  
 - **[docs/CODEMAP.md](docs/CODEMAP.md)** – pořadí `#include` fragmentů a mapa subsystémů  
-- **[AGENTS.md](AGENTS.md)** – rozcestník pro agenty  
+- **[AGENTS.md](AGENTS.md)** – rozcestník
 - **[bridge/README.md](bridge/README.md)** – protokol TCP, Node bridge, OpenAI, `.env`  
 - **[.cursor/rules/](.cursor/rules/)** – pravidla pro architekturu, DOS/font, Watcom 
 - **`scripts/pokyd_add_fn_comments.py`** – pomůcka pro komentáře u funkcí
