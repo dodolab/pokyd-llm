@@ -544,7 +544,7 @@ void NASTAV_STANDARD(void) {
   zenskyrod=0; zenapocitac=0; nalada=2; naladabody=37; charakter=3;
   strcpy(jmenomuzpocitac,"Klaban"); strcpy(jmenozenapocitac,"Daria");
   nastvani=1; zvuk=1; yz=0; pravopis=1;
-  pocetvterin=5; zvysovani=1; delayprocenta=100; font=1; pocetradku=2;
+  pocetvterin=30; zvysovani=1; delayprocenta=100; font=1; pocetradku=2;
   textefekty=1; pocetsetricvterin=180; mod=25; slovenstina=0; psani=1;
   extrasouborpsani=0; vyska=300; svtipy=2; spocasi=0;
   vkolikhodin=16; cekaniklavesy=0; ulozeninakonci=1; akcectrlbreak=0;

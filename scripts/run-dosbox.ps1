@@ -111,9 +111,12 @@ $autoexecTail = @(
     "echo [pokyd] Command: $guestLaunchLine",
     $guestLaunchLine,
     "echo.",
-    "echo $ExeToRun ended with errorlevel %ERRORLEVEL%",
-    "echo Staying at C:\ prompt --- type EXIT to close DOSBox."
+    "echo $ExeToRun ended with errorlevel %ERRORLEVEL%"
 )
+if ($LlmHost) {
+    $autoexecTail += "echo Re-run LLM mode: POKYDLLM.BAT"
+}
+$autoexecTail += "echo Staying at C:\ prompt --- type EXIT to close DOSBox."
 if ($ExitAfterNotes) {
     $autoexecTail = @($guestLaunchLine, "exit")
 }

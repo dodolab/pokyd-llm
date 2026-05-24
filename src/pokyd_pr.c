@@ -39,7 +39,7 @@ BYTE pocetslpamet,pocetjsem,pocetjsi,cisloslpamet=255,cislojsem=255,cislojsi=255
 
 BYTE ulozeninakonci=1;
 BYTE pocetpocitacu=1;
-DWORD pocetvterin=5,pocetsetricvterin=180;
+DWORD pocetvterin=30,pocetsetricvterin=180;
 signed char zvuk=1,yz=0,psani=2;
 DWORD vyska=300;
 BYTE akcectrlbreak=0,charakter=3,extrasouborpsani=0,hlasenispatnehocfg=0;

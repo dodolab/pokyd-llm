@@ -358,6 +358,18 @@ void SMYSL_VETY_POCITACE(void) {
    }
  }
 
+/* V LLM rezimu: pocetvterin / prah REALTIMEKEC nepod 30 s (0 = vypnuto). */
+void NASTAV_MIN_LLM_IDLE(void) {
+  if (llm_enabled != 0 && pocetvterin > 0 && pocetvterin < POKYD_MIN_LLM_IDLE_VTERIN)
+    pocetvterin = POKYD_MIN_LLM_IDLE_VTERIN;
+ }
+
+DWORD POKYD_PRAH_REALTIMEKEC(DWORD prah) {
+  if (llm_enabled != 0 && pocetvterin > 0 && prah < POKYD_MIN_LLM_IDLE_VTERIN)
+    return (DWORD)POKYD_MIN_LLM_IDLE_VTERIN;
+  return prah;
+ }
+
 /* Rutina NASTAVENI - viz implementace a nazvy promennych (konvence Pokyd). */
 BYTE NASTAVENI(void) {
 char pozice,odpoved[80],jinesercislo=0;
@@ -378,7 +390,7 @@ DWORD seriove;
     pocetpocitacu=CTINASTAVENI(0,0,1,0); pocetpocitacu++; //je jina otazka nez promenna
      nastvani=CTINASTAVENI(0,0,1,1);
     zvuk=CTINASTAVENI(0,0,1,1);
-     pocetvterin=CTINASTAVENI(0,0,99,5);
+     pocetvterin=CTINASTAVENI(0,0,99,30);
     zvysovani=CTINASTAVENI(0,0,1,1);
      delayprocenta=CTINASTAVENI(0,0,999,100);
     font=CTINASTAVENI(0,0,1,1);
@@ -405,6 +417,7 @@ DWORD seriove;
      if (seriove != VRAT_SERIOVE_CISLO()) jinesercislo=1;
 
     fclose(nastaveni); nastaveni=NULL;
+    NASTAV_MIN_LLM_IDLE();
    }
   return(jinesercislo);
  }
@@ -802,8 +815,9 @@ BYTE skrytepsanizatim=0;
 SETRIC:  PRECTIOBRAZOVKU(1); SETRIC_OBRAZOVKY(); NASTAVSPRAVNYMOD();
       ZAPISOBRAZOVKU(); goto NAPISSTART;
      }
-    if (celkem == 0 && pocetvterin > 0 && dalsikec+pocetkecvterin < time(NULL)) {
-      llm_idle_prah_vterin = (WORD)pocetkecvterin;
+    if (celkem == 0 && pocetvterin > 0 &&
+        dalsikec + POKYD_PRAH_REALTIMEKEC((DWORD)pocetkecvterin) < time(NULL)) {
+      llm_idle_prah_vterin = (WORD)POKYD_PRAH_REALTIMEKEC((DWORD)pocetkecvterin);
       ZACATECNIK("Nyni pocitac rekne dalsi vetu, aniz by cekal na tebe.",06);
       REALTIMEKEC(); dalsikec=time(NULL); VYNULOVANI(0);
       if (zvysovani == 1 && pocetkecvterin < 255) pocetkecvterin++;

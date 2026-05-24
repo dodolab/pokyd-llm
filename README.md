@@ -14,6 +14,7 @@ Původní [README z roku 2002](./docs/pokyd_old.md)
 - `assets/` – statická data (slovníky, doplňky)
 - `scripts/` – pomocné skripty pro DOSBox-X, Windows a MacOS
 - `bridge/` – Node.js server (LLM), viz [bridge/README.md](bridge/README.md)
+- `POKYDLLM.BAT` – spuštění `pokyd.exe` s LLM uvnitř DOSBoxu (po `build-and-run-llm`)
 
 ---
 
@@ -104,6 +105,17 @@ LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
 build-and-run-llm.bat
 ```
 
+**Znovu spustit Pokyd s LLM uvnitř DOSBoxu** (po ukončení hry, na výzvě `C:\>`):
+
+- Bridge na hostiteli musí stále běžet (spouští ho `build-and-run-llm.bat`, nebo ručně `node bridge\server.js`).
+- V DOSBoxu zadej:
+
+```text
+POKYDLLM
+```
+
+Soubor [`POKYDLLM.BAT`](POKYDLLM.BAT) v kořeni repozitáře (v DOSu `C:\POKYDLLM.BAT`) spustí `pokyd.exe -consplit -llm 10.0.2.2 8765`. Samotné `pokyd.exe` LLM nezapne – je potřeba přepínač `-llm`. Pokud máš jiný port než 8765, uprav v batch souboru řádky `POKYD_LLM_IP` / `POKYD_LLM_PORT` (stejně jako `BRIDGE_PORT` v `bridge\.env`).
+
 Podrobnosti k síti, `WATTCP.CFG` a `assets\NE2000.COM`: [bridge/README.md](bridge/README.md).
 
 ### MacOS
@@ -130,6 +142,8 @@ LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
 ```bash
 ./build-and-run-llm.sh
 ```
+
+**Znovu spustit Pokyd s LLM uvnitř DOSBoxu** (na výzvě `C:\>`): bridge na hostiteli musí běžet, pak v DOSu `POKYDLLM` (soubor `POKYDLLM.BAT` v kořeni repozitáře). Viz výše u Windows.
 
 ---
 

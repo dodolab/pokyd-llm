@@ -10,6 +10,9 @@
  * Konvence rozsireni: AGENTS.md, .cursor/rules/pokyd-architecture.mdc
  */
 
+/* Minimum silence (seconds) before spontaneous lines in LLM mode (-llm). */
+#define POKYD_MIN_LLM_IDLE_VTERIN 30
+
 /* DOS console split: keep COMMAND.COM / autoexec lines visible above Pokyd (see -consplit). */
 extern unsigned char pokyd_shell_rows;
 extern int pokyd_intro_argc_snapshot;
@@ -147,6 +150,8 @@ void SPUST(BYTE *co,BYTE mali_se_zapsat_obrazovka,BYTE plugin);
 void SPUSTPROGRAM(void);
 void SMYSL_VETY_POCITACE(void);
 BYTE NASTAVENI(void);
+void NASTAV_MIN_LLM_IDLE(void);
+DWORD POKYD_PRAH_REALTIMEKEC(DWORD prah);
 void INTRO_NAPISPAMET(void);
 void OBRAZEK_POKYDU(BYTE pozicex,BYTE pozicey,BYTE barva,BYTE pruhledne);
 void INTRO(int argc,BYTE puvpozy);

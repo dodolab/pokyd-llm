@@ -49,7 +49,8 @@ INITIATIVE <kind> [<seconds>]\n
   `resume`, `second_pc`, `second_pc_rules`, `solo_remark`, `joke_fallback`,
   `weather_fallback`, `goodbye` (unknown kinds fall back to `banter` on the bridge).
 - Optional number after `idle` is the silence threshold from `POKYD.CFG`
-  (`pocetvterin`); after `resume` it is the conversation visit/file index.
+  (`pocetvterin`; default 30 s, minimum 30 s in LLM mode); after `resume` it is
+  the conversation visit/file index.
 - Response is the same `REPLY` / `ERROR` format as `USER`. Does not count as a
   user turn on the DOS side.
 
@@ -173,6 +174,11 @@ Pass `-llm=<host>:<port>` on the command line:
 ```
 pokyd.exe -pokyd -llm=10.0.2.2:8765
 ```
+
+Inside DOSBox (repo mounted as `C:\`), you can re-run LLM mode after quitting
+Pokyd with **`POKYDLLM.BAT`** in the repo root (DOS-safe: `pokyd.exe -consplit
+-llm 10.0.2.2 8765`). Edit `POKYD_LLM_PORT` in that file if `BRIDGE_PORT` in
+`bridge/.env` is not 8765. Plain `pokyd.exe` does not enable LLM.
 
 If the bridge cannot be reached, Pokyd prints a message and falls back to the
 legacy rule-based engine automatically. LLM mode is completely opt-in.
