@@ -14,7 +14,7 @@ Původní [README z roku 2002](./docs/pokyd_old.md)
 
 - `src/` – veškeré C zdrojáky, hlavičky a další fragmenty
 - `assets/` – statická data (slovníky, doplňky)
-- `scripts/` – pomocné skripty pro DOSBox-X, Windows a MacOS
+- `scripts/` – pomocné skripty (DOSBox-X, build, Watt-32, release; macOS / Linux / Windows)
 - `bridge/` – Node.js server (LLM), viz [bridge/README.md](bridge/README.md)
 - `POKYDLLM.BAT` – spuštění `pokyd.exe` s LLM uvnitř DOSBoxu (po `build-and-run-llm`)
 
@@ -22,36 +22,52 @@ Původní [README z roku 2002](./docs/pokyd_old.md)
 
 ## Co a jak nainstalovat
 
-- **Open Watcom v2** (překladač pro DOS) - do složky watcom. Oficiální buildy: [Open Watcom v2 – Releases](https://github.com/open-watcom/open-watcom-v2/releases).
+Program se původně kompiloval v DOSu v Borland C++, teď je možno jej kompilovat i na dnešních systémech s využitím Open Watcom.
+
+- **Open Watcom v2** (překladač pro DOS) – Windows: `watcom\binnt\`; macOS/Linux: `./scripts/install-open-watcom.sh` nebo [releases](https://github.com/open-watcom/open-watcom-v2/releases).
 - **DOSBox-X** (DOS emulátor) - do složky dosbox. [DOSBox-X](https://dosbox-x.com/)
 - Pro **LLM režim** navíc: **Node.js 18+**, API klíč a .env proměnné v `bridge/` (podrobnosti v [bridge/README.md](bridge/README.md)).
 
 
-### MacOS
+### macOS a Linux
+
+Na obou platformách se používají stejné skripty v kořeni repa: **`build.sh`**, **`build-and-run.sh`**, **`build-and-run-llm.sh`**. Překlad probíhá na hostiteli (nikoliv v DOSu) přes Open Watcom; výstup je **`pokyd.exe`** pro DOS / DOSBox-X.
 
 1. **DOSBox-X**  
-   - Doporučeno: [Homebrew](https://brew.sh/) – `brew install dosbox-x`  
-   - Nebo instalátor z webu; pokud binárka není v PATH, nastav proměnnou `NOTES_DOSBOX_X` na plnou cestu k spustitelnému souboru `dosbox-x`.
+   - **macOS:** doporučeno [Homebrew](https://brew.sh/) – `brew install dosbox-x`  
+   - **Linux:** balíček z distribuce, nebo build z [DOSBox-X](https://dosbox-x.com/)  
+   - Pokud `dosbox-x` není v `PATH`, nastav **`NOTES_DOSBOX_X`** na plnou cestu k binárce.
 
 2. **Open Watcom**  
-   - Stáhni snapshot pro macOS (archiv `.tar.xz` z výše uvedených releases).  
-   - Rozbal například do **`/Users/<username>/watcom`** nebo přímo do **`/pokyd/watcom`**.  
-   - Skript `build.sh` hledá překladač v tomto pořadí: proměnné **`WATCOM`**, pak **`./watcom`**, `~/watcom`, `/usr/local/watcom`, `/opt/watcom`. Uvnitř musí být například `binl64/wcl` nebo `binl/wcl` (záleží na architektuře).
-   - Po rozbalení můžeš exportovat např.:  
-     `export WATCOM=/cesta_k_watcom`
+   - Jednorázově stáhni snapshot (stejný jako v CI):  
+     `./scripts/install-open-watcom.sh`  
+     (rozbalí do **`./watcom`** v kořeni repozitáře)  
+   - Nebo ručně z [Open Watcom v2 releases](https://github.com/open-watcom/open-watcom-v2/releases) (archiv `.tar.xz`) do `~/watcom`, `/opt/watcom`, nebo `./watcom`.  
+   - `build.sh` hledá instalaci v pořadí: **`WATCOM`**, `./watcom`, `~/watcom`, `/usr/local/watcom`, `/opt/watcom`.  
+   - Snapshot obsahuje překladače pro všechny platformy; **`build.sh` vybere správný hostitelský `wcl`** podle OS a CPU:
+
+   | Hostitel | Adresář s `wcl` |
+   |----------|------------------|
+   | Linux x86_64 | `binl64`, pak `binl` |
+   | Linux arm64 | `arml64`, pak `binl64` |
+   | macOS Apple Silicon | `armo64`, pak `arml64` |
+   | macOS Intel | `binl64`, pak `binl` |
+
+   - Příklad: `export WATCOM=/cesta/k/watcom`
 
 3. **Node.js** (jen pro LLM)  
-   - např. `brew install node` nebo [nodejs.org](https://nodejs.org/).
-   - zkopíruj `env.example` do `.env` a doplň parametry
+   - macOS: `brew install node` nebo [nodejs.org](https://nodejs.org/)  
+   - Linux: balíček `nodejs` / nvm / nodesource  
+   - V `bridge/`: `npm install`, zkopíruj `bridge/.env.example` → `bridge/.env`
 
 4. **Watt-32** (jen pro LLM)  
-   - Skript `build.sh` automaticky použije **`vendor/watt32-dos`**, pokud tam jsou hlavičky a knihovna (např. `inc/tcp.h`, `lib/wattcplf.lib`).  
-   - Tyto soubory je možno vygenerovat pomocí Dockeru:  
+   - `build.sh` automaticky použije **`vendor/watt32-dos`**, pokud existuje `inc/tcp.h` a knihovna v `lib/`.  
+   - Vygenerování (Docker na macOS i Linuxu, stejný skript):  
      `./scripts/bootstrap-watt32-docker.sh`  
-     (skript stáhne zdroje Watt-32 a zbuildí knihovnu pro Open Watcom).  
+     (Windows: `scripts\bootstrap-watt32-docker.bat`)
 
-5. **Spuštění „vše v jednom“ s LLM (macOS/Linux)**  
-   - Po splnění výše uvedeného (včetně doplnění parametrů do `bridge/.env`), spusť:  
+5. **Spuštění „vše v jednom“ s LLM**  
+   - Po bootstrapu Watt-32 a doplnění `bridge/.env`:  
      `./build-and-run-llm.sh`
 
 ### Windows
@@ -120,32 +136,33 @@ Soubor [`POKYDLLM.BAT`](POKYDLLM.BAT) v kořeni repozitáře (v DOSu `C:\POKYDLL
 
 Podrobnosti k síti, `WATTCP.CFG` a `assets\NE2000.COM`: [bridge/README.md](bridge/README.md).
 
-### MacOS
+### macOS a Linux
 
-Z kořene repozitáře:
+Z kořene repozitáře (stejné příkazy na obou OS):
 
-```bash
-./build-and-run.sh
-```
+| Účel | Příkaz |
+|------|--------|
+| Překlad + DOSBox | `./build-and-run.sh` |
+| Jen překlad | `./build.sh` |
+| LLM (Watt-32 + bridge + DOSBox) | `./build-and-run-llm.sh` |
+| Release zip (lokálně) | `./scripts/package-release.sh 1.0` |
 
-Postup:
+`build-and-run.sh` sestaví `pokyd.exe` a `slova.exe` a spustí DOSBox-X.
 
-1. Sestaví `pokyd.exe` a `slova.exe` pomocí hostitelských nástrojů Open Watcom (viz výše).
-2. Spustí DOSBox-X a `pokyd.exe`.
+---
 
-Jen překlad:
+## Pomocné skripty (`scripts/`)
 
-```bash
-./build.sh
-```
+| Skript | macOS / Linux | Windows alt. |
+|--------|---------------|---------|
+| `install-open-watcom.sh` | stáhne OW do `./watcom` | — (`watcom\binnt\wcl.exe`) |
+| `bootstrap-watt32-docker.sh` | Watt-32 → `vendor/watt32-dos` | `bootstrap-watt32-docker.bat` |
+| `package-release.sh` | zip pro DOS | — |
+| `push-release-tag.sh` | push tagu → CI release | — |
+| `download-ne2000.sh` | stíhne ovladač do `assets/NE2000.COM` | — |
+| `pokyd-llm-env.sh` | sdílené proměnné LLM (source z `build.sh`) | `pokyd-llm-env.ps1` |
 
-LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
-
-```bash
-./build-and-run-llm.sh
-```
-
-**Znovu spustit Pokyd s LLM uvnitř DOSBoxu** (na výzvě `C:\>`): bridge na hostiteli musí běžet, pak v DOSu `POKYDLLM` (soubor `POKYDLLM.BAT` v kořeni repozitáře). Viz výše u Windows.
+DOSBox na Windows: `run-dosbox.ps1`, `build-and-run-llm.ps1` (viz `scripts/common.ps1`).
 
 ---
 

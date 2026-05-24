@@ -66,7 +66,7 @@ if [[ -z "$DOSBOX_X_BIN" || ! -x "$DOSBOX_X_BIN" ]]; then
 fi
 
 if [[ "$SKIP_BUILD" -eq 0 ]]; then
-  echo "Building with Open Watcom (macOS host + DOSBox-X guest)..."
+  echo "Building with Open Watcom (Unix host + DOSBox-X guest)..."
   "$ROOT_DIR/build.sh"
 else
   echo "Skipping build (--no-build)."
@@ -147,7 +147,7 @@ usescancodes=false
 aspect=true
 doublescan=false
 [dosbox]
-title=Pokyd DOS (macOS)
+title=Pokyd DOS (Unix host)
 keyboard hook=false
 [cpu]
 core=${DOSBOX_CPU_CORE}

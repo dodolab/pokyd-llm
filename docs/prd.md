@@ -2,7 +2,7 @@
 
 ## 1. Product Overview
 
-Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of this modernization is to keep original behavior while making the repository maintainable and reproducible on modern Windows hosts.
+Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of this modernization is to keep original behavior while making the repository maintainable and reproducible on modern hosts: **Windows**, **macOS**, and **Linux** (host Open Watcom + DOSBox-X for the DOS binary).
 
 ## 2. Objectives
 
@@ -11,7 +11,7 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
   - static data/assets in `assets/`
   - built executable `pokyd.exe` in repository root
 - Keep runtime compatibility in DOS/DOSBox.
-- Provide one-step Windows build and run workflow.
+- Provide one-step build and run workflows on Windows (`build.bat`) and Unix (`build.sh` on macOS/Linux).
 - Document architecture, workflow, and legacy constraints.
 
 ## 3. In Scope
@@ -19,7 +19,8 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
 - Source relocation from root/plugin directories to `src/`.
 - Static asset relocation to `assets/`.
 - Runtime path resolver updates for hybrid root/assets lookup.
-- Build/run scripting for Open Watcom + DOSBox-X on Windows.
+- Build/run scripting for Open Watcom + DOSBox-X on Windows, macOS, and Linux.
+- GitHub Actions release workflow (tag push) building on `ubuntu-latest` and publishing `dist/pokyd-<tag>-dos.zip`.
 - Documentation updates (`README.md`, `docs/prd.md`).
 
 ## 4. Out of Scope
@@ -35,18 +36,19 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
 - DOS hobbyists and archivists.
 
 ### Core use cases
-- Build Pokyd on Windows.
+- Build Pokyd on Windows, macOS, or Linux.
 - Run Pokyd inside DOSBox.
 - Modify sources/assets without breaking runtime file loading.
 
 ## 6. Functional Requirements
 
 1. **Build output**
-   - `build.bat` must compile project from `src/`.
+   - `build.bat` (Windows) and `build.sh` (macOS/Linux) must compile the project from `src/`.
+   - `build.sh` must select the correct host Open Watcom `wcl` for the current OS/CPU (see README host-dir table).
    - Output executable must be `pokyd.exe` in repo root.
 
 2. **Run flow**
-   - `build-and-run.bat` must build and then launch DOSBox runner.
+   - `build-and-run.bat` / `build-and-run.sh` must build and then launch DOSBox-X.
    - DOSBox runner must execute `pokyd.exe`.
 
 3. **Asset loading**
@@ -66,7 +68,7 @@ Pokyd is a legacy Czech-language MS-DOS conversational application. The goal of 
 
 - Preserve behavior of legacy DOS runtime logic.
 - Maintain DOS-compatible file path and text processing assumptions.
-- Keep scripts Windows-friendly (batch + PowerShell).
+- Keep scripts platform-appropriate: batch + PowerShell on Windows; POSIX shell on macOS/Linux.
 
 ## 8. Czech Language and Font Constraint
 
@@ -79,7 +81,7 @@ Requirements:
 
 ## 9. Acceptance Criteria
 
-- `build-and-run.bat` successfully builds and launches `pokyd.exe` in DOSBox.
+- `build-and-run.bat` or `build-and-run.sh` successfully builds and launches `pokyd.exe` in DOSBox-X.
 - Source files are under `src/`; static assets are under `assets/`.
 - Key static files load correctly from `assets/` when absent in root.
 - Writable runtime files are created/updated in root as before.
@@ -87,7 +89,7 @@ Requirements:
 
 ## 10. Validation Checklist
 
-- Build passes with Open Watcom on Windows.
+- Build passes with Open Watcom on Windows (`build.bat`) and on macOS/Linux (`build.sh` + `scripts/install-open-watcom.sh` or manual `WATCOM`).
 - DOSBox starts and runs `pokyd.exe`.
 - Config and conversation write paths remain writable in root.
 - Czech text/font rendering appears correct in DOS text mode.
@@ -126,8 +128,12 @@ companion Node.js service (`bridge/`).
 | `assets/WATTCP.CFG` | Watt-32 network config template (DOSBox-X slirp + real HW) |
 | `vendor/watt32-dos/` | Bundled Watt-32 `inc/` + Open Watcom large-model `wattcpwl.lib` |
 | `assets/NE2000.COM` | NE2000 packet driver (Crynwr collection; see `assets/NE2000.LICENSE.txt`) |
+| `scripts/install-open-watcom.sh` | Download ow-snapshot into `./watcom` (macOS/Linux; same as CI) |
 | `scripts/bootstrap-watt32-docker.sh` | Rebuild `vendor/watt32-dos` via Docker on macOS/Linux |
+| `scripts/package-release.sh` | Build + stage flat DOS layout + `dist/pokyd-<version>-dos.zip` |
+| `scripts/push-release-tag.sh` | Push a git tag alone so GitHub Actions release webhook fires |
 | `scripts/download-ne2000.sh` | Refetch `assets/NE2000.COM` from Internet Archive |
+| `.github/workflows/release.yml` | Tag-triggered CI: Watcom, Watt-32, package, GitHub Release asset |
 
 ### Build requirements (LLM mode only)
 

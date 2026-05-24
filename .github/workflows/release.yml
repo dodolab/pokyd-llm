@@ -37,12 +37,7 @@ jobs:
           ref: refs/tags/${{ steps.meta.outputs.tag }}
 
       - name: Install Open Watcom
-        run: |
-          set -euo pipefail
-          wget -q https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/ow-snapshot.tar.xz
-          mkdir -p watcom
-          tar xf ow-snapshot.tar.xz -C watcom
-          test -x watcom/binl64/wcl || test -x watcom/binl/wcl
+        run: bash ./scripts/install-open-watcom.sh
 
       - name: Bootstrap Watt-32 (LLM build)
         run: bash ./scripts/bootstrap-watt32-docker.sh

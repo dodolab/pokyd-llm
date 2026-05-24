@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Build pokyd.exe on macOS or Linux (host Open Watcom). On Windows use build.bat.
+# Picks the host wcl for this machine (see README: Open Watcom host dirs).
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -81,7 +83,7 @@ LLM_LIBS=""
 LLM_STACK="-k16384"
 WATT_ROOT="${WATT_ROOT:-}"
 
-# Bundled Watt-32 headers + libs (macOS-friendly; see scripts/bootstrap-watt32-docker.sh).
+# Bundled Watt-32 headers + libs (see scripts/bootstrap-watt32-docker.sh; macOS/Linux + Docker).
 if [[ -z "$WATT_ROOT" && -f "$ROOT_DIR/vendor/watt32-dos/inc/tcp.h" ]]; then
   WATT_ROOT="$ROOT_DIR/vendor/watt32-dos"
 fi

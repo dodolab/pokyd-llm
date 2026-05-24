@@ -208,7 +208,7 @@ firewall if necessary).
 
 ### Regenerating Watt-32 (optional)
 
-The canonical way on the host (especially **macOS Apple Silicon**) is Docker:
+The canonical way on the host (**macOS and Linux**, including CI on `linux/amd64`) is Docker:
 
 ```bash
 ./scripts/bootstrap-watt32-docker.sh

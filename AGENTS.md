@@ -27,9 +27,16 @@ This repository is an **MS-DOS program in C**, compiled with **Open Watcom** as 
 
 ## Build
 
-- `./build.sh` / `build.bat` -> `pokyd.exe`
-- `./build-and-run.sh` - requires DOSBox-X (see [README.md](README.md))
-- LLM networking env (same on Windows and Unix): `BRIDGE_PORT`, `POKYD_LLM_HOST`, `POKYD_LLM_IP`, `POKYD_LLM_PORT` - resolved in `scripts/pokyd-llm-env.sh` / `pokyd-llm-env.ps1`
+| Platform | Compile | Run in DOSBox-X | LLM one-shot |
+|----------|---------|-----------------|--------------|
+| macOS / Linux | `./build.sh` | `./build-and-run.sh` | `./build-and-run-llm.sh` |
+| Windows | `build.bat` | `build-and-run.bat` | `build-and-run-llm.bat` |
+
+- **Unix hosts:** one `build.sh` for macOS and Linux; it picks the host `wcl` dir (`binl64`, `armo64`, …) from `uname`. Install Open Watcom: `./scripts/install-open-watcom.sh` or set `WATCOM`.
+- **Watt-32 (LLM):** `./scripts/bootstrap-watt32-docker.sh` (Docker on macOS/Linux; `.bat` on Windows).
+- **Release zip:** `./scripts/package-release.sh <tag>`; CI uses the same script on tag push (see `.github/workflows/release.yml`).
+- LLM networking env (same names on Windows and Unix): `BRIDGE_PORT`, `POKYD_LLM_HOST`, `POKYD_LLM_IP`, `POKYD_LLM_PORT` - resolved in `scripts/pokyd-llm-env.sh` / `pokyd-llm-env.ps1`
+- Details: [README.md](README.md)
 
 ## Bulk comments in source files
 
