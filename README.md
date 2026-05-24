@@ -4,6 +4,8 @@ Pokyd je česká konverzační aplikace pro MS-DOS od **KýblSoftu**; tento repo
 
 Původní zdrojové kódy jsou [zde](https://old.kyblsoft.cz/iqpokyd)
 
+Původní [README z roku 2002](./docs/pokyd_old.md)
+
 ![Pokyd screenshot](./docs/pokyd_scr01.png)
 
 ## Struktura repozitáře
@@ -132,6 +134,8 @@ LLM režim (Watt-32 + Node most + NE2000 v DOSBox-X) – vše najednou:
 ---
 
 ## Konfigurovatelné proměnné
+
+Konfigurační soubor hry je v souboru `POKYD.CFG`. V LLM módu jej hra odesílá na server při každém dotazu.
 
 | Proměnná | Výchozí | Účel |
 |----------|---------|----------------|
