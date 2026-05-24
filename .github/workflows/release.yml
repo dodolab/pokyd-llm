@@ -4,7 +4,15 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      # Match numeric tags (1.0), v-prefixed (v1.0.0), and anything else.
+      - '**'
+  # Manual run (Actions tab) or re-run after a missed tag push.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Git tag to build and release
+        required: true
+        default: '1.0'
 
 permissions:
   contents: write
@@ -13,8 +21,20 @@ jobs:
   build-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve release tag
+        id: meta
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ steps.meta.outputs.tag }}
 
       - name: Install Open Watcom
         run: |
@@ -25,16 +45,17 @@ jobs:
           test -x watcom/binl64/wcl || test -x watcom/binl/wcl
 
       - name: Bootstrap Watt-32 (LLM build)
-        run: ./scripts/bootstrap-watt32-docker.sh
+        run: bash ./scripts/bootstrap-watt32-docker.sh
 
       - name: Build and package MS-DOS release
         env:
           WATCOM: ${{ github.workspace }}/watcom
-          RELEASE_VERSION: ${{ github.ref_name }}
-        run: ./scripts/package-release.sh "${{ github.ref_name }}"
+          RELEASE_VERSION: ${{ steps.meta.outputs.tag }}
+        run: bash ./scripts/package-release.sh "${{ steps.meta.outputs.tag }}"
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/pokyd-${{ github.ref_name }}-dos.zip
+          tag_name: ${{ steps.meta.outputs.tag }}
+          files: dist/pokyd-${{ steps.meta.outputs.tag }}-dos.zip
           generate_release_notes: true

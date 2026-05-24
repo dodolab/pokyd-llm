@@ -42,7 +42,15 @@ if [[ -z "$WATCOM_ROOT" ]]; then
 fi
 
 WATCOM_HOST_BIN=""
-for host_dir in armo64 arml64 binl64 binl; do
+# ow-snapshot ships every host platform; -x alone is not enough (armo64 on Linux x86_64).
+case "$(uname -s)/$(uname -m)" in
+  Linux/x86_64|Linux/amd64) watcom_host_dirs=(binl64 binl) ;;
+  Linux/aarch64|Linux/arm64) watcom_host_dirs=(arml64 binl64 binl) ;;
+  Darwin/arm64) watcom_host_dirs=(armo64 arml64 binl64 binl) ;;
+  Darwin/x86_64) watcom_host_dirs=(binl64 binl) ;;
+  *) watcom_host_dirs=(binl64 binl armo64 arml64) ;;
+esac
+for host_dir in "${watcom_host_dirs[@]}"; do
   if [[ -x "$WATCOM_ROOT/$host_dir/wcl" ]]; then
     WATCOM_HOST_BIN="$WATCOM_ROOT/$host_dir"
     break
@@ -51,7 +59,7 @@ done
 
 if [[ -z "$WATCOM_HOST_BIN" ]]; then
   echo "No host Open Watcom compiler frontend found in $WATCOM_ROOT."
-  echo "Expected one of: armo64/wcl, arml64/wcl, binl64/wcl, binl/wcl."
+  echo "Tried host dirs: ${watcom_host_dirs[*]}"
   exit 1
 fi
 
